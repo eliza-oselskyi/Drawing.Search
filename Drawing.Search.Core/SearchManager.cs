@@ -11,6 +11,7 @@ using Tekla.Structures.Model.UI;
 using ModelObject = Tekla.Structures.Model.ModelObject;
 using Part = Tekla.Structures.Drawing.Part;
 using Task = System.Threading.Tasks.Task;
+using View = Tekla.Structures.Drawing.View;
 
 namespace Drawing.Search.Core
 {
@@ -34,13 +35,22 @@ namespace Drawing.Search.Core
             var selector = _drawingHandler.GetDrawingObjectSelector();
             var doArrayList = new ArrayList();
 
-            foreach (var x in modelObjects.Select(o => drawing.GetSheet().GetModelObjects(o.Identifier)))
+            var views = drawing.GetSheet().GetViews();
+            while (views.MoveNext())
             {
-                while (x.MoveNext())
+                if (!(views.Current is View curr) ||
+                    (curr.ViewType.Equals(View.ViewTypes.UnknownViewType) &&
+                     curr.ViewType.Equals(View.ViewTypes.DetailView) &&
+                     curr.ViewType.Equals(View.ViewTypes.SectionView))) continue;
+                foreach (var x in modelObjects.Select(o => curr.GetModelObjects(o.Identifier)))
                 {
-                    if (x.Current != null) doArrayList.Add(x.Current);
+                    while (x.MoveNext())
+                    {
+                        if (x.Current != null) doArrayList.Add(x.Current);
+                    }
                 }
             }
+
             
             selector.SelectObjects(doArrayList, false);
             return true;
@@ -61,6 +71,11 @@ namespace Drawing.Search.Core
                 if (!(m is Beam beam)) return prop.Equals(query);
                 return beam.GetAssembly().GetMainObject().Equals(m) && prop.Equals(query);
             }));
+        }
+
+        private static void GetViewType(View view)
+        {
+            
         }
     }
 }
