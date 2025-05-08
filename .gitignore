@@ -1,0 +1,5 @@
+packages/
+.idea
+bin/
+obj/
+Drawing.Search.sln.DotSettings.user
