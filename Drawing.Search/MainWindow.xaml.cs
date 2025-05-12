@@ -19,7 +19,9 @@ namespace Drawing.Search
             var searchManager = new SearchManager();
             var text = SelectTextBox.Text;
             
-            Task.Run(() => searchManager.ExecuteSearch(text));
+            //Task.Run(() => searchManager.ExecuteSearch(text));
+            //Task.Run(() => searchManager.ExecuteDetailSearch(text));
+            Task.Run(() => searchManager.ExecutePartMarkSearch(text));
         }
     }
 }
