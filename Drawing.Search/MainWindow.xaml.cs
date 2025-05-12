@@ -26,6 +26,7 @@ namespace Drawing.Search
         {
             var searchManager = new SearchManager();
             var text = SelectTextBox.Text;
+            Keyboard.Focus(SelectTextBox);
             
             if (AssemblyRadio.IsChecked == true)
             {
