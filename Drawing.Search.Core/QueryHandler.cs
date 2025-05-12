@@ -97,7 +97,7 @@ public class QueryHandler(string query)
         return "^" + Regex.Escape(wildcard).Replace("\\?", ".").Replace("\\*", ".*") + "$";
     }
 
-    public void ClearCache()
+    public static void ClearCache()
     {
         Cache.Clear();
     }
