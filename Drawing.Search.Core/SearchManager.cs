@@ -30,7 +30,7 @@ namespace Drawing.Search.Core
 
         public SearchManager()
         {
-            _events.DrawingLoaded += _queryHandler.ClearCache;
+            _events.DrawingLoaded += QueryHandler.ClearCache;
             _events.Register();
         }
 
