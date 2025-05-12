@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using Tekla.Structures;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.Model;
@@ -20,6 +21,7 @@ namespace Drawing.Search.Core
     {
         private readonly DrawingHandler  _drawingHandler = new DrawingHandler();
         private readonly Model _model = new Model();
+        private static readonly MemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
         public SearchManager()
         {
@@ -33,10 +35,10 @@ namespace Drawing.Search.Core
             var idList = _drawingHandler.GetModelObjectIdentifiers(_drawingHandler.GetActiveDrawing());
             var objList = _model.FetchModelObjects(idList, false);
             var modelObjects = GetMatchedModelObjects(query, objList);
-            if (modelObjects.Count == 0) return false;
+            if (modelObjects is { Count: 0 }) return false;
             
             var selector = _drawingHandler.GetDrawingObjectSelector();
-            var doArrayList = new ArrayList();
+            var drawingObjectArrayList = new ArrayList();
 
             var views = drawing.GetSheet().GetViews();
             while (views.MoveNext())
@@ -45,26 +47,35 @@ namespace Drawing.Search.Core
                     (curr.ViewType.Equals(View.ViewTypes.UnknownViewType) &&
                      curr.ViewType.Equals(View.ViewTypes.DetailView) &&
                      curr.ViewType.Equals(View.ViewTypes.SectionView))) continue;
+                if (modelObjects == null) continue;
                 foreach (var x in modelObjects.Select(o => curr.GetModelObjects(o.Identifier)))
                 {
-
                     while (x.MoveNext())
                     {
-                        if (x.Current != null) doArrayList.Add(x.Current);
+                        if (x.Current != null) drawingObjectArrayList.Add(x.Current);
                     }
                 }
             }
 
             
-            selector.SelectObjects(doArrayList, false);
+            selector.SelectObjects(drawingObjectArrayList, false);
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds);
             return true;
         }
 
-        private static List<ModelObject> GetMatchedModelObjects(string query, List<ModelObject> objList)
+        /// <summary>
+        /// Returns a list of model objects that match the query. Cached, to reduce database reads on subsequent duplicate queries
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="objList"></param>
+        /// <returns>List of ModelObject</returns>
+        private static List<ModelObject>? GetMatchedModelObjects(string query, List<ModelObject> objList)
         {
-            return objList
+            if (Cache.TryGetValue(query, out List<ModelObject>? result))
+                if (result != null)
+                    return result;
+            result = objList
                 .AsParallel().Where((m) =>
                 {
                     var prop = string.Empty;
@@ -80,6 +91,8 @@ namespace Drawing.Search.Core
                 }).
                 Select((m) => m)
                 .ToList();
+            Cache.Set(query, result, TimeSpan.FromMinutes(30));
+            return result;
         }
     }
 }
