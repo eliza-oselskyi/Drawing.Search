@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Threading.Tasks;
+using System.Windows;
 using Drawing.Search.Core;
 
 namespace Drawing.Search
@@ -18,7 +19,7 @@ namespace Drawing.Search
             var searchManager = new SearchManager();
             var text = SelectTextBox.Text;
             
-            searchManager.ExecuteSearch(text);
+            Task.Run(() => searchManager.ExecuteSearch(text));
         }
     }
 }

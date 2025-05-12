@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,12 +25,14 @@ namespace Drawing.Search.Core
         {
         }
 
-        public async Task<bool>  ExecuteSearch(string query)
+        public bool ExecuteSearch(string query)
         {
+            var sw = new Stopwatch();
+            sw.Start();
             var drawing = _drawingHandler.GetActiveDrawing();
             var idList = _drawingHandler.GetModelObjectIdentifiers(_drawingHandler.GetActiveDrawing());
             var objList = _model.FetchModelObjects(idList, false);
-            var modelObjects = await Task.Run(() => GetMatchedModelObjects(query, objList));
+            var modelObjects = GetMatchedModelObjects(query, objList);
             if (modelObjects.Count == 0) return false;
             
             var selector = _drawingHandler.GetDrawingObjectSelector();
@@ -44,6 +47,7 @@ namespace Drawing.Search.Core
                      curr.ViewType.Equals(View.ViewTypes.SectionView))) continue;
                 foreach (var x in modelObjects.Select(o => curr.GetModelObjects(o.Identifier)))
                 {
+
                     while (x.MoveNext())
                     {
                         if (x.Current != null) doArrayList.Add(x.Current);
@@ -53,29 +57,29 @@ namespace Drawing.Search.Core
 
             
             selector.SelectObjects(doArrayList, false);
+            sw.Stop();
+            Console.WriteLine(sw.ElapsedMilliseconds);
             return true;
         }
 
         private static List<ModelObject> GetMatchedModelObjects(string query, List<ModelObject> objList)
         {
-            return (objList.FindAll((m) =>
-            {
-                var prop = string.Empty;
-                m.GetReportProperty($"ASSEMBLY_POS", ref prop);
-
-                if (prop == string.Empty)
+            return objList
+                .AsParallel().Where((m) =>
                 {
-                    m.GetReportProperty($"PART_POS", ref prop);
-                }
+                    var prop = string.Empty;
+                    m.GetReportProperty($"ASSEMBLY_POS", ref prop);
 
-                if (!(m is Beam beam)) return prop.Equals(query);
-                return beam.GetAssembly().GetMainObject().Equals(m) && prop.Equals(query);
-            }));
-        }
+                    if (prop == string.Empty)
+                    {
+                        m.GetReportProperty($"PART_POS", ref prop);
+                    }
 
-        private static void GetViewType(View view)
-        {
-            
+                    if (!(m is Beam beam)) return prop.Equals(query);
+                    return beam.GetAssembly().GetMainObject().Equals(m) && prop.Equals(query);
+                }).
+                Select((m) => m)
+                .ToList();
         }
     }
 }
