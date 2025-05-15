@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Drawing.Search.Core;
-using Tekla.Structures.Drawing.UI;
+using Tekla.Structures.Drawing;
+using Events = Tekla.Structures.Drawing.UI.Events;
 
 namespace Drawing.Search
 {
@@ -17,10 +18,18 @@ namespace Drawing.Search
         private readonly Events _events = new Events();
         public MainWindow()
         {
-            InitializeComponent();
-            this.Loaded += new RoutedEventHandler(GainKeyboardFocus);
-            _events.DrawingEditorClosed += AppExit;
-            _events.Register();
+            var dh = new DrawingHandler();
+            if (dh.GetActiveDrawing() == null)
+            {
+                MessageBox.Show("No active drawing open.");
+                AppExit();
+            }
+            else {
+                InitializeComponent();
+                this.Loaded += new RoutedEventHandler(GainKeyboardFocus);
+                _events.DrawingEditorClosed += AppExit;
+                _events.Register();
+            }
         }
 
         private static void AppExit()
