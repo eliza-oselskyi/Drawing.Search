@@ -8,8 +8,6 @@ namespace Drawing.Search.Core;
 
 public class ExactMatchStrategy<T>(double cacheExpiration = 30) : ISearchStrategy<T>
 {
-    private readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
-
     public bool Match(T obj, SearchQuery query)
     {
         var res = obj != null && obj.ToString().Equals(query.Term, StringComparison.OrdinalIgnoreCase);
