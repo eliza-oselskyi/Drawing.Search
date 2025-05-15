@@ -42,32 +42,61 @@ namespace Drawing.Search
             Keyboard.Focus(SelectTextBox);
         }
 
-        private void SelectButton_OnClick(object sender, RoutedEventArgs e)
+        private void ProgressBarHandle(bool setup)
+        {
+            if (setup)
+            {
+                ProgressBar.Visibility = Visibility.Visible;
+                ProgressLabel.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                ProgressBar.Visibility = Visibility.Hidden;
+                ProgressLabel.Visibility = Visibility.Visible;
+            }
+        }
+
+        private async Task<int> SearchResults()
         {
             var searchManager = new SearchManager();
             var text = SelectTextBox.Text;
             Keyboard.Focus(SelectTextBox);
-            
+
+            int res;
             if (AssemblyRadio.IsChecked == true)
             {
-                Task.Run(() => searchManager.ExecuteAssemblySearch(text));
+                res = await Task.Run(() => searchManager.ExecuteAssemblySearch(text));
             }
             else if (DetailRadio.IsChecked == true)
             {
-                Task.Run(() => searchManager.ExecuteDetailSearch(text));
+                res = await Task.Run(() => searchManager.ExecuteDetailSearch(text));
             }
             else if (PartMarkRadio.IsChecked == true)
             {
-                Task.Run(() => searchManager.ExecutePartMarkSearch(text));
+                res = await Task.Run(() => searchManager.ExecutePartMarkSearch(text));
             }
+            else
+            {
+                return -1;
+            }
+
+            return res;
         }
 
-        private void SelectTextBox_OnKeyDown(object sender, KeyEventArgs e)
+        private async void SelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if (e.Key == Key.Enter)
-            {
-                SelectButton_OnClick(sender, e);
-            }
+            
+            ProgressBarHandle(true);
+            var x = await SearchResults();
+            ProgressBarHandle(false);
+            TextBlock.Text = $@"Results found: {x}";
+            Console.WriteLine(x);
+        }
+
+        private async void SelectTextBox_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter) return;
+            SelectButton_OnClick(sender, e);
         }
     }
 }

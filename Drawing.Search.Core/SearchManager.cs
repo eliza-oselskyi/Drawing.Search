@@ -37,7 +37,7 @@ namespace Drawing.Search.Core
             _events.Register();
         }
 
-        public bool ExecutePartMarkSearch(string query)
+        public int ExecutePartMarkSearch(string query)
         {
             var sw =  Stopwatch.StartNew();
             var drawingObjects = GetAllDrawingObjectsInActiveDrawing(out var drawingObjectList);
@@ -63,7 +63,7 @@ namespace Drawing.Search.Core
             
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds);
-            return true;
+            return searchObserver.Matches;
         }
 
         private DrawingObjectEnumerator GetAllDrawingObjectsInActiveDrawing(out List<Mark> drawingObjectList)
@@ -75,7 +75,7 @@ namespace Drawing.Search.Core
             return drawingObjects;
         }
 
-        public bool ExecuteDetailSearch(string query)
+        public int ExecuteDetailSearch(string query)
         {
             var sw = new Stopwatch();
             sw.Start();
@@ -105,10 +105,10 @@ namespace Drawing.Search.Core
             
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds);
-            return true;
+            return searchObserver.Matches;
         }
         
-        public void ExecuteAssemblySearch(string query)
+        public int ExecuteAssemblySearch(string query)
         {
             var sw = new Stopwatch();
             sw.Start();
@@ -130,6 +130,7 @@ namespace Drawing.Search.Core
             
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds);
+            return searchObserver.Matches;
         }
 
 
