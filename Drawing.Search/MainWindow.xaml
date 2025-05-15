@@ -16,9 +16,9 @@
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <StackPanel Grid.Column="0" HorizontalAlignment="Left" Margin="10">
-            <RadioButton Name="AssemblyRadio" GroupName="ObjectTypes" Checked="MainWindow_Loaded">As Assembly</RadioButton>
-            <RadioButton Name="DetailRadio" GroupName="ObjectTypes" Checked="MainWindow_Loaded">Details</RadioButton>
-            <RadioButton Name="PartMarkRadio" GroupName="ObjectTypes" IsChecked="True" Checked="MainWindow_Loaded">Part Marks</RadioButton>
+            <RadioButton Name="AssemblyRadio" GroupName="ObjectTypes" Checked="GainKeyboardFocus">As Assembly</RadioButton>
+            <RadioButton Name="DetailRadio" GroupName="ObjectTypes" Checked="GainKeyboardFocus">Details</RadioButton>
+            <RadioButton Name="PartMarkRadio" GroupName="ObjectTypes" IsChecked="True" Checked="GainKeyboardFocus">Part Marks</RadioButton>
         </StackPanel>
             <TextBox Grid.Row="1" Grid.Column="0" Name="SelectTextBox" Width="250" Height="30" KeyDown="SelectTextBox_OnKeyDown" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
             <Button Grid.Row="1" Grid.Column="1" Name="SelectButton" Click="SelectButton_OnClick" HorizontalAlignment="Left">Select</Button>

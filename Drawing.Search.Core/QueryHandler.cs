@@ -7,6 +7,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.Model;
 using ModelObject = Tekla.Structures.Model.ModelObject;
+using Weld = Tekla.Structures.Drawing.Weld;
 
 namespace Drawing.Search.Core;
 
@@ -79,7 +80,8 @@ public class QueryHandler(string query)
             .Where((obj) =>
             {
                 var content = obj.Attributes.Content.GetUnformattedString();
-                return queryRegex.IsMatch(content);
+                var parsedContent = ParseUnformattedString(content);
+                return queryRegex.IsMatch(parsedContent);
             })
             .Select(DrawingObject (m) => m)
             .ToList();
@@ -95,6 +97,11 @@ public class QueryHandler(string query)
     private static string WildcardToRegex(string wildcard)
     {
         return "^" + Regex.Escape(wildcard).Replace("\\?", ".").Replace("\\*", ".*") + "$";
+    }
+
+    private static string ParseUnformattedString(string str)
+    {
+        return str.Replace("{", "").Replace("}", "").Replace("[", "").Replace("]", "").Replace("\n", "").Trim();
     }
 
     public static void ClearCache()
