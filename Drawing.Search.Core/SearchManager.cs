@@ -162,5 +162,29 @@ namespace Drawing.Search.Core
             Cache.Set(drawing, objList, TimeSpan.FromMinutes(15));
             return drawing;
         }
+
+
+        public void AssemblySearch(string query)
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+            
+            var dh = new DrawingHandler();
+            var model = new Model();
+            var allObjects = dh.GetModelObjectIdentifiers(dh.GetActiveDrawing());
+            var objList = model.FetchModelObjects(allObjects, false);
+
+            var searcher =
+                new ObservableSearch<ModelObject>([new RegexMatchStrategy<ModelObject>()], new ModelObjectExtractor());
+            var searchObserver = new SearchResultObserver();
+            searcher.Subscribe(searchObserver);
+            
+            var results = searcher.Search(objList, new SearchQuery(query));
+            
+            TeklaWrapper.ModelObjectListToSelection(results.ToList(), dh.GetActiveDrawing());
+            
+            sw.Stop();
+            Console.WriteLine(sw.ElapsedMilliseconds);
+        }
     }
 }
