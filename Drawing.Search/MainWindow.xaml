@@ -29,7 +29,7 @@
             <TextBox Grid.Row="1" Grid.Column="0"  Name="SelectTextBox" Width="250" Height="30" KeyDown="SelectTextBox_OnKeyDown" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="Transparent"/>
             <Button Grid.Row="1" Grid.Column="1" Name="SelectButton" Click="SelectButton_OnClick" HorizontalAlignment="Center">Select</Button>
             <ProgressBar Grid.Column="1" Grid.Row="0" Width = "120" Height = "20" Name="ProgressBar" IsIndeterminate="True" Visibility="Hidden"></ProgressBar>
-            <Label Grid.Column="2" Grid.Row="2" HorizontalAlignment="Center" ToolTip="Written by: Eliza Oselskyi">v1.0.0</Label>
+            <Label Grid.Column="2" Grid.Row="2" HorizontalAlignment="Center" ToolTip="Written by: Eliza Oselskyi">v1.0.1</Label>
     </Grid>
     
 </Window>
