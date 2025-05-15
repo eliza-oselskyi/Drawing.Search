@@ -1,5 +1,6 @@
 ﻿using Drawing.Search.Core.Interfaces;
 using Tekla.Structures.Drawing;
+using Tekla.Structures.Model;
 using ModelObject = Tekla.Structures.Model.ModelObject;
 
 namespace Drawing.Search.Core;
@@ -11,6 +12,7 @@ public class ModelObjectExtractor : IDataExtractor
         var model = obj as ModelObject;
         var prop = string.Empty;
         if (model == null) return prop;
+        if (model is not Beam beam) return prop;
         model.GetReportProperty($"ASSEMBLY_POS", ref prop);
 
         if (prop == string.Empty)
@@ -18,7 +20,7 @@ public class ModelObjectExtractor : IDataExtractor
             model.GetReportProperty($"PART_POS", ref prop);
         }
 
-        return prop;
+        return beam.GetAssembly().GetMainObject().Equals(model)  ? prop : string.Empty;
     }
 }
 
