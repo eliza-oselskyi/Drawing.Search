@@ -3,12 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Mime;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Tekla.Structures;
 using Tekla.Structures.Drawing;
+using Tekla.Structures.Drawing.UI;
 using Tekla.Structures.DrawingInternal;
 using Tekla.Structures.Model;
 using Tekla.Structures.Model.UI;
@@ -17,6 +19,7 @@ using ModelObject = Tekla.Structures.Model.ModelObject;
 using Part = Tekla.Structures.Drawing.Part;
 using Task = System.Threading.Tasks.Task;
 using View = Tekla.Structures.Drawing.View;
+using System.Windows;
 
 namespace Drawing.Search.Core
 {
@@ -30,10 +33,10 @@ namespace Drawing.Search.Core
 
         public SearchManager()
         {
+            if (!_model.GetConnectionStatus()) throw new ApplicationException("Connection not established");
             _events.DrawingLoaded += QueryHandler.ClearCache;
             _events.Register();
         }
-
 
         //TODO: Profile this method to see why caching seems to not work. Slow!
         public bool ExecutePartMarkSearch(string query)
