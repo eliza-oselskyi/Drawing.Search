@@ -37,10 +37,12 @@
     <ItemGroup>
         <Reference Include="System"/>
         <Reference Include="System.Core"/>
-        <Reference Include="System.Data"/>
         <Reference Include="System.Xml"/>
         <Reference Include="System.Xaml">
             <RequiredTargetFramework>4.0</RequiredTargetFramework>
+        </Reference>
+        <Reference Include="Tekla.Structures.Drawing">
+          <HintPath>..\..\..\..\.nuget\packages\tekla.structures.drawing\2023.0.0\lib\net40\Tekla.Structures.Drawing.dll</HintPath>
         </Reference>
         <Reference Include="WindowsBase"/>
         <Reference Include="PresentationCore"/>
