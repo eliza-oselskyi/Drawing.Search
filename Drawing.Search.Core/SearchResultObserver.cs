@@ -1,0 +1,14 @@
+using System;
+using Drawing.Search.Core.Interfaces;
+
+namespace Drawing.Search.Core;
+
+public class SearchResultObserver : IObserver
+{
+    public int Matches { get; private set; }
+    public void OnMatchFound(object obj)
+    {
+        Matches++;
+        //Console.WriteLine($"Observer Match Found: {obj}");
+    }
+}

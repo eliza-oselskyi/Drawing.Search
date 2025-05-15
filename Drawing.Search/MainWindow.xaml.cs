@@ -50,7 +50,7 @@ namespace Drawing.Search
             
             if (AssemblyRadio.IsChecked == true)
             {
-                Task.Run(() => searchManager.ExecuteSearch(text));
+                Task.Run(() => searchManager.ExecuteAssemblySearch(text));
             }
             else if (DetailRadio.IsChecked == true)
             {
