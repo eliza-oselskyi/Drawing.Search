@@ -7,8 +7,17 @@ using ModelObject = Tekla.Structures.Model.ModelObject;
 
 namespace Drawing.Search.Core;
 
+/// <summary>
+/// General class that currently contains useful methods to interact directly with Tekla Structures
+/// </summary>
 public class TeklaWrapper
 {
+    /// <summary>
+    /// Takes a list of DrawingObject and selects them in the provided drawing.
+    /// </summary>
+    /// <param name="drawingObjects"></param>
+    /// <param name="drawing"></param>
+    /// <returns></returns>
     public static void DrawingObjectListToSelection(List<DrawingObject> drawingObjects, Tekla.Structures.Drawing.Drawing drawing)
     {
         var dh = new DrawingHandler();
@@ -22,6 +31,12 @@ public class TeklaWrapper
         
         selector.SelectObjects(doArrayList, false);
     }
+    /// <summary>
+    /// Takes a list of ModelObject, gets the associated DrawingObject and selects them in the provided drawing
+    /// </summary>
+    /// <param name="objList"></param>
+    /// <param name="drawing"></param>
+    /// <returns></returns>
     public static void ModelObjectListToSelection(List<ModelObject> objList, Tekla.Structures.Drawing.Drawing drawing)
     {
         var dh = new DrawingHandler();

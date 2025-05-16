@@ -4,6 +4,12 @@ using Weld = Tekla.Structures.Drawing.Weld;
 
 namespace Drawing.Search.Core;
 
+/// <summary>
+/// Handled search queries at one time, now some odd, duplicate methods.
+/// <remarks>Do not use this class! To be removed in future versions.</remarks>
+/// </summary>
+/// <param name="query">Search query.</param>
+[Obsolete("Use ObservableSearch class instead.")]
 public class QueryHandler(string query)
 {
     public string Query

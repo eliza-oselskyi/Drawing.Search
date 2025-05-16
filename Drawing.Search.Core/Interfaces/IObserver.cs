@@ -9,11 +9,15 @@ using Text = Tekla.Structures.Drawing.Text;
 
 namespace Drawing.Search.Core.Interfaces;
 
+/// <summary>
+/// Declares methods for observers of search classes.
+/// </summary>
 public interface IObserver
 {
     void OnMatchFound(object obj);
 }
 
+// TODO: Remove unnecessary comment
 
 /*
 public class Driver
