@@ -17,6 +17,27 @@ Drawing Peeker allows you to search for different types of objects in an active 
 <!--## How It Works-->
 <!--1.-->
 
+## Installation
+
+<details><summary><b>Show instructions</b></summary>
+
+1. Go to the [ latest release ](https://github.com/eliza-oselskyi/Drawing.Search/releases/tag/v1.0.1) and download the `.zip` file.
+
+2. Extract the `.zip` file to any location on your computer.
+
+3. Run the `install_script` with powershell.
+
+    ```txt
+    Right Click on install script > Click "Run with Powershell"
+    ```
+4. In Tekla, go to Applications and Components and click on the "hamburger" menu.
+
+5. Under `Catalog Management`, click `Reload Catalog`.
+
+That should be it! It automatically installs everything where it needs to be.
+
+</details>
+
 ## Usage
 
 Starting your first search is very trivial:
@@ -70,7 +91,7 @@ Searching assemblies will select the main part of the actual assembly representa
 
 <!--<details><summary><b>Show</b></summary>-->
 
- <details><summary><b><u>Searching for CED bubbles</u></b></summary>
+ <details><summary><b>Searching for CED bubbles</b></summary>
 
 #### Searching for CED bubbles
 ---
@@ -88,7 +109,7 @@ Searching assemblies will select the main part of the actual assembly representa
 </details>
 
 
-<details> <summary> <b> <u> Searching in unexploded charts and notes and other NBG plugins: </u> </b> </summary>
+<details> <summary> <b> Searching in unexploded charts and notes and other NBG plugins: </b> </summary>
 
 #### Searching in unexploded charts and notes and other NBG plugins:
 ---
