@@ -29,7 +29,7 @@ namespace Drawing.Search.Core
     /// </summary>
     public class SearchManager
     {
-        private readonly DrawingHandler  _drawingHandler = new();
+        private readonly DrawingHandler _drawingHandler = new();
         private readonly Model _model = new();
         private static readonly MemoryCache Cache = new(new MemoryCacheOptions());
         private readonly Events _events = new();
@@ -48,14 +48,14 @@ namespace Drawing.Search.Core
         /// <returns>The number of matches found.</returns>
         public int ExecutePartMarkSearch(string query)
         {
-            var sw =  Stopwatch.StartNew();
+            var sw = Stopwatch.StartNew();
             var drawingObjects = GetAllDrawingObjectsInActiveDrawing(out var drawingObjectList);
 
             while (drawingObjects.MoveNext())
             {
                 var curr = drawingObjects.Current;
                 if (curr.GetType() != typeof(Mark)) continue;
-                var mark = (Mark) curr;
+                var mark = (Mark)curr;
                 var content = mark.Attributes.Content;
                 drawingObjectList.Add(mark);
             }
@@ -63,13 +63,13 @@ namespace Drawing.Search.Core
             var searcher = new ObservableSearch<Mark>([new RegexMatchStrategy<Mark>()], new MarkExtractor());
             var searchObserver = new SearchResultObserver();
             searcher.Subscribe(searchObserver);
-            
+
 
             var res = searcher.Search(drawingObjectList, new SearchQuery(query));
             var dolist = res.Select(DrawingObject (mark) => mark).ToList();
-            
+
             TeklaWrapper.DrawingObjectListToSelection(dolist, _drawingHandler.GetActiveDrawing());
-            
+
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds);
             return searchObserver.Matches;
@@ -110,25 +110,25 @@ namespace Drawing.Search.Core
             {
                 var curr = drawingObjects.Current;
                 if (curr.GetType() != typeof(Text)) continue;
-                var text = (Text) curr;
+                var text = (Text)curr;
                 drawingObjectList.Add(text);
             }
 
             var searcher = new ObservableSearch<Text>([new RegexMatchStrategy<Text>()], new TextExtractor());
             var searchObserver = new SearchResultObserver();
-            
+
             searcher.Subscribe(searchObserver);
             var result = searcher.Search(drawingObjectList, new SearchQuery(query));
             var x = result.Select(DrawingObject (text) => text).ToList();
 
 
             TeklaWrapper.DrawingObjectListToSelection(x, _drawingHandler.GetActiveDrawing());
-            
+
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds);
             return searchObserver.Matches;
         }
-        
+
         /// <summary>
         /// Executes a search on all ModelObject in the active drawing.
         /// </summary>
@@ -138,7 +138,7 @@ namespace Drawing.Search.Core
         {
             var sw = new Stopwatch();
             sw.Start();
-            
+
             var dh = new DrawingHandler();
             var model = new Model();
             var allObjects = dh.GetModelObjectIdentifiers(dh.GetActiveDrawing());
@@ -149,11 +149,11 @@ namespace Drawing.Search.Core
                 new ObservableSearch<ModelObject>([new RegexMatchStrategy<ModelObject>()], new ModelObjectExtractor());
             var searchObserver = new SearchResultObserver();
             searcher.Subscribe(searchObserver);
-            
+
             var results = searcher.Search(objList, new SearchQuery(query));
-            
+
             TeklaWrapper.ModelObjectListToSelection(results.ToList(), dh.GetActiveDrawing());
-            
+
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds);
             return searchObserver.Matches;
@@ -169,13 +169,11 @@ namespace Drawing.Search.Core
         {
             var drawing = _drawingHandler.GetActiveDrawing();
             if (Cache.TryGetValue(drawing, out objList)) return drawing;
-            
+
             var idList = _drawingHandler.GetModelObjectIdentifiers(_drawingHandler.GetActiveDrawing());
             objList = _model.FetchModelObjects(idList, false);
             Cache.Set(drawing, objList, TimeSpan.FromMinutes(15));
             return drawing;
         }
-
-
     }
 }

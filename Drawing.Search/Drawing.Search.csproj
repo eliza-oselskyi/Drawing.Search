@@ -42,7 +42,7 @@
             <RequiredTargetFramework>4.0</RequiredTargetFramework>
         </Reference>
         <Reference Include="Tekla.Structures.Drawing">
-          <HintPath>..\..\..\..\.nuget\packages\tekla.structures.drawing\2023.0.0\lib\net40\Tekla.Structures.Drawing.dll</HintPath>
+            <HintPath>..\..\..\..\.nuget\packages\tekla.structures.drawing\2023.0.0\lib\net40\Tekla.Structures.Drawing.dll</HintPath>
         </Reference>
         <Reference Include="WindowsBase"/>
         <Reference Include="PresentationCore"/>
@@ -84,10 +84,10 @@
         <None Include="App.config"/>
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Drawing.Search.Core\Drawing.Search.Core.csproj">
-        <Project>{042c7355-f82d-4035-acb3-70e72f5a019d}</Project>
-        <Name>Drawing.Search.Core</Name>
-      </ProjectReference>
+        <ProjectReference Include="..\Drawing.Search.Core\Drawing.Search.Core.csproj">
+            <Project>{042c7355-f82d-4035-acb3-70e72f5a019d}</Project>
+            <Name>Drawing.Search.Core</Name>
+        </ProjectReference>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
 </Project>

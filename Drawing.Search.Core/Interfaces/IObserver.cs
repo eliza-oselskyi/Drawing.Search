@@ -53,7 +53,7 @@ public class Driver
 
         var searchObserver = new SearchResultObserver();
         searcher.Subscribe(searchObserver);
-        
+
         var results = searcher.Search(dolist, new SearchQuery("ltmesa"));
 
         var texts = results.ToList();
@@ -71,4 +71,3 @@ public class Driver
 
 }
 */
-

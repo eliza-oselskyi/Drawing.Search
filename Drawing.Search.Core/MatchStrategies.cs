@@ -32,7 +32,6 @@ public class ContainsMatchStrategy<T> : ISearchStrategy<T>
         }
         else
         {
-
             if (obj != null) s = obj.ToString();
             return s.Contains(query.Term);
         }
@@ -79,6 +78,5 @@ public class RegexMatchStrategy<T> : ISearchStrategy<T>
                    query.CaseSensitive == StringComparison.OrdinalIgnoreCase
                        ? RegexOptions.IgnoreCase
                        : RegexOptions.None);
-        
     }
 }

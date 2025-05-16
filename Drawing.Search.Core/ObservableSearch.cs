@@ -13,7 +13,8 @@ namespace Drawing.Search.Core;
 /// <param name="searchStrategies">Array of search strategies to use.</param>
 /// <param name="dataExtractor">Data extractor to use.</param>
 /// <typeparam name="T">Type of object to search on.</typeparam>
-public class ObservableSearch<T>(ISearchStrategy<T>[] searchStrategies, IDataExtractor dataExtractor) : IObserverableSearch
+public class ObservableSearch<T>(ISearchStrategy<T>[] searchStrategies, IDataExtractor dataExtractor)
+    : IObserverableSearch
 {
     private readonly List<IObserver> _observers = [];
     private readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
@@ -60,12 +61,12 @@ public class ObservableSearch<T>(ISearchStrategy<T>[] searchStrategies, IDataExt
     /// <returns><c>IEnumerable</c> list of matches of the type <c>T</c> provided.</returns>
     public IEnumerable<T> Search(IEnumerable<T> items, SearchQuery query)
     {
-
         if (_cache.TryGetValue(query.Term, out IEnumerable<T> res))
         {
             if (res != null) return res;
         }
-        res =  items
+
+        res = items
             .AsParallel()
             .Where((o) =>
             {
@@ -75,9 +76,9 @@ public class ObservableSearch<T>(ISearchStrategy<T>[] searchStrategies, IDataExt
                 return true;
             })
             .ToList();
-        
+
         _cache.Set(query.Term, res, TimeSpan.FromMinutes(15));
-        
+
         return res;
     }
 }

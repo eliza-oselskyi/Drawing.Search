@@ -9,6 +9,7 @@ namespace Drawing.Search.Core;
 public class SearchResultObserver : IObserver
 {
     public int Matches { get; private set; }
+
     public void OnMatchFound(object obj)
     {
         Matches++;

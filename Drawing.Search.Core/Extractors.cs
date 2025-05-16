@@ -28,7 +28,7 @@ public class ModelObjectExtractor : IDataExtractor
             model.GetReportProperty($"PART_POS", ref prop);
         }
 
-        return beam.GetAssembly().GetMainObject().Equals(model)  ? prop : string.Empty;
+        return beam.GetAssembly().GetMainObject().Equals(model) ? prop : string.Empty;
     }
 }
 
@@ -81,7 +81,7 @@ public class MarkExtractor : IDataExtractor
         if (obj is Mark mark) return ParseUnformattedString(mark.Attributes.Content.GetUnformattedString());
         return "";
     }
-    
+
     /// <summary>
     /// Filters an unformatted string to be more searchable.
     /// </summary>

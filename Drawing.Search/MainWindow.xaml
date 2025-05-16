@@ -19,17 +19,34 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="10">
-            <RadioButton Name="AssemblyRadio" GroupName="ObjectTypes" Checked="GainKeyboardFocus" ToolTip="Selects the main part of an assembly in the drawing">As Assembly</RadioButton>
-            <RadioButton Name="DetailRadio" GroupName="ObjectTypes" Checked="GainKeyboardFocus" ToolTip="Includes any text object, including manually added CED bubbles">Text</RadioButton>
-            <RadioButton Name="PartMarkRadio" GroupName="ObjectTypes" IsChecked="True" Checked="GainKeyboardFocus" ToolTip="Includes any mark object">Part Marks</RadioButton>
-            <Label Name="ProgressLabel" Visibility="Visible" Width="350" Height="50" HorizontalContentAlignment="Left" VerticalContentAlignment="Center">
+            <RadioButton Name="AssemblyRadio" GroupName="ObjectTypes" Checked="GainKeyboardFocus"
+                         ToolTip="Selects the main part of an assembly in the drawing">
+                As Assembly
+            </RadioButton>
+            <RadioButton Name="DetailRadio" GroupName="ObjectTypes" Checked="GainKeyboardFocus"
+                         ToolTip="Includes any text object, including manually added CED bubbles">
+                Text
+            </RadioButton>
+            <RadioButton Name="PartMarkRadio" GroupName="ObjectTypes" IsChecked="True" Checked="GainKeyboardFocus"
+                         ToolTip="Includes any mark object">
+                Part Marks
+            </RadioButton>
+            <Label Name="ProgressLabel" Visibility="Visible" Width="350" Height="50" HorizontalContentAlignment="Left"
+                   VerticalContentAlignment="Center">
                 <TextBlock Name="TextBlock"></TextBlock>
             </Label>
         </StackPanel>
-            <TextBox Grid.Row="1" Grid.Column="0"  Name="SelectTextBox" Width="250" Height="30" KeyDown="SelectTextBox_OnKeyDown" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="Transparent"/>
-            <Button Grid.Row="1" Grid.Column="1" Name="SelectButton" Click="SelectButton_OnClick" HorizontalAlignment="Center">Select</Button>
-            <ProgressBar Grid.Column="1" Grid.Row="0" Width = "120" Height = "20" Name="ProgressBar" IsIndeterminate="True" Visibility="Hidden"></ProgressBar>
-            <Label Grid.Column="2" Grid.Row="2" HorizontalAlignment="Center" ToolTip="Written by: Eliza Oselskyi">v1.0.1</Label>
+        <TextBox Grid.Row="1" Grid.Column="0" Name="SelectTextBox" Width="250" Height="30"
+                 KeyDown="SelectTextBox_OnKeyDown" HorizontalContentAlignment="Center"
+                 VerticalContentAlignment="Center" Background="Transparent" />
+        <Button Grid.Row="1" Grid.Column="1" Name="SelectButton" Click="SelectButton_OnClick"
+                HorizontalAlignment="Center">
+            Select
+        </Button>
+        <ProgressBar Grid.Column="1" Grid.Row="0" Width="120" Height="20" Name="ProgressBar" IsIndeterminate="True"
+                     Visibility="Hidden">
+        </ProgressBar>
+        <Label Grid.Column="2" Grid.Row="2" HorizontalAlignment="Center" ToolTip="Written by: Eliza Oselskyi">v1.0.1</Label>
     </Grid>
-    
+
 </Window>

@@ -14,8 +14,8 @@ namespace Drawing.Search
     /// </summary>
     public partial class MainWindow
     {
-        
         private readonly Events _events = new Events();
+
         public MainWindow()
         {
             var dh = new DrawingHandler();
@@ -24,7 +24,8 @@ namespace Drawing.Search
                 MessageBox.Show("No active drawing open.");
                 AppExit();
             }
-            else {
+            else
+            {
                 InitializeComponent();
                 this.Loaded += new RoutedEventHandler(GainKeyboardFocus);
                 _events.DrawingEditorClosed += AppExit;
@@ -85,7 +86,6 @@ namespace Drawing.Search
 
         private async void SelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            
             ProgressBarHandle(true);
             var x = await SearchResults();
             ProgressBarHandle(false);
