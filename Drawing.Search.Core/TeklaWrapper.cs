@@ -25,10 +25,7 @@ public class TeklaWrapper
         var doArrayList = new ArrayList();
         var selector = dh.GetDrawingObjectSelector();
 
-        foreach (var o in drawingObjects)
-        {
-            doArrayList.Add(o);
-        }
+        foreach (var o in drawingObjects) doArrayList.Add(o);
 
         selector.SelectObjects(doArrayList, false);
     }
@@ -54,12 +51,9 @@ public class TeklaWrapper
                  curr.ViewType.Equals(View.ViewTypes.SectionView))) continue;
             if (objList == null) continue;
             foreach (var x in objList.Select(o => curr.GetModelObjects(o.Identifier)))
-            {
                 while (x.MoveNext())
-                {
-                    if (x.Current != null) doArrayList.Add(x.Current);
-                }
-            }
+                    if (x.Current != null)
+                        doArrayList.Add(x.Current);
         }
 
         selector.SelectObjects(doArrayList, false);

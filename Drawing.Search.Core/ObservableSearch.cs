@@ -47,10 +47,7 @@ public class ObservableSearch<T>(ISearchStrategy<T>[] searchStrategies, IDataExt
     /// <returns></returns>
     private void NotifyObservers(object obj)
     {
-        foreach (var observer in _observers.ToList())
-        {
-            observer.OnMatchFound(obj);
-        }
+        foreach (var observer in _observers.ToList()) observer.OnMatchFound(obj);
     }
 
     /// <summary>
@@ -62,9 +59,8 @@ public class ObservableSearch<T>(ISearchStrategy<T>[] searchStrategies, IDataExt
     public IEnumerable<T> Search(IEnumerable<T> items, SearchQuery query)
     {
         if (_cache.TryGetValue(query.Term, out IEnumerable<T> res))
-        {
-            if (res != null) return res;
-        }
+            if (res != null)
+                return res;
 
         res = items
             .AsParallel()

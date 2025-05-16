@@ -3,19 +3,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Drawing.Search"
         mc:Ignorable="d"
         Title="Drawing Searcher" Topmost="True" Width="500" Height="230" MinHeight="230" MaxHeight="230" MinWidth="500"
         MaxWidth="500">
     <Grid ShowGridLines="False">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="10">
@@ -33,7 +32,7 @@
             </RadioButton>
             <Label Name="ProgressLabel" Visibility="Visible" Width="350" Height="50" HorizontalContentAlignment="Left"
                    VerticalContentAlignment="Center">
-                <TextBlock Name="TextBlock"></TextBlock>
+                <TextBlock Name="TextBlock" />
             </Label>
         </StackPanel>
         <TextBox Grid.Row="1" Grid.Column="0" Name="SelectTextBox" Width="250" Height="30"
@@ -44,8 +43,7 @@
             Select
         </Button>
         <ProgressBar Grid.Column="1" Grid.Row="0" Width="120" Height="20" Name="ProgressBar" IsIndeterminate="True"
-                     Visibility="Hidden">
-        </ProgressBar>
+                     Visibility="Hidden" />
         <Label Grid.Column="2" Grid.Row="2" HorizontalAlignment="Center" ToolTip="Written by: Eliza Oselskyi">v1.0.1</Label>
     </Grid>
 

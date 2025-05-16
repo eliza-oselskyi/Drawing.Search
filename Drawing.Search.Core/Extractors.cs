@@ -23,10 +23,7 @@ public class ModelObjectExtractor : IDataExtractor
         if (model is not Beam beam) return prop;
         model.GetReportProperty($"ASSEMBLY_POS", ref prop);
 
-        if (prop == string.Empty)
-        {
-            model.GetReportProperty($"PART_POS", ref prop);
-        }
+        if (prop == string.Empty) model.GetReportProperty($"PART_POS", ref prop);
 
         return beam.GetAssembly().GetMainObject().Equals(model) ? prop : string.Empty;
     }

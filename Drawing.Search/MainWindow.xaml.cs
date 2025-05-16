@@ -65,21 +65,13 @@ namespace Drawing.Search
 
             int res;
             if (AssemblyRadio.IsChecked == true)
-            {
                 res = await Task.Run(() => searchManager.ExecuteAssemblySearch(text));
-            }
             else if (DetailRadio.IsChecked == true)
-            {
                 res = await Task.Run(() => searchManager.ExecuteDetailSearch(text));
-            }
             else if (PartMarkRadio.IsChecked == true)
-            {
                 res = await Task.Run(() => searchManager.ExecutePartMarkSearch(text));
-            }
             else
-            {
                 return -1;
-            }
 
             return res;
         }
