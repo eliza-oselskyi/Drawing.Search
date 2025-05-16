@@ -1,5 +1,9 @@
 namespace Drawing.Search.Core.Interfaces;
 
+/// <summary>
+/// Declares methods for implementing observers into a search class.
+/// </summary>
+// TODO: Fix typo in 'Observable'
 public interface IObserverableSearch
 {
     void Subscribe(IObserver observer);

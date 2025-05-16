@@ -23,6 +23,10 @@ using System.Windows;
 
 namespace Drawing.Search.Core
 {
+    /// <summary>
+    /// Driver class to handle execution paths of different search types.
+    /// <remarks>Planned to be deprecated soon.</remarks>
+    /// </summary>
     public class SearchManager
     {
         private readonly DrawingHandler  _drawingHandler = new();
@@ -33,10 +37,15 @@ namespace Drawing.Search.Core
         public SearchManager()
         {
             if (!_model.GetConnectionStatus()) throw new ApplicationException("Connection not established");
-            _events.DrawingLoaded += QueryHandler.ClearCache;
+            _events.DrawingLoaded += QueryHandler.ClearCache; // This seems suspicious to do. Find a better way.
             _events.Register();
         }
 
+        /// <summary>
+        /// Executes a search on part marks.
+        /// </summary>
+        /// <param name="query">Search query.</param>
+        /// <returns>The number of matches found.</returns>
         public int ExecutePartMarkSearch(string query)
         {
             var sw =  Stopwatch.StartNew();
@@ -66,6 +75,12 @@ namespace Drawing.Search.Core
             return searchObserver.Matches;
         }
 
+        /// <summary>
+        /// Gets all drawing objects in the active drawing.
+        /// </summary>
+        /// <param name="drawingObjectList"></param>
+        /// <returns></returns>
+        [Obsolete]
         private DrawingObjectEnumerator GetAllDrawingObjectsInActiveDrawing(out List<Mark> drawingObjectList)
         {
             var drawingObjects = _drawingHandler.GetActiveDrawing().GetSheet().GetAllObjects();
@@ -75,6 +90,12 @@ namespace Drawing.Search.Core
             return drawingObjects;
         }
 
+        /// <summary>
+        /// Executes a search on text objects in active drawing.
+        /// </summary>
+        /// <param name="query">Search query.</param>
+        /// <returns>The number of matches found.</returns>
+        /// <exception cref="ArgumentNullException">drawingObjectList is empty.</exception>
         public int ExecuteDetailSearch(string query)
         {
             var sw = new Stopwatch();
@@ -108,6 +129,11 @@ namespace Drawing.Search.Core
             return searchObserver.Matches;
         }
         
+        /// <summary>
+        /// Executes a search on all ModelObject in the active drawing.
+        /// </summary>
+        /// <param name="query">Search query.</param>
+        /// <returns>The number of matches found.</returns>
         public int ExecuteAssemblySearch(string query)
         {
             var sw = new Stopwatch();

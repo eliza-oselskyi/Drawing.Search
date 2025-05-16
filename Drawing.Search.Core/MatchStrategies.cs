@@ -44,8 +44,18 @@ public class ContainsMatchStrategy<T> : ISearchStrategy<T>
     }
 }
 
+/// <summary>
+/// Match strategy, using regular expressions.
+/// </summary>
+/// <typeparam name="T">Type.</typeparam>
 public class RegexMatchStrategy<T> : ISearchStrategy<T>
 {
+    /// <summary>
+    /// Matches some object <c>T</c> to a <c>SearchQuery</c> query.
+    /// </summary>
+    /// <param name="obj">Searchable object.</param>
+    /// <param name="query">Search query. <c>SearchQuery</c> object instance.</param>
+    /// <returns>True on successful match.</returns>
     public bool Match(T obj, SearchQuery query)
     {
         var s = obj?.ToString();
@@ -58,6 +68,7 @@ public class RegexMatchStrategy<T> : ISearchStrategy<T>
                        : RegexOptions.None);
     }
 
+    // TODO: Remove this overload and find a way to do it generically like the method above.
     public bool Match(string str, SearchQuery query)
     {
         var s = str?.ToString();
