@@ -59,3 +59,24 @@ public class RegexMatchStrategy<T> : ISearchStrategy
                        : RegexOptions.None);
     }
 }
+
+public class WildcardMatchStrategy<T> : ISearchStrategy
+{
+    public bool Match(string obj, SearchQuery query)
+    {
+        var s = obj?.ToString();
+        var reg = WildcardToRegex(query.Term);
+        return s != null &&
+               Regex.IsMatch(s,
+                   reg,
+                   query.CaseSensitive == StringComparison.OrdinalIgnoreCase
+                       ? RegexOptions.IgnoreCase
+                       : RegexOptions.None);
+        
+    }
+    
+    private static string WildcardToRegex(string wildcard)
+    {
+        return "^" + Regex.Escape(wildcard).Replace("\\?", ".").Replace("\\*", ".*") + "$";
+    }
+}
