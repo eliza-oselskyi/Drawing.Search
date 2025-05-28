@@ -1,4 +1,5 @@
-﻿using Drawing.Search.Core.Interfaces;
+﻿using System;
+using Drawing.Search.Core.Interfaces;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.Model;
 using ModelObject = Tekla.Structures.Model.ModelObject;

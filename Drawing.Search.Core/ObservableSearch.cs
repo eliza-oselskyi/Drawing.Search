@@ -13,7 +13,7 @@ namespace Drawing.Search.Core;
 /// <param name="searchStrategies">Array of search strategies to use.</param>
 /// <param name="dataExtractor">Data extractor to use.</param>
 /// <typeparam name="T">Type of object to search on.</typeparam>
-public class ObservableSearch<T>(ISearchStrategy<T>[] searchStrategies, IDataExtractor dataExtractor) : IObserverableSearch
+public class ObservableSearch<T>(ISearchStrategy[] searchStrategies, IDataExtractor dataExtractor) : IObserverableSearch
 {
     private readonly List<IObserver> _observers = [];
     private readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions());

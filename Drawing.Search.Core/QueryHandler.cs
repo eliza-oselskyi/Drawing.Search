@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Caching.Memory;
 using Weld = Tekla.Structures.Drawing.Weld;
 
