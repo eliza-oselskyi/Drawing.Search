@@ -10,7 +10,7 @@ public class ExactMatchStrategy<T>(double cacheExpiration = 30) : ISearchStrateg
 {
     public bool Match(string obj, SearchQuery query)
     {
-        var res = obj != null && obj.ToString().Equals(query.Term, StringComparison.OrdinalIgnoreCase);
+        var res = obj.ToString().Equals(query.Term, StringComparison.OrdinalIgnoreCase);
         return res;
     }
 }
@@ -22,13 +22,12 @@ public class ContainsMatchStrategy<T> : ISearchStrategy
         var s = string.Empty;
         if (query.CaseSensitive == StringComparison.OrdinalIgnoreCase)
         {
-            if (obj != null) s = obj.ToString().ToLower();
+            s = obj.ToString().ToLower();
             return s.Contains(query.Term.ToLower());
         }
         else
         {
-
-            if (obj != null) s = obj.ToString();
+            s = obj.ToString();
             return s.Contains(query.Term);
         }
     }
