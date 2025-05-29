@@ -37,10 +37,10 @@
         </Style>
         <Style TargetType="CheckBox">
             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False">
                     <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
-                    <Setter Property="Opacity" Value="0.7"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
