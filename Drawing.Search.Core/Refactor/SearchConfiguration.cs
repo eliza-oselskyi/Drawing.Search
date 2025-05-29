@@ -17,6 +17,7 @@ public class SearchConfiguration
         CaseSensitive
             ? StringComparison.Ordinal
             : StringComparison.OrdinalIgnoreCase;
+    public IObserver Observer { get; set; }
 
     public override string ToString()
     {

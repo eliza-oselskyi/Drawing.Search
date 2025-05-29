@@ -25,6 +25,7 @@ public class SearchDriver : IDisposable
     private string _currentDrawingId;
      const string ASSEMBLY_CACHE_KEY = "assembly_objects";
     private const string DRAWING_OBJECTS_CACHE_KEY = "drawing_objects";
+    private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
     private bool _cacheInvalidated = true; // track if cache needs refresh
     private readonly object _lockObject = new object();
     
@@ -149,13 +150,21 @@ public class SearchDriver : IDisposable
     {
         var marks = GetFilteredObjects<Mark>(drawing);
         var searcher = CreateSearcher<Mark>(config);
-        var results = searcher.Search(marks, CreateSearchQuery(config));
+        var contentCollector = new ContentCollectingObserver(new MarkExtractor());
+        searcher.Subscribe(contentCollector);
+        
+        var results = searcher.Search(marks, CreateSearchQuery(config)).ToList();
         
         SelectResults(results.Cast<DrawingObject>().ToList());
 
+        foreach (var content in contentCollector.MatchedContent)
+        {
+            _cache.GetOrCreate(MATCHED_CONTENT_CACHE_KEY, entry => new HashSet<string>(StringComparer.OrdinalIgnoreCase)).Add(content);
+        }
+
         return new SearchResult
         {
-            MatchCount = results.Count(),
+            MatchCount = results.Count,
             ElapsedMilliseconds = 0, // Set by caller
             SearchType = SearchType.PartMark
         };
@@ -204,23 +213,6 @@ public class SearchDriver : IDisposable
         }
 
         return _cache.Get<List<T>>(cacheKeyWithDrawing) ?? throw new InvalidOperationException("Cache unexpectedly empty. This should not happen.");
-    }
-
-    private List<T> GetObjectsOfType<T>(Tekla.Structures.Drawing.Drawing drawing) where T : DrawingObject
-    {
-        var objects = new List<T>();
-        
-        // always check if cache needs refresh
-        if (_cacheInvalidated ||
-            !_cache.TryGetValue($"{_currentDrawingId}_{DRAWING_OBJECTS_CACHE_KEY}",
-                out List<DrawingObject> _))
-        {
-            RefreshCache(drawing);
-        }
-        var allObjects = GetCachedDrawingObjects<DrawingObject>(
-            DRAWING_OBJECTS_CACHE_KEY);
-        objects.AddRange(allObjects.OfType<T>());
-        return objects;
     }
 
     private void RefreshCache(Tekla.Structures.Drawing.Drawing drawing)
