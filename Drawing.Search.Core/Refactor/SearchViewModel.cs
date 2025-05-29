@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Mime;
 using System.Runtime.CompilerServices;
+using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -36,15 +38,76 @@ public class SearchViewModel : INotifyPropertyChanged
     private string _statusMessage;
     private bool _isCaseSensitive;
     private bool _isSearching;
+    private bool _isCaching;
+    private MemoryCache _cache;
+    private string _ghostSuggestion; // for autocomplete
+
+    public string GhostSuggestion
+    {
+        get => _ghostSuggestion;
+        set
+        {
+            _ghostSuggestion = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private HashSet<string> _previousSearches = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
     public SearchViewModel()
     {
-        _searchDriver = new SearchDriver(new MemoryCache(new MemoryCacheOptions()));
+        _cache = new MemoryCache(new MemoryCacheOptions());
+        
+        var uiContext = SynchronizationContext.Current ??
+                        throw new InvalidOperationException("SearchViewModel must be created on UI thread.");
+        _searchDriver = new SearchDriver(_cache, uiContext);
+        _searchDriver.CacheObserver.StatusMessageChanged += (sender, message) =>
+        {
+            StatusMessage = message;
+        };
         SearchCommand = new AsyncRelayCommand(
             execute: ExecuteSearchAsync,
             canExecute: CanExecuteSearch
         );
         Version = $"v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
+
+        PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(SearchTerm))
+            {
+                UpdateGhostSuggestion(SearchTerm);
+            }
+        };
+    }
+
+    private ContentCollectingObserver _contentCollector;
+
+    private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
+    private void UpdateGhostSuggestion(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            GhostSuggestion = "";
+            return;
+        }
+
+        Debug.Assert(_cache != null, nameof(_cache) + " != null");
+        _cache.TryGetValue(MATCHED_CONTENT_CACHE_KEY, out HashSet<string> cachedContent);
+
+        cachedContent ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        
+        
+        var allSuggestions = _previousSearches.Union(cachedContent);
+        
+        var suggestion = allSuggestions
+            .Where(s => s.StartsWith(input, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(s => _previousSearches.Contains(s)) // Prioritize previous searches
+            .ThenByDescending(s => cachedContent.Contains(s)) // then cached content
+            .ThenBy(s => s.Length) // Prefer shorter matches
+            .FirstOrDefault();
+
+        Console.WriteLine($"Input: {input}, Suggestion: {suggestion}"); // Add this line
+        GhostSuggestion = suggestion ?? "";
     }
 
     public bool IsSearching
@@ -53,6 +116,16 @@ public class SearchViewModel : INotifyPropertyChanged
         set
         {
             _isSearching = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsCaching
+    {
+        get => _isCaching;
+        set
+        {
+            _isCaching = value;
             OnPropertyChanged();
         }
     }
@@ -108,6 +181,10 @@ public class SearchViewModel : INotifyPropertyChanged
             StatusMessage = "Searching...";
 
             var stopwatch = Stopwatch.StartNew();
+            
+            _contentCollector = new ContentCollectingObserver(GetExtractor(SelectedSearchType));
+            
+            
             var result = await Task.Run(() =>
             {
                 var config = new SearchConfiguration
@@ -115,6 +192,7 @@ public class SearchViewModel : INotifyPropertyChanged
                     SearchTerm = SearchTerm,
                     Type = SelectedSearchType,
                     SearchStrategies = GetSearchStrategies(),
+                    Observer = _contentCollector
                 };
 
                 return _searchDriver.ExecuteSearch(config);
@@ -122,7 +200,21 @@ public class SearchViewModel : INotifyPropertyChanged
             });
             stopwatch.Stop();
             result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
-                StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedMilliseconds} ms."; 
+                StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedMilliseconds} ms.";
+
+                // After successful search, add to previous searches list
+                if (result.MatchCount > 0)
+                {
+                    if (!string.IsNullOrEmpty(SearchTerm))
+                    {
+                        _previousSearches.Add(SearchTerm);
+                    }
+
+                    foreach (var content in _contentCollector.MatchedContent)
+                    {
+                        _previousSearches.Add(content);
+                    }
+                }
         }
         catch (Exception e)
         {
@@ -133,6 +225,17 @@ public class SearchViewModel : INotifyPropertyChanged
             IsSearching = false;
             SearchCompleted?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    private IDataExtractor GetExtractor(SearchType type)
+    {
+        return type switch
+        {
+            SearchType.PartMark => new MarkExtractor(),
+            SearchType.Text => new TextExtractor(),
+            SearchType.Assembly => new ModelObjectExtractor(),
+            _ => throw new ArgumentException($"No extractor available for: {type}")
+        };
     }
 
     private List<ISearchStrategy> GetSearchStrategies()

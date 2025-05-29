@@ -58,6 +58,8 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="CachingObserver.cs" />
+        <Compile Include="ContentCollectingObserver.cs" />
         <Compile Include="EnumToBoolConverter.cs" />
         <Compile Include="Extractors.cs" />
         <Compile Include="Interfaces\IDataExtractor.cs" />
