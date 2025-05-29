@@ -1,6 +1,6 @@
 ﻿using Drawing.Search.Core.Interfaces;
 
-namespace Drawing.Search.Core;
+namespace Drawing.Search.Core.SearchService;
 
 public class SearchBuilder
 {
@@ -35,6 +35,9 @@ public class SearchBuilder
         _config.SearchStrategies.Add(strategy);
         return this;
     }
-    
-    public SearchConfiguration Build() => _config;
+
+    public SearchConfiguration Build()
+    {
+        return _config;
+    }
 }

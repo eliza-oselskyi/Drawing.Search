@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Drawing.Search.Core;
+namespace Drawing.Search.Core.Interfaces;
 
 public interface ISearchLogger
 {

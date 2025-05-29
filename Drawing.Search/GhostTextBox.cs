@@ -9,8 +9,15 @@ namespace Drawing.Search
 {
     public class GhostTextBox : TextBox
     {
+        public static readonly DependencyProperty GhostTextProperty =
+            DependencyProperty.Register(
+                nameof(GhostText),
+                typeof(string),
+                typeof(GhostTextBox),
+                new PropertyMetadata(string.Empty, OnGhostTextChanged));
+
         private TextBlock _ghostTextBlock;
-    
+
         static GhostTextBox()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(GhostTextBox),
@@ -20,6 +27,12 @@ namespace Drawing.Search
         public GhostTextBox()
         {
             Loaded += OnLoaded;
+        }
+
+        public string GhostText
+        {
+            get => (string)GetValue(GhostTextProperty);
+            set => SetValue(GhostTextProperty, value);
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -45,25 +58,9 @@ namespace Drawing.Search
             }
         }
 
-        public static readonly DependencyProperty GhostTextProperty =
-            DependencyProperty.Register(
-                nameof(GhostText),
-                typeof(string),
-                typeof(GhostTextBox),
-                new PropertyMetadata(string.Empty, OnGhostTextChanged));
-
-        public string GhostText
-        {
-            get => (string)GetValue(GhostTextProperty);
-            set => SetValue(GhostTextProperty, value);
-        }
-
         private static void OnGhostTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is GhostTextBox ghostTextBox)
-            {
-                ghostTextBox.UpdateGhostText();
-            }
+            if (d is GhostTextBox ghostTextBox) ghostTextBox.UpdateGhostText();
         }
 
         private void OnTextChanged(object sender, TextChangedEventArgs e)
@@ -82,28 +79,21 @@ namespace Drawing.Search
             }
 
             if (GhostText.StartsWith(Text, StringComparison.OrdinalIgnoreCase))
-            {
                 //_ghostTextBlock.Text = GhostText.Substring(Text.Length);
                 // TODO: Currently a workaround for the issue with the TextBlock. Idea is to get it to show only the remainder of the suggestion.
                 _ghostTextBlock.Text = GhostText;
-                // _ghostTextBlock.Text = LeftPad(GhostText.Substring(Text.Length)
-                //                                    .Length -
-                //                                Text.Length) +
-                //                        GhostText.Substring(Text.Length);
-            }
+            // _ghostTextBlock.Text = LeftPad(GhostText.Substring(Text.Length)
+            //                                    .Length -
+            //                                Text.Length) +
+            //                        GhostText.Substring(Text.Length);
             else
-            {
                 _ghostTextBlock.Text = "";
-            }
         }
 
         private static string LeftPad(int length)
         {
             var s = new StringBuilder();
-            for (int i = 0; i < Math.Abs(length); i++)
-            {
-                s.Append(" ");
-            }
+            for (var i = 0; i < Math.Abs(length); i++) s.Append(" ");
             return s.ToString();
         }
 

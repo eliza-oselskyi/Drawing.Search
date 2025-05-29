@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Drawing.Search
@@ -7,6 +8,12 @@ namespace Drawing.Search
     public class MainWindowViewModel : INotifyPropertyChanged
     {
         private string _version;
+
+        public MainWindowViewModel()
+        {
+            Version = $"v{Assembly.GetExecutingAssembly().GetName().Version}";
+        }
+
         public string Version
         {
             get => _version;
@@ -17,10 +24,6 @@ namespace Drawing.Search
             }
         }
 
-        public MainWindowViewModel()
-        {
-            Version = $"v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
-        }
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

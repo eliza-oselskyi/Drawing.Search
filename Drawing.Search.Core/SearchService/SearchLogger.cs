@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using Drawing.Search.Core.Interfaces;
 
-namespace Drawing.Search.Core;
+namespace Drawing.Search.Core.SearchService;
 
 public class SearchLogger : ISearchLogger
 {

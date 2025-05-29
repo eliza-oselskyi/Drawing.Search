@@ -1,17 +1,11 @@
-﻿using System;
-using System.Net.Mime;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
-using Drawing.Search.Core;
-using Tekla.Structures.Drawing;
-using Events = Tekla.Structures.Drawing.UI.Events;
+﻿using System.Windows;
 using System.Windows.Media;
+using Drawing.Search.Core;
 
 namespace Drawing.Search
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    ///     Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -22,10 +16,7 @@ namespace Drawing.Search
 
             Loaded += (s, e) => SearchTextBox.Focus();
 
-            if (DataContext is SearchViewModel vm)
-            {
-                vm.SearchCompleted += (s, e) => SearchTextBox.Focus();
-            }
+            if (DataContext is SearchViewModel vm) vm.SearchCompleted += (s, e) => SearchTextBox.Focus();
         }
 
         private void RadioButton_Click(object sender, RoutedEventArgs e)
@@ -36,15 +27,17 @@ namespace Drawing.Search
         private void ThemeToggle_CheckedChanged(object sender, RoutedEventArgs e)
         {
             var resources = Application.Current.Resources;
-    
+
             if (ThemeToggle.IsChecked == true)
             {
                 // Switch to Dark Theme
                 resources["BackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E"));
                 resources["ForegroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFFFF"));
-                resources["SecondaryBackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2D2D2D"));
+                resources["SecondaryBackgroundBrush"] =
+                    new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2D2D2D"));
                 resources["BorderBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#404040"));
-                resources["DisabledForegroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#999999"));
+                resources["DisabledForegroundBrush"] =
+                    new SolidColorBrush((Color)ColorConverter.ConvertFromString("#999999"));
             }
             else
             {

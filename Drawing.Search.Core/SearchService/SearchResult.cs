@@ -1,4 +1,4 @@
-﻿namespace Drawing.Search.Core;
+﻿namespace Drawing.Search.Core.SearchService;
 
 public class SearchResult
 {

@@ -1,8 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
 using Drawing.Search.Core.Interfaces;
-using Microsoft.Extensions.Caching.Memory;
-using Tekla.Structures.Drawing;
 
 namespace Drawing.Search.Core;
 
@@ -31,17 +29,16 @@ public class ContainsMatchStrategy<T> : ISearchStrategy
             return s.Contains(query.Term);
         }
     }
-
 }
 
 /// <summary>
-/// Match strategy, using regular expressions.
+///     Match strategy, using regular expressions.
 /// </summary>
 /// <typeparam name="T">Type.</typeparam>
 public class RegexMatchStrategy<T> : ISearchStrategy
 {
     /// <summary>
-    /// Matches some object <c>T</c> to a <c>SearchQuery</c> query.
+    ///     Matches some object <c>T</c> to a <c>SearchQuery</c> query.
     /// </summary>
     /// <param name="obj">Searchable object.</param>
     /// <param name="query">Search query. <c>SearchQuery</c> object instance.</param>
@@ -71,9 +68,8 @@ public class WildcardMatchStrategy<T> : ISearchStrategy
                    query.CaseSensitive == StringComparison.OrdinalIgnoreCase
                        ? RegexOptions.IgnoreCase
                        : RegexOptions.None);
-        
     }
-    
+
     private static string WildcardToRegex(string wildcard)
     {
         return "^" + Regex.Escape(wildcard).Replace("\\?", ".").Replace("\\*", ".*") + "$";

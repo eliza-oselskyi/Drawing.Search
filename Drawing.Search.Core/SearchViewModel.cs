@@ -3,22 +3,58 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Mime;
+using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 using Drawing.Search.Core.Interfaces;
+using Drawing.Search.Core.SearchService;
 using Microsoft.Extensions.Caching.Memory;
 using Tekla.Structures.Drawing;
+using ModelObject = Tekla.Structures.Model.ModelObject;
 
 namespace Drawing.Search.Core;
 
 public class SearchViewModel : INotifyPropertyChanged
 {
+    private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
+
+    private readonly SearchDriver _searchDriver;
+    private readonly MemoryCache _cache;
+
+    private ContentCollectingObserver _contentCollector;
+    private string _ghostSuggestion; // for autocomplete
+    private bool _isCaching;
+    private bool _isCaseSensitive;
+    private bool _isSearching;
+
+    private readonly HashSet<string> _previousSearches = new(StringComparer.OrdinalIgnoreCase);
+    private string _searchTerm;
+    private SearchType _selectedSearchType;
+    private string _statusMessage;
     private string _version;
+
+    public SearchViewModel()
+    {
+        _cache = new MemoryCache(new MemoryCacheOptions());
+
+        var uiContext = SynchronizationContext.Current ??
+                        throw new InvalidOperationException("SearchViewModel must be created on UI thread.");
+        _searchDriver = new SearchDriver(_cache, uiContext);
+        _searchDriver.CacheObserver.StatusMessageChanged += (sender, message) => { StatusMessage = message; };
+        SearchCommand = new AsyncRelayCommand(
+            ExecuteSearchAsync,
+            CanExecuteSearch
+        );
+        Version = $"v{Assembly.GetExecutingAssembly().GetName().Version}";
+
+        PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(SearchTerm)) UpdateGhostSuggestion(SearchTerm);
+        };
+    }
+
     public string Version
     {
         get => _version;
@@ -28,19 +64,8 @@ public class SearchViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-    public event PropertyChangedEventHandler PropertyChanged;
-    public event EventHandler SearchCompleted;
-    public AsyncRelayCommand SearchCommand { get; }
 
-    private readonly SearchDriver _searchDriver;
-    private string _searchTerm;
-    private SearchType _selectedSearchType;
-    private string _statusMessage;
-    private bool _isCaseSensitive;
-    private bool _isSearching;
-    private bool _isCaching;
-    private MemoryCache _cache;
-    private string _ghostSuggestion; // for autocomplete
+    public AsyncRelayCommand SearchCommand { get; }
 
     public string GhostSuggestion
     {
@@ -50,64 +75,6 @@ public class SearchViewModel : INotifyPropertyChanged
             _ghostSuggestion = value;
             OnPropertyChanged();
         }
-    }
-    
-    private HashSet<string> _previousSearches = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-    public SearchViewModel()
-    {
-        _cache = new MemoryCache(new MemoryCacheOptions());
-        
-        var uiContext = SynchronizationContext.Current ??
-                        throw new InvalidOperationException("SearchViewModel must be created on UI thread.");
-        _searchDriver = new SearchDriver(_cache, uiContext);
-        _searchDriver.CacheObserver.StatusMessageChanged += (sender, message) =>
-        {
-            StatusMessage = message;
-        };
-        SearchCommand = new AsyncRelayCommand(
-            execute: ExecuteSearchAsync,
-            canExecute: CanExecuteSearch
-        );
-        Version = $"v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
-
-        PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(SearchTerm))
-            {
-                UpdateGhostSuggestion(SearchTerm);
-            }
-        };
-    }
-
-    private ContentCollectingObserver _contentCollector;
-
-    private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
-    private void UpdateGhostSuggestion(string input)
-    {
-        if (string.IsNullOrEmpty(input))
-        {
-            GhostSuggestion = "";
-            return;
-        }
-
-        Debug.Assert(_cache != null, nameof(_cache) + " != null");
-        _cache.TryGetValue(MATCHED_CONTENT_CACHE_KEY, out HashSet<string> cachedContent);
-
-        cachedContent ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        
-        
-        var allSuggestions = _previousSearches.Union(cachedContent);
-        
-        var suggestion = allSuggestions
-            .Where(s => s.StartsWith(input, StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(s => _previousSearches.Contains(s)) // Prioritize previous searches
-            .ThenByDescending(s => cachedContent.Contains(s)) // then cached content
-            .ThenBy(s => s.Length) // Prefer shorter matches
-            .FirstOrDefault();
-
-        Console.WriteLine($"Input: {input}, Suggestion: {suggestion}"); // Add this line
-        GhostSuggestion = suggestion ?? "";
     }
 
     public bool IsSearching
@@ -171,7 +138,40 @@ public class SearchViewModel : INotifyPropertyChanged
         }
     }
 
-    private bool CanExecuteSearch() => !string.IsNullOrEmpty(SearchTerm) && !IsSearching;
+    public event PropertyChangedEventHandler PropertyChanged;
+    public event EventHandler SearchCompleted;
+
+    private void UpdateGhostSuggestion(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            GhostSuggestion = "";
+            return;
+        }
+
+        Debug.Assert(_cache != null, nameof(_cache) + " != null");
+        _cache.TryGetValue(MATCHED_CONTENT_CACHE_KEY, out HashSet<string> cachedContent);
+
+        cachedContent ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+
+        var allSuggestions = _previousSearches.Union(cachedContent);
+
+        var suggestion = allSuggestions
+            .Where(s => s.StartsWith(input, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(s => _previousSearches.Contains(s)) // Prioritize previous searches
+            .ThenByDescending(s => cachedContent.Contains(s)) // then cached content
+            .ThenBy(s => s.Length) // Prefer shorter matches
+            .FirstOrDefault();
+
+        Console.WriteLine($"Input: {input}, Suggestion: {suggestion}"); // Add this line
+        GhostSuggestion = suggestion ?? "";
+    }
+
+    private bool CanExecuteSearch()
+    {
+        return !string.IsNullOrEmpty(SearchTerm) && !IsSearching;
+    }
 
     private async Task ExecuteSearchAsync()
     {
@@ -181,10 +181,10 @@ public class SearchViewModel : INotifyPropertyChanged
             StatusMessage = "Searching...";
 
             var stopwatch = Stopwatch.StartNew();
-            
+
             _contentCollector = new ContentCollectingObserver(GetExtractor(SelectedSearchType));
-            
-            
+
+
             var result = await Task.Run(() =>
             {
                 var config = new SearchConfiguration
@@ -196,25 +196,18 @@ public class SearchViewModel : INotifyPropertyChanged
                 };
 
                 return _searchDriver.ExecuteSearch(config);
-
             });
             stopwatch.Stop();
             result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
-                StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedMilliseconds} ms.";
+            StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedMilliseconds} ms.";
 
-                // After successful search, add to previous searches list
-                if (result.MatchCount > 0)
-                {
-                    if (!string.IsNullOrEmpty(SearchTerm))
-                    {
-                        _previousSearches.Add(SearchTerm);
-                    }
+            // After successful search, add to previous searches list
+            if (result.MatchCount > 0)
+            {
+                if (!string.IsNullOrEmpty(SearchTerm)) _previousSearches.Add(SearchTerm);
 
-                    foreach (var content in _contentCollector.MatchedContent)
-                    {
-                        _previousSearches.Add(content);
-                    }
-                }
+                foreach (var content in _contentCollector.MatchedContent) _previousSearches.Add(content);
+            }
         }
         catch (Exception e)
         {
@@ -248,11 +241,11 @@ public class SearchViewModel : INotifyPropertyChanged
             },
             SearchType.Text => new List<ISearchStrategy>
             {
-                new RegexMatchStrategy<Tekla.Structures.Drawing.Text>()
+                new RegexMatchStrategy<Text>()
             },
             SearchType.Assembly => new List<ISearchStrategy>
             {
-                new RegexMatchStrategy<Tekla.Structures.Model.ModelObject>()
+                new RegexMatchStrategy<ModelObject>()
             },
             _ => throw new ArgumentException($"Unsupported search type: {SelectedSearchType}")
         };
@@ -274,10 +267,10 @@ public class SearchViewModel : INotifyPropertyChanged
 
 public class AsyncRelayCommand : ICommand
 {
-    private readonly Func<Task> _execute;
     private readonly Func<bool> _canExecute;
+    private readonly Func<Task> _execute;
     private bool _isExecuting;
-    
+
     public AsyncRelayCommand(Func<Task> execute, Func<bool> canExecute = null)
     {
         _execute = execute ?? throw new ArgumentNullException(nameof(execute));
@@ -301,12 +294,15 @@ public class AsyncRelayCommand : ICommand
         }
         finally
         {
-           _isExecuting = false; 
-           RaiseCanExecuteChanged();
+            _isExecuting = false;
+            RaiseCanExecuteChanged();
         }
     }
 
     public event EventHandler? CanExecuteChanged;
-    
-    public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+
+    public void RaiseCanExecuteChanged()
+    {
+        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    }
 }

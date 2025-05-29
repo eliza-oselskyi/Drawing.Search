@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Drawing.Search.Core.Interfaces;
 
-namespace Drawing.Search.Core;
+namespace Drawing.Search.Core.SearchService;
 
 public class SearchConfiguration
 {
@@ -13,10 +13,12 @@ public class SearchConfiguration
     public bool Wildcard { get; set; }
     public List<ISearchStrategy> SearchStrategies { get; set; } = new();
     public SearchType Type { get; set; }
+
     public StringComparison StringComparison =>
         CaseSensitive
             ? StringComparison.Ordinal
             : StringComparison.OrdinalIgnoreCase;
+
     public IObserver Observer { get; set; }
 
     public override string ToString()
