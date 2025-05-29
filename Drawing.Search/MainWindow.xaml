@@ -4,32 +4,105 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Drawing.Search"
+        xmlns:core="clr-namespace:Drawing.Search.Core;assembly=Drawing.Search.Core"
         mc:Ignorable="d"
-        Title="Drawing Searcher" Topmost="True" Width="500" Height="230" MinHeight="230" MaxHeight="230" MinWidth="500"
+        Title="Drawing Searcher"
+        Topmost="True"
+        Width="500"
+        Height="230"
+        MinHeight="230"
+        MaxHeight="230"
+        MinWidth="500"
         MaxWidth="500">
-    <Grid ShowGridLines="False">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
+
+    <Window.Resources>
+        <core:EnumToBoolConverter x:Key="EnumToBoolConverter"></core:EnumToBoolConverter>
+    </Window.Resources>
+
+    <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="10">
-            <RadioButton Name="AssemblyRadio" GroupName="ObjectTypes" Checked="GainKeyboardFocus" ToolTip="Selects the main part of an assembly in the drawing">As Assembly</RadioButton>
-            <RadioButton Name="DetailRadio" GroupName="ObjectTypes" Checked="GainKeyboardFocus" ToolTip="Includes any text object, including manually added CED bubbles">Text</RadioButton>
-            <RadioButton Name="PartMarkRadio" GroupName="ObjectTypes" IsChecked="True" Checked="GainKeyboardFocus" ToolTip="Includes any mark object">Part Marks</RadioButton>
-            <Label Name="ProgressLabel" Visibility="Visible" Width="350" Height="50" HorizontalContentAlignment="Left" VerticalContentAlignment="Center">
-                <TextBlock Name="TextBlock"></TextBlock>
-            </Label>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <RadioButton GroupName="SearchType"
+                         Content="Assembly"
+                         IsChecked="{Binding SelectedSearchType, 
+                            Converter={StaticResource EnumToBoolConverter}, 
+                            ConverterParameter={x:Static core:SearchType.Assembly}}"
+                         ToolTip="Selects the main part of an assembly in the drawing" />
+            <RadioButton GroupName="SearchType"
+                         Content="Text"
+                         IsChecked="{Binding SelectedSearchType, 
+                            Converter={StaticResource EnumToBoolConverter}, 
+                            ConverterParameter={x:Static core:SearchType.Text}}"
+                         ToolTip="Includes any text object, including manually added CED bubbles" />
+            <RadioButton GroupName="SearchType"
+                         Content="Part Marks"
+                         IsChecked="{Binding SelectedSearchType, 
+                            Converter={StaticResource EnumToBoolConverter}, 
+                            ConverterParameter={x:Static core:SearchType.PartMark}}"
+                         ToolTip="Includes any mark object" />
         </StackPanel>
-            <TextBox Grid.Row="1" Grid.Column="0"  Name="SelectTextBox" Width="250" Height="30" KeyDown="SelectTextBox_OnKeyDown" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="Transparent"/>
-            <Button Grid.Row="1" Grid.Column="1" Name="SelectButton" Click="SelectButton_OnClick" HorizontalAlignment="Center">Select</Button>
-            <ProgressBar Grid.Column="1" Grid.Row="0" Width = "120" Height = "20" Name="ProgressBar" IsIndeterminate="True" Visibility="Hidden"></ProgressBar>
-            <Label Grid.Column="2" Grid.Row="2" HorizontalAlignment="Center" ToolTip="Written by: Eliza Oselskyi">v1.0.1</Label>
+
+        <DockPanel Grid.Row="1" LastChildFill="True">
+            <CheckBox DockPanel.Dock="Right"
+                      Content="Case Sensitive"
+                      IsChecked="{Binding IsCaseSensitive}"
+                      VerticalAlignment="Center"
+                      Margin="10,0,0,0" />
+            <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                     Height="30"
+                     VerticalContentAlignment="Center" />
+        </DockPanel>
+
+        <Button Grid.Row="2"
+                Height="30"
+                Margin="0,10,0,0">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                            <Setter Property="Content" Value="Searching..." />
+                            <Setter Property="IsEnabled" Value="False" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsSearching}" Value="False">
+                            <Setter Property="Content" Value="Search" />
+                            <Setter Property="IsEnabled" Value="True" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+            <Button.Command>
+                <Binding Path="SearchCommand" />
+            </Button.Command>
+        </Button>
+        
+        
+        <ProgressBar Grid.Row="2" 
+                     Height="2" 
+                     Margin="0,10,0,0"
+                     IsIndeterminate="True">
+            <ProgressBar.Style>
+                <Style TargetType="ProgressBar">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsSearching}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ProgressBar.Style>
+        </ProgressBar>
+
+        <TextBlock Grid.Row="3"
+                   Text="{Binding StatusMessage}"
+                   TextWrapping="Wrap"
+                   Margin="0,10,0,0" />
     </Grid>
-    
 </Window>

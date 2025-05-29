@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Net.Mime;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using Drawing.Search.Core.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
@@ -12,21 +17,32 @@ namespace Drawing.Search.Core;
 public class SearchViewModel : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
-    public RelayCommand SearchCommand { get; }
+    public AsyncRelayCommand SearchCommand { get; }
 
     private readonly SearchDriver _searchDriver;
     private string _searchTerm;
     private SearchType _selectedSearchType;
     private string _statusMessage;
     private bool _isCaseSensitive;
+    private bool _isSearching;
 
     public SearchViewModel()
     {
         _searchDriver = new SearchDriver(new MemoryCache(new MemoryCacheOptions()));
-        SearchCommand = new RelayCommand(
-            execute: ExecuteSearch,
+        SearchCommand = new AsyncRelayCommand(
+            execute: ExecuteSearchAsync,
             canExecute: CanExecuteSearch
         );
+    }
+
+    public bool IsSearching
+    {
+        get => _isSearching;
+        set
+        {
+            _isSearching = value;
+            OnPropertyChanged();
+        }
     }
 
     public string SearchTerm
@@ -70,25 +86,39 @@ public class SearchViewModel : INotifyPropertyChanged
         }
     }
 
-    private bool CanExecuteSearch() => !string.IsNullOrEmpty(SearchTerm);
+    private bool CanExecuteSearch() => !string.IsNullOrEmpty(SearchTerm) && !IsSearching;
 
-    private void ExecuteSearch()
+    private async Task ExecuteSearchAsync()
     {
         try
         {
-            var config = new SearchConfiguration
+            IsSearching = true;
+            StatusMessage = "Searching...";
+
+            var stopwatch = Stopwatch.StartNew();
+            var result = await Task.Run(() =>
             {
-                SearchTerm = SearchTerm,
-                Type = SelectedSearchType,
-                SearchStrategies = GetSearchStrategies(),
-            };
-            
-            var result = _searchDriver.ExecuteSearch(config);
-            StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedMilliseconds} ms.";
+                var config = new SearchConfiguration
+                {
+                    SearchTerm = SearchTerm,
+                    Type = SelectedSearchType,
+                    SearchStrategies = GetSearchStrategies(),
+                };
+
+                return _searchDriver.ExecuteSearch(config);
+
+            });
+            stopwatch.Stop();
+            result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+                StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedMilliseconds} ms."; 
         }
         catch (Exception e)
         {
             StatusMessage = $"Error: {e.Message}";
+        }
+        finally
+        {
+            IsSearching = false;
         }
     }
 
@@ -126,19 +156,39 @@ public class SearchViewModel : INotifyPropertyChanged
     }
 }
 
-public class RelayCommand : ICommand
+public class AsyncRelayCommand : ICommand
 {
-    private readonly Action _execute;
+    private readonly Func<Task> _execute;
     private readonly Func<bool> _canExecute;
+    private bool _isExecuting;
     
-    public RelayCommand(Action execute, Func<bool> canExecute = null)
+    public AsyncRelayCommand(Func<Task> execute, Func<bool> canExecute = null)
     {
         _execute = execute ?? throw new ArgumentNullException(nameof(execute));
         _canExecute = canExecute;
     }
-    public bool CanExecute(object parameter) => _canExecute?.Invoke() ?? true;
 
-    public void Execute(object parameter) => _execute();
+    public bool CanExecute(object parameter)
+    {
+        return !_isExecuting && (_canExecute?.Invoke() ?? true);
+    }
+
+    public async void Execute(object parameter)
+    {
+        if (_isExecuting) return;
+
+        try
+        {
+            _isExecuting = true;
+            RaiseCanExecuteChanged();
+            await _execute();
+        }
+        finally
+        {
+           _isExecuting = false; 
+           RaiseCanExecuteChanged();
+        }
+    }
 
     public event EventHandler? CanExecuteChanged;
     

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Drawing.Search.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
 using Tekla.Structures.Model;
-using Events = Tekla.Structures.Drawing.UI.Events;
+using Events = Tekla.Structures.Drawing.Events;
 using MemoryCache = System.Runtime.Caching.MemoryCache;
 using ModelObject = Tekla.Structures.Model.ModelObject;
 using System.Runtime.Caching;
@@ -22,6 +21,10 @@ public class SearchDriver : IDisposable
     private readonly Events _events;
     private readonly IMemoryCache _cache;
     private readonly ISearchLogger _logger;
+    private string _currentDrawingId;
+    private const string ASSEMBLY_CACHE_KEY = "assembly_objects";
+    private const string DRAWING_OBJECTS_CACHE_KEY = "drawing_objects";
+    private readonly object _lockObject = new object();
 
     public SearchDriver(IMemoryCache cache)
     {
@@ -41,16 +44,36 @@ public class SearchDriver : IDisposable
 
     private void InitializeEvents()
     {
-        //_events.DrawingLoaded += _cache.Clear;
+        _events.DrawingChanged += OnDrawingModified;
+        _events.DrawingUpdated += OnDrawingUpdated;
         _events.Register();
     }
+
+    private void OnDrawingUpdated(Tekla.Structures.Drawing.Drawing drawing, Events.DrawingUpdateTypeEnum type)
+    {
+        ClearDrawingCache();
+    }
+
+    private void OnDrawingModified()
+    {
+        ClearDrawingCache();
+    }
+
+    private void ClearDrawingCache()
+    {
+        lock (_lockObject)
+        {
+            _cache.Remove($"{_currentDrawingId}_{DRAWING_OBJECTS_CACHE_KEY}");
+            _logger.LogInformation($"Drawing cache cleared.");
+        }
+    }
+
 
     public SearchResult ExecuteSearch(SearchConfiguration config)
     {
         if (config == null) throw new ArgumentNullException();
         
         _logger.LogInformation($"Executing search with configuration: {config}.");
-        var stopwatch = Stopwatch.StartNew();
 
         try
         {
@@ -62,9 +85,6 @@ public class SearchDriver : IDisposable
                 _ => throw new ArgumentException($"Unsupported search type: {config.Type}")
             };
             
-            stopwatch.Stop();
-            _logger.LogInformation($"Search completed in {stopwatch.ElapsedMilliseconds} ms.");
-
             return result;
         }
         catch (Exception e)
@@ -76,12 +96,49 @@ public class SearchDriver : IDisposable
 
     private SearchResult ExecuteAssemblySearch(SearchConfiguration config)
     {
-        throw new NotImplementedException();
+        var modelObjects = GetCachedAssemblyObjects();
+        
+        var searcher = CreateSearcher<ModelObject>(config);
+        var results = searcher.Search(modelObjects, CreateSearchQuery(config));
+        
+        SelectResults(results.Cast<ModelObject>().ToList());
+        return new SearchResult()
+        {
+            MatchCount = results.Count(),
+            ElapsedMilliseconds = 0, // Set by caller
+            SearchType = SearchType.Assembly
+        };
+    }
+
+    private List<ModelObject> GetCachedAssemblyObjects()
+    {
+        return _cache.GetOrCreate(ASSEMBLY_CACHE_KEY, entry =>
+        {
+            entry.SlidingExpiration = TimeSpan.FromMinutes(15);
+            lock (_lockObject)
+            {
+                return GetModelObjects();
+            }
+        });
     }
 
     private SearchResult ExecuteTextSearch(SearchConfiguration config)
     {
-        throw new NotImplementedException();
+        var texts = GetCachedDrawingObjects<Text>(
+            cacheKey: "texts",
+            fetchFunc: () => GetObjectsOfType<Text>(_drawingHandler.GetActiveDrawing()));
+        
+        var searcher = CreateSearcher<Text>(config);
+        var results = searcher.Search(texts, CreateSearchQuery(config));
+        
+        SelectResults(results.Cast<DrawingObject>().ToList());
+
+        return new SearchResult()
+        {
+            MatchCount = results.Count(),
+            ElapsedMilliseconds = 0, // Set by caller
+            SearchType = SearchType.Text
+        };
     }
 
     private SearchResult ExecutePartMarkSearch(SearchConfiguration config)
@@ -106,28 +163,46 @@ public class SearchDriver : IDisposable
     private List<T> GetCachedDrawingObjects<T>(string cacheKey, Func<List<T>> fetchFunc)
     {
         var drawing = _drawingHandler.GetActiveDrawing();
-        var cacheKeyWithDrawing = $"{drawing.GetIdentifier().ToString()}_{cacheKey}";
+        var drawingId  = drawing.GetIdentifier().ToString();
+        var cacheKeyWithDrawing = $"{drawingId}_{cacheKey}";
 
-         return _cache.GetOrCreate(cacheKeyWithDrawing, entry =>
+        lock (_lockObject)
         {
+            _currentDrawingId = drawingId;
+        }
+
+        return _cache.GetOrCreate(cacheKeyWithDrawing, entry =>
+        {
+            _logger.LogInformation($"Cache miss for {typeof(T).Name} objects. Fetching from Tekla.");
             entry.SlidingExpiration = TimeSpan.FromMinutes(15);
-            return fetchFunc();
+            var result =  fetchFunc();
+            _logger.LogInformation($"Cached {result.Count} {typeof(T).Name} objects.");
+            return result;
         });
     }
 
     private List<T> GetObjectsOfType<T>(Tekla.Structures.Drawing.Drawing drawing) where T : DrawingObject
     {
         var objects = new List<T>();
-        var enumerator = drawing.GetSheet().GetAllObjects();
 
-        while (enumerator.MoveNext())
-        {
-            if (enumerator.Current is T obj)
+
+        var allObjects = GetCachedDrawingObjects<DrawingObject>(
+            DRAWING_OBJECTS_CACHE_KEY,
+            (() =>
             {
-                objects.Add(obj);
-            }
-        }
+                var list = new List<DrawingObject>();
+                var enumerator = drawing.GetSheet().GetAllObjects();
+                while (enumerator.MoveNext())
+                {
+                    if (enumerator.Current is T obj)
+                    {
+                        list.Add(obj);
+                    }
+                }
 
+                return list;
+            }));
+        objects.AddRange(allObjects.OfType<T>());
         return objects;
     }
 
@@ -176,36 +251,9 @@ public class SearchDriver : IDisposable
 
     public void Dispose()
     {
+        _events.DrawingChanged -= OnDrawingModified;
+        _events.DrawingUpdated -= OnDrawingUpdated;
         _events.UnRegister();
         GC.SuppressFinalize(this);
     }
-}
-
-public class SearchLogger : ISearchLogger
-{
-    public void LogInformation(string message)
-    {
-        Debug.WriteLine($"INFO: {message}");
-        Console.WriteLine($"INFO: {message}");
-    }
-
-    public void LogError(Exception exception, string message)
-    {
-        Debug.WriteLine($"ERROR: {message}");
-        Debug.WriteLine($"Exception: {exception}");
-        Console.WriteLine($"ERROR: {message}");
-        Console.WriteLine($"Exception: {exception}");
-    }
-
-    public void DebugInfo(string message)
-    {
-        Debug.WriteLine($"DEBUG: {message}");
-    }
-}
-
-internal interface ISearchLogger
-{
-    void LogInformation(string message);
-    void LogError(Exception exception, string message);
-    void DebugInfo(string message);
 }

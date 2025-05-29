@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Drawing.Search.Core.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Tekla.Structures.Model;
@@ -61,10 +63,42 @@ public class ObservableSearch<T>(List<ISearchStrategy> searchStrategies, IDataEx
     public IEnumerable<T> Search(IEnumerable<T> items, SearchQuery query)
     {
 
+        var cacheKey = $"{query.Term}_{query.CaseSensitive}";
+
         if (_cache.TryGetValue(query.Term, out IEnumerable<T> res))
         {
-            if (res != null) return res;
+            return res ?? Enumerable.Empty<T>();
         }
+
+        var compiledStrategies = searchStrategies.ToList();
+        var matches = new ConcurrentBag<T>();
+        var parallelOptions = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = Environment.ProcessorCount
+        };
+        
+        var itemsList = items.ToList();
+
+        Parallel.ForEach(
+            Partition(itemsList, 1000),
+            parallelOptions,
+            chunk =>
+            {
+                foreach (var item in chunk)
+                {
+                    var data = dataExtractor.ExtractSearchableString(item);
+                    if (compiledStrategies.Any(strategy => strategy.Match(data, query)))
+                    {
+                        matches.Add(item);
+                        NotifyObservers(item);
+                    }
+                }
+            });
+        
+        res = matches.ToList();
+        _cache.Set(cacheKey, res, TimeSpan.FromMinutes(15));
+        
+        /*
         res =  items
             .AsParallel()
             .Where((o) =>
@@ -77,7 +111,18 @@ public class ObservableSearch<T>(List<ISearchStrategy> searchStrategies, IDataEx
             .ToList();
         
         _cache.Set(query.Term, res, TimeSpan.FromMinutes(15));
+        */
         
         return res;
+    }
+
+    private static IEnumerable<List<T>> Partition(List<T> list, int chunkSize)
+    {
+        for (int i = 0; i < list.Count; i+=chunkSize)
+        {
+            yield return list.GetRange(
+                i,
+                Math.Min(chunkSize, list.Count - i));
+        }
     }
 }
