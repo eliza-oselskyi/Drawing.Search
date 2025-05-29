@@ -16,7 +16,18 @@ namespace Drawing.Search.Core;
 
 public class SearchViewModel : INotifyPropertyChanged
 {
+    private string _version;
+    public string Version
+    {
+        get => _version;
+        set
+        {
+            _version = value;
+            OnPropertyChanged();
+        }
+    }
     public event PropertyChangedEventHandler PropertyChanged;
+    public event EventHandler SearchCompleted;
     public AsyncRelayCommand SearchCommand { get; }
 
     private readonly SearchDriver _searchDriver;
@@ -33,6 +44,7 @@ public class SearchViewModel : INotifyPropertyChanged
             execute: ExecuteSearchAsync,
             canExecute: CanExecuteSearch
         );
+        Version = $"v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
     }
 
     public bool IsSearching
@@ -119,6 +131,7 @@ public class SearchViewModel : INotifyPropertyChanged
         finally
         {
             IsSearching = false;
+            SearchCompleted?.Invoke(this, EventArgs.Empty);
         }
     }
 
