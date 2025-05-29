@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Drawing.Search.Core.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,7 @@ public class SearchDriver : IDisposable
     private string _currentDrawingId;
     private const string ASSEMBLY_CACHE_KEY = "assembly_objects";
     private const string DRAWING_OBJECTS_CACHE_KEY = "drawing_objects";
+    private bool _cacheInvalidated = true; // track if cache needs refresh
     private readonly object _lockObject = new object();
 
     public SearchDriver(IMemoryCache cache)
@@ -51,36 +53,38 @@ public class SearchDriver : IDisposable
 
     private void OnDrawingUpdated(Tekla.Structures.Drawing.Drawing drawing, Events.DrawingUpdateTypeEnum type)
     {
-        ClearDrawingCache();
+        InvalidateCache();
     }
 
     private void OnDrawingModified()
     {
-        ClearDrawingCache();
+        InvalidateCache();
     }
 
-    private void ClearDrawingCache()
+    private void InvalidateCache()
     {
         lock (_lockObject)
         {
             _cache.Remove($"{_currentDrawingId}_{DRAWING_OBJECTS_CACHE_KEY}");
-            _logger.LogInformation($"Drawing cache cleared.");
+            _cacheInvalidated = true;
+            _logger.LogInformation($"Drawing cache invalidated.");
         }
     }
 
-
     public SearchResult ExecuteSearch(SearchConfiguration config)
     {
+        var drawing = _drawingHandler.GetActiveDrawing();
+        if (drawing == null) throw new InvalidOperationException("No active drawing.");
         if (config == null) throw new ArgumentNullException();
         
-        _logger.LogInformation($"Executing search with configuration: {config}.");
+        _logger.LogInformation($"Executing search with configuration: {config.ToString()}.");
 
         try
         {
             var result = config.Type switch
             {
-                SearchType.PartMark => ExecutePartMarkSearch(config),
-                SearchType.Text => ExecuteTextSearch(config),
+                SearchType.PartMark => ExecutePartMarkSearch(config, drawing),
+                SearchType.Text => ExecuteTextSearch(config, drawing),
                 SearchType.Assembly => ExecuteAssemblySearch(config),
                 _ => throw new ArgumentException($"Unsupported search type: {config.Type}")
             };
@@ -122,11 +126,9 @@ public class SearchDriver : IDisposable
         });
     }
 
-    private SearchResult ExecuteTextSearch(SearchConfiguration config)
+    private SearchResult ExecuteTextSearch(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
     {
-        var texts = GetCachedDrawingObjects<Text>(
-            cacheKey: "texts",
-            fetchFunc: () => GetObjectsOfType<Text>(_drawingHandler.GetActiveDrawing()));
+        var texts = GetFilteredObjects<Text>(drawing);
         
         var searcher = CreateSearcher<Text>(config);
         var results = searcher.Search(texts, CreateSearchQuery(config));
@@ -141,12 +143,9 @@ public class SearchDriver : IDisposable
         };
     }
 
-    private SearchResult ExecutePartMarkSearch(SearchConfiguration config)
+    private SearchResult ExecutePartMarkSearch(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
     {
-        var marks = GetCachedDrawingObjects<Mark>(
-            cacheKey: "marks",
-            fetchFunc: () => GetObjectsOfType<Mark>(_drawingHandler.GetActiveDrawing()));
-        
+        var marks = GetFilteredObjects<Mark>(drawing);
         var searcher = CreateSearcher<Mark>(config);
         var results = searcher.Search(marks, CreateSearchQuery(config));
         
@@ -160,7 +159,38 @@ public class SearchDriver : IDisposable
         };
     }
 
-    private List<T> GetCachedDrawingObjects<T>(string cacheKey, Func<List<T>> fetchFunc)
+    private IEnumerable<T> GetFilteredObjects<T>(Tekla.Structures.Drawing.Drawing drawing) where T : DrawingObject
+    {
+        // always check if cache needs refresh
+        if (_cacheInvalidated ||
+            !_cache.TryGetValue($"{_currentDrawingId}_{DRAWING_OBJECTS_CACHE_KEY}",
+                out List<DrawingObject> _))
+        {
+            RefreshCache(drawing);
+        }
+        
+        var cacheKey = $"{drawing.GetIdentifier()}_{typeof(T).Name}_filtered";
+        return _cache.GetOrCreate(cacheKey, entry =>
+        {
+            entry.SlidingExpiration = TimeSpan.FromMinutes(15);
+            _logger.LogInformation($"Fetching {typeof(T).Name} objects from drawing...");
+
+            var objects = new List<T>();
+            var enumerator = drawing.GetSheet().GetAllObjects();
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.Current is T typedObject)
+                {
+                    objects.Add(typedObject);
+                }
+            }
+
+            _logger.LogInformation($"Fetched and cached {objects.Count} {typeof(T).Name} objects from drawing.");
+            return objects;
+        });
+    }
+
+    private List<T> GetCachedDrawingObjects<T>(string cacheKey)
     {
         var drawing = _drawingHandler.GetActiveDrawing();
         var drawingId  = drawing.GetIdentifier().ToString();
@@ -171,39 +201,63 @@ public class SearchDriver : IDisposable
             _currentDrawingId = drawingId;
         }
 
-        return _cache.GetOrCreate(cacheKeyWithDrawing, entry =>
-        {
-            _logger.LogInformation($"Cache miss for {typeof(T).Name} objects. Fetching from Tekla.");
-            entry.SlidingExpiration = TimeSpan.FromMinutes(15);
-            var result =  fetchFunc();
-            _logger.LogInformation($"Cached {result.Count} {typeof(T).Name} objects.");
-            return result;
-        });
+        return _cache.Get<List<T>>(cacheKeyWithDrawing) ?? throw new InvalidOperationException("Cache unexpectedly empty. This should not happen.");
     }
 
     private List<T> GetObjectsOfType<T>(Tekla.Structures.Drawing.Drawing drawing) where T : DrawingObject
     {
         var objects = new List<T>();
-
-
+        
+        // always check if cache needs refresh
+        if (_cacheInvalidated ||
+            !_cache.TryGetValue($"{_currentDrawingId}_{DRAWING_OBJECTS_CACHE_KEY}",
+                out List<DrawingObject> _))
+        {
+            RefreshCache(drawing);
+        }
         var allObjects = GetCachedDrawingObjects<DrawingObject>(
-            DRAWING_OBJECTS_CACHE_KEY,
-            (() =>
-            {
-                var list = new List<DrawingObject>();
-                var enumerator = drawing.GetSheet().GetAllObjects();
-                while (enumerator.MoveNext())
-                {
-                    if (enumerator.Current is T obj)
-                    {
-                        list.Add(obj);
-                    }
-                }
-
-                return list;
-            }));
+            DRAWING_OBJECTS_CACHE_KEY);
         objects.AddRange(allObjects.OfType<T>());
         return objects;
+    }
+
+    private void RefreshCache(Tekla.Structures.Drawing.Drawing drawing)
+    {
+        lock (_lockObject)
+        {
+            if (_cacheInvalidated)
+            {
+                var stopwatch = Stopwatch.StartNew();
+                
+                _logger.LogInformation("Refreshing drawing objects cache...");
+                var objects = FetchAllDrawingObjects(drawing);
+                var drawingId = drawing.GetIdentifier().ToString();
+                var cacheKey = $"{drawingId}_{DRAWING_OBJECTS_CACHE_KEY}";
+                
+                _cache.Set(cacheKey, objects, TimeSpan.FromMinutes(15));
+                _currentDrawingId = drawingId;
+                _cacheInvalidated = false;
+                
+                stopwatch.Stop();
+                _logger.LogInformation($"Drawing objects cache refreshed with {objects.Count} objects. ");
+                _logger.DebugInfo($"Cache refreshed in {stopwatch.ElapsedMilliseconds} ms."); 
+            }
+        }
+    }
+
+    private List<DrawingObject> FetchAllDrawingObjects(Tekla.Structures.Drawing.Drawing drawing)
+    {
+        var list = new List<DrawingObject>();
+        var enumerator = drawing.GetSheet().GetAllObjects();
+        while (enumerator.MoveNext())
+        {
+            if (enumerator.Current is not null)
+            {
+                list.Add(enumerator.Current);
+            }
+        }
+
+        return list;
     }
 
     private List<ModelObject> GetModelObjects()
@@ -216,6 +270,9 @@ public class SearchDriver : IDisposable
     private void SelectResults<T>(List<T> results) where T : class
     {
         var drawing = _drawingHandler.GetActiveDrawing();
+        var selector = _drawingHandler.GetDrawingObjectSelector();
+        selector.UnselectAllObjects();
+        
         if (typeof(T) == typeof(ModelObject))
         {
             TeklaWrapper.ModelObjectListToSelection(results.Cast<ModelObject>().ToList(), drawing);
