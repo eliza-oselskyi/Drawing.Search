@@ -101,7 +101,6 @@
         </ProjectReference>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Extended.Wpf.Toolkit" Version="4.7.25104.5739"/>
         <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0"/>
