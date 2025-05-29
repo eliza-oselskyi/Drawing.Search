@@ -24,6 +24,6 @@ public abstract class QueryHandler(string query)
 
     public static void ClearCache()
     {
-        Cache.Clear();
+        //Cache.Clear();
     }
 }
