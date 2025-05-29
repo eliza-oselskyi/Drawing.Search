@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Mime;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -36,6 +37,21 @@ public class SearchViewModel : INotifyPropertyChanged
     private string _statusMessage;
     private bool _isCaseSensitive;
     private bool _isSearching;
+    private const string ASSEMBLY_CACHE_KEY = "assembly_objects";
+    private const string DRAWING_OBJECTS_CACHE_KEY = "drawing_objects";
+    private string _ghostSuggestion; // for autocomplete
+
+    public string GhostSuggestion
+    {
+        get => _ghostSuggestion;
+        set
+        {
+            _ghostSuggestion = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private HashSet<string> _previousSearches = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
     public SearchViewModel()
     {
@@ -45,6 +61,31 @@ public class SearchViewModel : INotifyPropertyChanged
             canExecute: CanExecuteSearch
         );
         Version = $"v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}";
+
+        PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(SearchTerm))
+            {
+                UpdateGhostSuggestion(SearchTerm);
+            }
+        };
+    }
+
+    private void UpdateGhostSuggestion(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            GhostSuggestion = "";
+            return;
+        }
+        
+        var suggestion = _previousSearches
+            .Where(s => s.StartsWith(input, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(s => s.Length) // Prefer shorter matches
+            .FirstOrDefault();
+
+        Console.WriteLine($"Input: {input}, Suggestion: {suggestion}"); // Add this line
+        GhostSuggestion = suggestion ?? "";
     }
 
     public bool IsSearching
@@ -122,7 +163,16 @@ public class SearchViewModel : INotifyPropertyChanged
             });
             stopwatch.Stop();
             result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
-                StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedMilliseconds} ms."; 
+                StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedMilliseconds} ms.";
+
+                // After successful search, add to previous searches list
+                if (result.MatchCount > 0)
+                {
+                    if (!string.IsNullOrEmpty(SearchTerm))
+                    {
+                        _previousSearches.Add(SearchTerm);
+                    }
+                }
         }
         catch (Exception e)
         {

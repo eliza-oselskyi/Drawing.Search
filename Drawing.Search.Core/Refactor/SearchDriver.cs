@@ -23,10 +23,12 @@ public class SearchDriver : IDisposable
     private readonly IMemoryCache _cache;
     private readonly ISearchLogger _logger;
     private string _currentDrawingId;
-    private const string ASSEMBLY_CACHE_KEY = "assembly_objects";
+     const string ASSEMBLY_CACHE_KEY = "assembly_objects";
     private const string DRAWING_OBJECTS_CACHE_KEY = "drawing_objects";
     private bool _cacheInvalidated = true; // track if cache needs refresh
     private readonly object _lockObject = new object();
+    
+    public IMemoryCache Cache { get; private set; }
 
     public SearchDriver(IMemoryCache cache)
     {
