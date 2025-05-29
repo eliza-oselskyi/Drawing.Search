@@ -6,97 +6,55 @@ using System.Windows.Input;
 using Drawing.Search.Core;
 using Tekla.Structures.Drawing;
 using Events = Tekla.Structures.Drawing.UI.Events;
+using System.Windows.Media;
 
 namespace Drawing.Search
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow
+    public partial class MainWindow : Window
     {
-        
-        private readonly Events _events = new Events();
         public MainWindow()
         {
-            var dh = new DrawingHandler();
-            if (dh.GetActiveDrawing() == null)
+            InitializeComponent();
+            DataContext = new SearchViewModel();
+
+            Loaded += (s, e) => SearchTextBox.Focus();
+
+            if (DataContext is SearchViewModel vm)
             {
-                MessageBox.Show("No active drawing open.");
-                AppExit();
-            }
-            else {
-                InitializeComponent();
-                this.Loaded += new RoutedEventHandler(GainKeyboardFocus);
-                _events.DrawingEditorClosed += AppExit;
-                _events.Register();
+                vm.SearchCompleted += (s, e) => SearchTextBox.Focus();
             }
         }
 
-        private static void AppExit()
+        private void RadioButton_Click(object sender, RoutedEventArgs e)
         {
-            Environment.Exit(0);
+            SearchTextBox.Focus();
         }
 
-        private void GainKeyboardFocus(object sender, RoutedEventArgs e)
+        private void ThemeToggle_CheckedChanged(object sender, RoutedEventArgs e)
         {
-            Keyboard.Focus(SelectTextBox);
-        }
-
-        private void ProgressBarHandle(bool setup)
-        {
-            if (setup)
+            var resources = Application.Current.Resources;
+    
+            if (ThemeToggle.IsChecked == true)
             {
-                ProgressBar.Visibility = Visibility.Visible;
-                ProgressLabel.Visibility = Visibility.Hidden;
+                // Switch to Dark Theme
+                resources["BackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E"));
+                resources["ForegroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFFFF"));
+                resources["SecondaryBackgroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2D2D2D"));
+                resources["BorderBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#404040"));
+                resources["DisabledForegroundBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#999999"));
             }
             else
             {
-                ProgressBar.Visibility = Visibility.Hidden;
-                ProgressLabel.Visibility = Visibility.Visible;
+                // Switch to Light Theme
+                resources["BackgroundBrush"] = new SolidColorBrush(Colors.White);
+                resources["ForegroundBrush"] = new SolidColorBrush(Colors.Black);
+                resources["SecondaryBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(240, 240, 240));
+                resources["BorderBrush"] = new SolidColorBrush(Color.FromRgb(204, 204, 204));
+                resources["DisabledForegroundBrush"] = new SolidColorBrush(Color.FromRgb(102, 102, 102));
             }
-        }
-
-        private async Task<int> SearchResults()
-        {
-            var searchManager = new SearchManager();
-            var text = SelectTextBox.Text;
-            Keyboard.Focus(SelectTextBox);
-
-            int res;
-            if (AssemblyRadio.IsChecked == true)
-            {
-                res = await Task.Run(() => searchManager.ExecuteAssemblySearch(text));
-            }
-            else if (DetailRadio.IsChecked == true)
-            {
-                res = await Task.Run(() => searchManager.ExecuteDetailSearch(text));
-            }
-            else if (PartMarkRadio.IsChecked == true)
-            {
-                res = await Task.Run(() => searchManager.ExecutePartMarkSearch(text));
-            }
-            else
-            {
-                return -1;
-            }
-
-            return res;
-        }
-
-        private async void SelectButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            
-            ProgressBarHandle(true);
-            var x = await SearchResults();
-            ProgressBarHandle(false);
-            TextBlock.Text = $@"Results found: {x}";
-            Console.WriteLine(x);
-        }
-
-        private async void SelectTextBox_OnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key != Key.Enter) return;
-            SelectButton_OnClick(sender, e);
         }
     }
 }
