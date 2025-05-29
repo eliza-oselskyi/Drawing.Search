@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Mime;
 using System.Runtime.CompilerServices;
+using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -37,6 +38,7 @@ public class SearchViewModel : INotifyPropertyChanged
     private string _statusMessage;
     private bool _isCaseSensitive;
     private bool _isSearching;
+    private bool _isCaching;
     private MemoryCache _cache;
     private string _ghostSuggestion; // for autocomplete
 
@@ -55,7 +57,14 @@ public class SearchViewModel : INotifyPropertyChanged
     public SearchViewModel()
     {
         _cache = new MemoryCache(new MemoryCacheOptions());
-        _searchDriver = new SearchDriver(_cache);
+        
+        var uiContext = SynchronizationContext.Current ??
+                        throw new InvalidOperationException("SearchViewModel must be created on UI thread.");
+        _searchDriver = new SearchDriver(_cache, uiContext);
+        _searchDriver.CacheObserver.StatusMessageChanged += (sender, message) =>
+        {
+            StatusMessage = message;
+        };
         SearchCommand = new AsyncRelayCommand(
             execute: ExecuteSearchAsync,
             canExecute: CanExecuteSearch
@@ -107,6 +116,16 @@ public class SearchViewModel : INotifyPropertyChanged
         set
         {
             _isSearching = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsCaching
+    {
+        get => _isCaching;
+        set
+        {
+            _isCaching = value;
             OnPropertyChanged();
         }
     }

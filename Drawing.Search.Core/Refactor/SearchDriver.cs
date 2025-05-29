@@ -11,6 +11,7 @@ using Events = Tekla.Structures.Drawing.Events;
 using MemoryCache = System.Runtime.Caching.MemoryCache;
 using ModelObject = Tekla.Structures.Model.ModelObject;
 using System.Runtime.Caching;
+using System.Threading;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Drawing.Search.Core;
@@ -28,14 +29,20 @@ public class SearchDriver : IDisposable
     private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
     private bool _cacheInvalidated = true; // track if cache needs refresh
     private readonly object _lockObject = new object();
+    private bool _isCaching;
+    private IObserver _cacheObserver;
+    public CachingObserver CacheObserver { get; private set; }
+    
 
-    public SearchDriver(IMemoryCache cache)
+    public SearchDriver(IMemoryCache cache, SynchronizationContext uiContext)
     {
         _drawingHandler = new DrawingHandler();
         _model = new Model();
         _events = new Events();
         _cache = cache;
         _logger = new SearchLogger();
+        CacheObserver = new CachingObserver(SynchronizationContext.Current);
+        _cacheObserver = CacheObserver;
 
         if (!_model.GetConnectionStatus())
         {
@@ -69,6 +76,7 @@ public class SearchDriver : IDisposable
             _cache.Remove($"{_currentDrawingId}_{DRAWING_OBJECTS_CACHE_KEY}");
             _cacheInvalidated = true;
             _logger.LogInformation($"Drawing cache invalidated.");
+            
         }
     }
 
@@ -125,6 +133,13 @@ public class SearchDriver : IDisposable
 
     private List<ModelObject> GetCachedAssemblyObjects()
     {
+        // always check if cache needs refresh
+        if (_cacheInvalidated ||
+            !_cache.TryGetValue($"{_currentDrawingId}_{DRAWING_OBJECTS_CACHE_KEY}",
+                out List<DrawingObject> _))
+        {
+            RefreshCache(_drawingHandler.GetActiveDrawing());
+        }
         return _cache.GetOrCreate(ASSEMBLY_CACHE_KEY, entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(15);
@@ -231,8 +246,12 @@ public class SearchDriver : IDisposable
 
     private void RefreshCache(Tekla.Structures.Drawing.Drawing drawing)
     {
+        
         lock (_lockObject)
         {
+            _isCaching = true;
+            _cacheObserver.OnMatchFound(_isCaching);
+            
             if (_cacheInvalidated)
             {
                 var stopwatch = Stopwatch.StartNew();
@@ -250,6 +269,9 @@ public class SearchDriver : IDisposable
                 _logger.LogInformation($"Drawing objects cache refreshed with {objects.Count} objects. ");
                 _logger.DebugInfo($"Cache refreshed in {stopwatch.ElapsedMilliseconds} ms."); 
             }
+            
+            _isCaching = false;
+            _cacheObserver.OnMatchFound(_isCaching);
         }
     }
 

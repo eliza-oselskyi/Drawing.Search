@@ -7,7 +7,7 @@
         <!-- Light Theme -->
         <SolidColorBrush x:Key="BackgroundBrush" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="ForegroundBrush" Color="#000000"/>
-        <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#F0F0F0"/>
+        <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#e6ecf5"/>
         <SolidColorBrush x:Key="BorderBrush" Color="#CCCCCC"/>
         <SolidColorBrush x:Key="DisabledForegroundBrush" Color="#666666"/>
                     

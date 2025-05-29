@@ -51,7 +51,7 @@ namespace Drawing.Search
                 // Switch to Light Theme
                 resources["BackgroundBrush"] = new SolidColorBrush(Colors.White);
                 resources["ForegroundBrush"] = new SolidColorBrush(Colors.Black);
-                resources["SecondaryBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(240, 240, 240));
+                resources["SecondaryBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(230, 236, 245));
                 resources["BorderBrush"] = new SolidColorBrush(Color.FromRgb(204, 204, 204));
                 resources["DisabledForegroundBrush"] = new SolidColorBrush(Color.FromRgb(102, 102, 102));
             }
