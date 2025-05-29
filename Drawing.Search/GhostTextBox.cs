@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -33,8 +34,9 @@ namespace Drawing.Search
                     Foreground = Brushes.Gray,
                     Opacity = 0.5,
                     IsHitTestVisible = false,
-                    Margin = new Thickness(10, 0, 4, 0),
-                    VerticalAlignment = VerticalAlignment.Center
+                    Margin = new Thickness(4, 0, 4, 0),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Left
                 };
 
                 grid.Children.Add(_ghostTextBlock);
@@ -81,12 +83,28 @@ namespace Drawing.Search
 
             if (GhostText.StartsWith(Text, StringComparison.OrdinalIgnoreCase))
             {
-                _ghostTextBlock.Text = GhostText.Substring(Text.Length);
+                //_ghostTextBlock.Text = GhostText.Substring(Text.Length);
+                // TODO: Currently a workaround for the issue with the TextBlock. Idea is to get it to show only the remainder of the suggestion.
+                _ghostTextBlock.Text = GhostText;
+                // _ghostTextBlock.Text = LeftPad(GhostText.Substring(Text.Length)
+                //                                    .Length -
+                //                                Text.Length) +
+                //                        GhostText.Substring(Text.Length);
             }
             else
             {
                 _ghostTextBlock.Text = "";
             }
+        }
+
+        private static string LeftPad(int length)
+        {
+            var s = new StringBuilder();
+            for (int i = 0; i < Math.Abs(length); i++)
+            {
+                s.Append(" ");
+            }
+            return s.ToString();
         }
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)

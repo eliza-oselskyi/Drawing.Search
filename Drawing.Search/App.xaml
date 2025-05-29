@@ -43,7 +43,8 @@
                             <Grid>
                                 <ScrollViewer x:Name="PART_ContentHost" 
                                             Margin="{TemplateBinding Padding}"
-                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                            HorizontalAlignment="Left"/>
                             </Grid>
                         </Border>
                     </ControlTemplate>

@@ -28,8 +28,6 @@ public class SearchDriver : IDisposable
     private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
     private bool _cacheInvalidated = true; // track if cache needs refresh
     private readonly object _lockObject = new object();
-    
-    public IMemoryCache Cache { get; private set; }
 
     public SearchDriver(IMemoryCache cache)
     {
@@ -106,9 +104,17 @@ public class SearchDriver : IDisposable
         var modelObjects = GetCachedAssemblyObjects();
         
         var searcher = CreateSearcher<ModelObject>(config);
+        var contentCollector = new ContentCollectingObserver(new ModelObjectExtractor());
+        searcher.Subscribe(contentCollector);
+        
         var results = searcher.Search(modelObjects, CreateSearchQuery(config));
         
         SelectResults(results.Cast<ModelObject>().ToList());
+        foreach (var content in contentCollector.MatchedContent)
+        {
+            _cache.GetOrCreate(MATCHED_CONTENT_CACHE_KEY, entry => new HashSet<string>(StringComparer.OrdinalIgnoreCase)).Add(content);
+        }
+        
         return new SearchResult()
         {
             MatchCount = results.Count(),
@@ -134,9 +140,17 @@ public class SearchDriver : IDisposable
         var texts = GetFilteredObjects<Text>(drawing);
         
         var searcher = CreateSearcher<Text>(config);
+        var contentCollector = new ContentCollectingObserver(new TextExtractor());
+        searcher.Subscribe(contentCollector);
+        
         var results = searcher.Search(texts, CreateSearchQuery(config));
         
         SelectResults(results.Cast<DrawingObject>().ToList());
+        
+        foreach (var content in contentCollector.MatchedContent)
+        {
+            _cache.GetOrCreate(MATCHED_CONTENT_CACHE_KEY, entry => new HashSet<string>(StringComparer.OrdinalIgnoreCase)).Add(content);
+        }
 
         return new SearchResult()
         {

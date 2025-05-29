@@ -37,6 +37,7 @@ public class SearchViewModel : INotifyPropertyChanged
     private string _statusMessage;
     private bool _isCaseSensitive;
     private bool _isSearching;
+    private MemoryCache _cache;
     private string _ghostSuggestion; // for autocomplete
 
     public string GhostSuggestion
@@ -53,7 +54,8 @@ public class SearchViewModel : INotifyPropertyChanged
 
     public SearchViewModel()
     {
-        _searchDriver = new SearchDriver(new MemoryCache(new MemoryCacheOptions()));
+        _cache = new MemoryCache(new MemoryCacheOptions());
+        _searchDriver = new SearchDriver(_cache);
         SearchCommand = new AsyncRelayCommand(
             execute: ExecuteSearchAsync,
             canExecute: CanExecuteSearch
@@ -71,6 +73,7 @@ public class SearchViewModel : INotifyPropertyChanged
 
     private ContentCollectingObserver _contentCollector;
 
+    private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
     private void UpdateGhostSuggestion(string input)
     {
         if (string.IsNullOrEmpty(input))
@@ -79,7 +82,12 @@ public class SearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        var cachedContent = _contentCollector.MatchedContent;
+        Debug.Assert(_cache != null, nameof(_cache) + " != null");
+        _cache.TryGetValue(MATCHED_CONTENT_CACHE_KEY, out HashSet<string> cachedContent);
+
+        cachedContent ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        
+        
         var allSuggestions = _previousSearches.Union(cachedContent);
         
         var suggestion = allSuggestions
