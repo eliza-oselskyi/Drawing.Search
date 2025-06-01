@@ -54,16 +54,6 @@ namespace Drawing.Search.Core.SearchService
         private string _currentDrawingId;
         private bool _isCaching;
 
-
-    public SearchDriver(IMemoryCache cache, SynchronizationContext uiContext)
-    {
-        _drawingHandler = new DrawingHandler();
-        _model = new Model();
-        _events = new Events();
-        _cache = cache;
-        _logger = new SearchLogger();
-        CacheObserver = new CachingObserver(SynchronizationContext.Current);
-        _cacheObserver = CacheObserver;
         /// <summary>
         /// Initializes a new instance of the <see cref="SearchDriver"/> class.
         /// </summary>
@@ -76,6 +66,7 @@ namespace Drawing.Search.Core.SearchService
             _model = new Model();
             _events = new Events();
             _cache = cache;
+            _logger = SearchService.GetLoggerInstance();
             CacheObserver = new CachingObserver(SynchronizationContext.Current);
             _cacheObserver = CacheObserver;
 
