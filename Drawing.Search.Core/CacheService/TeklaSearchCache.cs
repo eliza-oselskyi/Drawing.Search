@@ -259,11 +259,13 @@ public class TeklaSearchCache : ISearchCache
                 foreach (var relKey in rels)
                 {
                     _relationshipsCache.TryGetValue(relKey, out var relSet);
-                    foreach (var cacheKey in relSet)
-                    {
-                        _cache.TryGetValue(mainKey, out var objects);
-                        if (objects != null) objects.TryRemove(cacheKey.Key, out _);
-                    }
+                    if (relSet != null)
+                        foreach (var cacheKey in relSet)
+                        {
+                            _cache.TryGetValue(mainKey, out var objects);
+                            if (objects != null) objects.TryRemove(cacheKey.Key, out _);
+                        }
+
                     _relationshipsCache.TryRemove(relKey, out _);
                 }
             }
@@ -293,14 +295,18 @@ public class TeklaSearchCache : ISearchCache
                 var relKeys = rels.FindAll(k => k.Contains(entryKey)).ToList();
                 foreach (var relKey in relKeys)
                 {
-                    relSet.TryGetValue(relKey, out var keys);
-                    foreach (var cacheKey in keys)
+                    if (relSet != null)
                     {
-                        _cache.TryGetValue(mainKey, out var objects);
-                        if (objects != null) objects.TryRemove(cacheKey, out _);
-                    }
+                        relSet.TryGetValue(relKey, out var keys);
+                        if (keys != null)
+                            foreach (var cacheKey in keys)
+                            {
+                                _cache.TryGetValue(mainKey, out var objects);
+                                if (objects != null) objects.TryRemove(cacheKey, out _);
+                            }
 
-                    relSet.TryRemove(relKey, out _);
+                        relSet.TryRemove(relKey, out _);
+                    }
                 }
             }
             else
@@ -337,9 +343,12 @@ public class TeklaSearchCache : ISearchCache
             }
             
             _relationshipsCache.TryGetValue(mainKey, out var relSet);
-            relSet.TryAdd(relationshipKey, new HashSet<string>());
-            relSet[relationshipKey].Add(objectKey1);
-            relSet[relationshipKey].Add(objectKey2);
+            if (relSet != null)
+            {
+                relSet.TryAdd(relationshipKey, new HashSet<string>());
+                relSet[relationshipKey].Add(objectKey1);
+                relSet[relationshipKey].Add(objectKey2);
+            }
         }
         SetIsCaching(false);
     }
@@ -389,17 +398,18 @@ public class TeklaSearchCache : ISearchCache
             foreach (var mainKey in allRelationshipMainKeys)
             {
                 var keyValuePairs = _relationshipsCache.TryGetValue(mainKey, out var relSet);
-                foreach (var rel in relSet)
-                {
-                    if (rel.Key.Contains(objectKey))
+                if (relSet != null)
+                    foreach (var rel in relSet)
                     {
-                        foreach (var relatedKey in rel.Value)
+                        if (rel.Key.Contains(objectKey))
                         {
-                            var relatedObject = GetFromCache(mainKey, relatedKey);
-                            relatedObjects.Add(relatedObject);
+                            foreach (var relatedKey in rel.Value)
+                            {
+                                var relatedObject = GetFromCache(mainKey, relatedKey);
+                                relatedObjects.Add(relatedObject);
+                            }
                         }
                     }
-                }
             }
             
         }

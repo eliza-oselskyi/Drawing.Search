@@ -37,7 +37,8 @@ public class SearchViewModel : INotifyPropertyChanged
     private SearchType _selectedSearchType;
     private string _statusMessage;
     private string _version;
-    private readonly Events _events = new();
+    private readonly Events _drawingEvents = new();
+    private readonly Tekla.Structures.Drawing.UI.Events _uiEvents = new();
 
     public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver, ICacheService cacheService)
     {
@@ -45,9 +46,11 @@ public class SearchViewModel : INotifyPropertyChanged
         _searchDriver = searchDriver ?? throw new ArgumentNullException(nameof(searchDriver));
         _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         
-        _events.DrawingChanged += OnDrawingModified;
-        _events.DrawingUpdated += OnDrawingUpdated;
-        _events.Register();
+        _drawingEvents.DrawingChanged += OnDrawingModified;
+        _drawingEvents.DrawingUpdated += OnDrawingUpdated;
+        _uiEvents.DrawingLoaded += UiEventsOnDrawingLoaded;
+        _drawingEvents.Register();
+        _uiEvents.Register();
         _cacheService.IsCachingChanged += (_cacheService, isCaching) => { IsCaching = isCaching; };
 
         var uiContext = SynchronizationContext.Current ??
@@ -64,6 +67,20 @@ public class SearchViewModel : INotifyPropertyChanged
         {
             if (e.PropertyName == nameof(SearchTerm)) UpdateGhostSuggestion(SearchTerm);
         };
+    }
+
+    private void UiEventsOnDrawingLoaded()
+    {
+        var dwgKey = new CacheKeyBuilder(DrawingHandler.Instance.GetActiveDrawing()
+                .GetIdentifier()
+                .ToString()).UseDrawingKey()
+            .AppendObjectId()
+            .Build();
+
+        var dwgKeys = ((TeklaCacheService)_cacheService).DumpIdentifiers();
+        IsCaching = true;
+        _cacheService.RefreshCache(dwgKey);
+        IsCaching = false;
     }
 
     // TODO: Figure out why IsCaching binding not working for search button. Should be disabled when caching is active.

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Drawing.Search.Core.CacheService.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
+using Tekla.Structures.Drawing;
 
 namespace Drawing.Search.Core.CacheService;
 
@@ -63,7 +64,13 @@ public class TeklaCacheService : ICacheService
         
         return tCache.GetSelectablePartsFromCache(drawingKey, ids);
     }
-    
+
+    public List<string> DumpIdentifiers()
+    {
+        var tCache = _searchCache as TeklaSearchCache;
+        
+        return tCache.DumpIdentifiers();
+    }
     public List<string> DumpIdentifiers(string drawingKey)
     {
         var tCache = _searchCache as TeklaSearchCache;
@@ -78,6 +85,9 @@ public class TeklaCacheService : ICacheService
 
     public void RefreshCache(string drawingKey)
     {
+        _searchCache.RemoveMainKeyFromCache(drawingKey);
+        var drawing = DrawingHandler.Instance.GetActiveDrawing();
+        WriteAllObjectsInDrawingToCache(drawing);
     }
 
     public void RefreshCache(string drawingKey, Tekla.Structures.Drawing.Drawing drawing)
