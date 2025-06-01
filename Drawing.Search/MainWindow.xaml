@@ -20,6 +20,7 @@
 
     <Window.Resources>
         <core:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+        <core:InverseBooleanConverter x:Key="InverseBooleanConverter" />
     </Window.Resources>
 
     <Grid Background="{DynamicResource BackgroundBrush}"
@@ -75,7 +76,8 @@
                                 Height="30"
                                 GhostText="{Binding GhostSuggestion, UpdateSourceTrigger=PropertyChanged}"
                                 VerticalContentAlignment="Center"
-                                Margin="0,0,0,5">
+                                Margin="0,0,0,5"
+                                IsEnabled="{Binding IsCaching, Converter={StaticResource InverseBooleanConverter}}">
                 <TextBox.InputBindings>
                     <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
                 </TextBox.InputBindings>
@@ -86,7 +88,8 @@
                     Command="{Binding SearchCommand}"
                     Height="30"
                     Name="SearchButton"
-                    HorizontalContentAlignment="Stretch">
+                    HorizontalContentAlignment="Stretch"
+                    IsEnabled="{Binding IsCaching, Converter={StaticResource InverseBooleanConverter}}">
                 <Button.Style>
                     <Style TargetType="Button">
                         <!--
@@ -95,6 +98,10 @@
                     <Setter Property="BorderBrush" Value="{DynamicResource ForegroundBrush}"></Setter>
                     -->
                         <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCaching}" Value="True">
+                                <Setter Property="Tag" Value="Caching..."></Setter>
+                                <Setter Property="IsEnabled" Value="False"></Setter>
+                            </DataTrigger>
                             <DataTrigger Binding="{Binding IsSearching}" Value="True">
                                 <Setter Property="Tag" Value="Searching..." />
                                 <Setter Property="IsEnabled" Value="False" />
@@ -119,6 +126,9 @@
                         <ProgressBar.Style>
                             <Style TargetType="ProgressBar">
                                 <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCaching}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"></Setter>
+                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding IsSearching}" Value="False">
                                         <Setter Property="Visibility" Value="Collapsed" />
                                     </DataTrigger>

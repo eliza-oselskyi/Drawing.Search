@@ -8,21 +8,24 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Drawing.Search.Core.Interfaces;
+using Drawing.Search.Core.CacheService;
+using Drawing.Search.Core.CacheService.Interfaces;
 using Drawing.Search.Core.SearchService;
+using Drawing.Search.Core.SearchService.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Tekla.Structures.Drawing;
+using Tekla.Structures.DrawingInternal;
 using ModelObject = Tekla.Structures.Model.ModelObject;
 
 namespace Drawing.Search.Core;
 
 public class SearchViewModel : INotifyPropertyChanged
 {
-    private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
-
+    private readonly SearchService.SearchService _searchService;
     private readonly SearchDriver _searchDriver;
-    private readonly MemoryCache _cache;
-
+    private readonly ICacheService _cacheService;
+    
+    private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
     private ContentCollectingObserver _contentCollector;
     private string _ghostSuggestion; // for autocomplete
     private bool _isCaching;
@@ -34,14 +37,21 @@ public class SearchViewModel : INotifyPropertyChanged
     private SearchType _selectedSearchType;
     private string _statusMessage;
     private string _version;
+    private readonly Events _events = new();
 
-    public SearchViewModel()
+    public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver, ICacheService cacheService)
     {
-        _cache = new MemoryCache(new MemoryCacheOptions());
+        _searchService = searchService ?? throw new ArgumentNullException(nameof(searchService));
+        _searchDriver = searchDriver ?? throw new ArgumentNullException(nameof(searchDriver));
+        _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
+        
+        _events.DrawingChanged += OnDrawingModified;
+        _events.DrawingUpdated += OnDrawingUpdated;
+        _events.Register();
+        _cacheService.IsCachingChanged += (_cacheService, isCaching) => { IsCaching = isCaching; };
 
         var uiContext = SynchronizationContext.Current ??
                         throw new InvalidOperationException("SearchViewModel must be created on UI thread.");
-        _searchDriver = new SearchDriver(_cache, uiContext);
         _searchDriver.CacheObserver.StatusMessageChanged += (sender, message) => { StatusMessage = message; };
         SearchCommand = new AsyncRelayCommand(
             ExecuteSearchAsync,
@@ -49,10 +59,33 @@ public class SearchViewModel : INotifyPropertyChanged
         );
         Version = $"v{Assembly.GetExecutingAssembly().GetName().Version}";
 
+
         PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(SearchTerm)) UpdateGhostSuggestion(SearchTerm);
         };
+    }
+
+    // TODO: Figure out why IsCaching binding not working for search button. Should be disabled when caching is active.
+    private void OnDrawingUpdated(Tekla.Structures.Drawing.Drawing drawing, Events.DrawingUpdateTypeEnum type)
+    {
+        IsCaching = true;
+        StatusMessage = "Caching drawing objects...";
+        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).UseDrawingKey().AppendObjectId().Build();
+        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, drawing);
+        StatusMessage = "Ready";
+        IsCaching = false;
+    }
+
+    private void OnDrawingModified()
+    {
+        IsCaching = true;
+        StatusMessage = "Caching drawing objects...";
+        var dwgId = DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ToString();
+        var dwgKey = new CacheKeyBuilder(dwgId).UseDrawingKey().AppendObjectId().Build();
+        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
+        StatusMessage = "Ready";
+        IsCaching = false;
     }
 
     public string Version
@@ -149,8 +182,11 @@ public class SearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        Debug.Assert(_cache != null, nameof(_cache) + " != null");
-        _cache.TryGetValue(MATCHED_CONTENT_CACHE_KEY, out HashSet<string> cachedContent);
+        // TODO: Implement matched_content caching to work with new cache system
+       // Debug.Assert(_cache != null, nameof(_cache) + " != null");
+  //      _cache.TryGetValue(MATCHED_CONTENT_CACHE_KEY, out HashSet<string> cachedContent);
+  var cachedContent = new HashSet<string>();
+  cachedContent.Add("NOT IMPLEMENTED");
 
         cachedContent ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -170,11 +206,16 @@ public class SearchViewModel : INotifyPropertyChanged
 
     private bool CanExecuteSearch()
     {
-        return !string.IsNullOrEmpty(SearchTerm) && !IsSearching;
+        return !string.IsNullOrEmpty(SearchTerm) && !IsSearching && !IsCaching;
     }
 
     private async Task ExecuteSearchAsync()
     {
+        if (IsCaching)
+        {
+            StatusMessage = "Cannot search while caching is active.";
+            return;
+        }
         try
         {
             IsSearching = true;

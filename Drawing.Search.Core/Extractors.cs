@@ -1,4 +1,4 @@
-﻿using Drawing.Search.Core.Interfaces;
+﻿using Drawing.Search.Core.SearchService.Interfaces;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.Model;
 using ModelObject = Tekla.Structures.Model.ModelObject;
