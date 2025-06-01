@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Drawing.Search.Core.Interfaces;
+using Drawing.Search.Core.SearchService.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Drawing.Search.Core.Interfaces;
+using Drawing.Search.Core.SearchService.Interfaces;
 
 namespace Drawing.Search.Core.SearchService;
 
