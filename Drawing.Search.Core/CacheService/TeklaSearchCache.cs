@@ -16,6 +16,32 @@ namespace Drawing.Search.Core.CacheService;
 /// Provides in-memory caching for Tekla Structures drawing and model objects, aimed at optimizing
 /// performance and enabling efficient retrieval of objects and their relationships.
 /// </summary>
+/// <example>
+/// <code>
+/// var cache = new TeklaSearchCache();
+/// 
+/// // Add a drawing and related objects to the cache
+/// 
+/// var drawing = DrawingHandler.Instance.GetActiveDrawing();
+/// cache.WriteAllObjectsInDrawingToCache(drawing);
+/// 
+/// // Retrieve an object from the cache
+/// 
+/// var objectFromCache = cache.GetFromCache("mainKey", "objectKey");
+/// 
+/// // Add a relationship between two objects
+/// 
+/// cache.AddRelationship("mainKey", "objectKey1", "objectKey2");
+/// 
+/// // Fetch related objects
+/// 
+/// var relatedObjects = cache.GetRelatedObjects("mainKey", "objectKey");
+/// 
+/// // Invalidate the cache for a specific key
+/// 
+/// cache.InvalidateCache("mainKey");
+/// </code>
+/// </example>
 public class TeklaSearchCache : ISearchCache
 {
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, object>> _cache = new();
