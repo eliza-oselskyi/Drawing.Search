@@ -4,13 +4,15 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Drawing.Search.Caching;
+using Drawing.Search.Common.Interfaces;
 using Drawing.Search.Core.CacheService.Interfaces;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
 using Tekla.Structures.Model;
 using Part = Tekla.Structures.Drawing.Part;
 
-namespace Drawing.Search.Core.CacheService;
+namespace Drawing.Search.CADIntegration;
 
 /// <summary>
 /// Provides in-memory caching for Tekla Structures drawing and model objects, aimed at optimizing
@@ -44,6 +46,7 @@ namespace Drawing.Search.Core.CacheService;
 /// </example>
 public class TeklaSearchCache : ISearchCache
 {
+    private readonly ISearchLogger _logger;
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, object>> _cache = new();
     private readonly ConcurrentDictionary<string,ConcurrentDictionary<string, HashSet<string>>> _relationshipsCache = new();
     private readonly ConcurrentDictionary<string, bool> _dirtyDrawingsCache = new();
@@ -51,6 +54,11 @@ public class TeklaSearchCache : ISearchCache
     
     private bool _isCaching = false;
     private bool _isDirty = false;
+
+    public TeklaSearchCache(ISearchLogger logger)
+    {
+        _logger = logger;
+    }
     
     /// <summary>
     /// Fully clears and resets all cached data if the cache has been flagged as "dirty."
@@ -136,7 +144,7 @@ public class TeklaSearchCache : ISearchCache
             }
         }
         stopwatch.Stop();
-        Console.WriteLine($"Reading and caching took {stopwatch.ElapsedMilliseconds} ms.");
+        _logger.LogInformation($"Reading and caching took {stopwatch.ElapsedMilliseconds} ms.");
     }
 
     /// <summary>
@@ -492,7 +500,7 @@ public class TeklaSearchCache : ISearchCache
     }
 
     
-    public event EventHandler<bool> IsCachingChanged; 
+    public event EventHandler<bool>? IsCachingChanged; 
     
     public bool IsCaching()
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Drawing.Search.Core.CacheService;
+namespace Drawing.Search.Caching;
 
 /// <summary>
 /// Provides a utility for constructing cache keys in a modular and structured manner.

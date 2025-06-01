@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Drawing.Search.Caching;
+using Drawing.Search.Common.Interfaces;
 using Drawing.Search.Core.CacheService;
 using Drawing.Search.Core.CacheService.Interfaces;
 using Drawing.Search.Core.SearchService.Interfaces;
@@ -47,7 +49,7 @@ namespace Drawing.Search.Core.SearchService
         private const string DRAWING_OBJECTS_CACHE_KEY = "drawing_objects";
         private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
         private readonly IMemoryCache _cache;
-        private readonly ICacheService _cacheService;
+        private readonly TeklaCacheService _cacheService;
         private readonly DrawingHandler _drawingHandler;
         private readonly Events _events;
         private readonly object _lockObject = new();
@@ -64,7 +66,7 @@ namespace Drawing.Search.Core.SearchService
         /// <param name="cache">The memory cache used for caching objects during searches.</param>
         /// <param name="uiContext">The synchronization context used for UI-related updates.</param>
         /// <exception cref="ApplicationException">Thrown when Tekla connection cannot be established.</exception>
-        public SearchDriver(ICacheService cacheService, SynchronizationContext uiContext)
+        public SearchDriver(TeklaCacheService cacheService, SynchronizationContext uiContext)
         {
             _drawingHandler = new DrawingHandler();
             _model = new Model();
@@ -241,7 +243,7 @@ namespace Drawing.Search.Core.SearchService
                 .Build();
 
             // Fetch all model object identifiers for the current drawing
-            var cachedModelObjectIds = _cacheService.DumpIdentifiers(drawingKey);
+            var cachedModelObjectIds = _cacheService.DumpIdentifiers(activeDrawing.GetIdentifier().ToString());;
             
             // Fetch associated ModelObject instances
             var cachedModelObjects = cachedModelObjectIds
@@ -262,7 +264,7 @@ namespace Drawing.Search.Core.SearchService
                     .UseAssemblyObjectKey()
                     .AppendObjectId()
                     .Build();
-                var relatedDrawingObjects = ((TeklaCacheService)_cacheService).GetRelatedObjects(drawingKey, modelObject.Identifier.ToString());
+                var relatedDrawingObjects = _cacheService.GetRelatedObjects(activeDrawing.GetIdentifier().ToString(), modelObject.Identifier.ToString());
                 selectableParts.AddRange(relatedDrawingObjects.OfType<Part>());
             }
 
@@ -324,7 +326,7 @@ namespace Drawing.Search.Core.SearchService
                 .AppendObjectId()
                 .Build();
 
-            var ids = _cacheService.DumpIdentifiers(dwgKey);
+            var ids = _cacheService.DumpIdentifiers(drawing.GetIdentifier().ToString());
 
             var texts = ids.Where(t => _cacheService.GetFromCache(dwgKey, t) is Text).Select(t => _cacheService.GetFromCache(dwgKey, t) as Text).ToList();
             var searcher = CreateSearcher<Text>(config);
@@ -374,7 +376,7 @@ namespace Drawing.Search.Core.SearchService
                 .AppendObjectId()
                 .Build();
             
-            var ids = _cacheService.DumpIdentifiers(dwgKey);
+            var ids = _cacheService.DumpIdentifiers(drawing.GetIdentifier().ToString());
             var marks = ids.Where(t => _cacheService.GetFromCache(dwgKey, t) is Mark).Select(t => _cacheService.GetFromCache(dwgKey, t) as Mark).ToList();
             var searcher = CreateSearcher<Mark>(config);
             var contentCollector = new ContentCollectingObserver(new MarkExtractor());

@@ -58,17 +58,9 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="CacheService\CacheKeyBuilder.cs" />
         <Compile Include="CacheService\TeklaCacheService.cs" />
-        <Compile Include="CacheService\Interfaces\ICacheService.cs" />
-        <Compile Include="CacheService\Interfaces\ISearchCache.cs" />
-        <Compile Include="CacheService\TeklaSearchCache.cs" />
         <Compile Include="CacheService\TestCache.cs" />
         <Compile Include="CachingObserver.cs" />
-        <Compile Include="CADIntegrationService\Interfaces\IDrawing.cs" />
-        <Compile Include="CADIntegrationService\Interfaces\IDrawingHandler.cs" />
-        <Compile Include="CADIntegrationService\TeklaDrawingHandler.cs" />
-        <Compile Include="CADIntegrationService\TeklaDrawingWrapper.cs" />
         <Compile Include="ContentCollectingObserver.cs" />
         <Compile Include="Extractors.cs" />
         <Compile Include="MatchStrategies.cs" />
@@ -79,7 +71,6 @@
         <Compile Include="SearchService\Interfaces\IDataExtractor.cs" />
         <Compile Include="SearchService\Interfaces\IObserver.cs" />
         <Compile Include="SearchService\Interfaces\IObserverableSearch.cs" />
-        <Compile Include="SearchService\Interfaces\ISearchLogger.cs" />
         <Compile Include="SearchService\Interfaces\ISearchStrategy.cs" />
         <Compile Include="SearchService\SearchBuilder.cs" />
         <Compile Include="SearchService\SearchConfiguration.cs" />
@@ -119,6 +110,23 @@
         <PackageReference Include="Tekla.Technology.Akit5" Version="5.8.17235.1" />
         <PackageReference Include="Tekla.Technology.Scripting" Version="5.0.20041" />
         <PackageReference Include="Tekla.Technology.Scripting.Plugins" Version="5.3.17206" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="CADIntegrationService\" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Drawing.Search.Caching\Drawing.Search.Caching.csproj">
+        <Project>{022a9742-6cb0-4639-9875-532c530fdc6b}</Project>
+        <Name>Drawing.Search.Caching</Name>
+      </ProjectReference>
+      <ProjectReference Include="..\Drawing.Search.CADIntegration\Drawing.Search.CADIntegration.csproj">
+        <Project>{86b87741-f878-4647-99f8-f50d557bbcc4}</Project>
+        <Name>Drawing.Search.CADIntegration</Name>
+      </ProjectReference>
+      <ProjectReference Include="..\Drawing.Search.Common\Drawing.Search.Common.csproj">
+        <Project>{7cecbcae-4636-41c1-9080-c59a93a34068}</Project>
+        <Name>Drawing.Search.Common</Name>
+      </ProjectReference>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

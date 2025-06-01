@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Drawing.Search.Caching;
 using Drawing.Search.Core.CacheService;
 using Drawing.Search.Core.CacheService.Interfaces;
 using Drawing.Search.Core.SearchService;
@@ -23,7 +24,7 @@ public class SearchViewModel : INotifyPropertyChanged
 {
     private readonly SearchService.SearchService _searchService;
     private readonly SearchDriver _searchDriver;
-    private readonly ICacheService _cacheService;
+    private readonly TeklaCacheService _cacheService;
     
     private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
     private ContentCollectingObserver _contentCollector;
@@ -40,7 +41,7 @@ public class SearchViewModel : INotifyPropertyChanged
     private readonly Events _drawingEvents = new();
     private readonly Tekla.Structures.Drawing.UI.Events _uiEvents = new();
 
-    public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver, ICacheService cacheService)
+    public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver, TeklaCacheService cacheService)
     {
         _searchService = searchService ?? throw new ArgumentNullException(nameof(searchService));
         _searchDriver = searchDriver ?? throw new ArgumentNullException(nameof(searchDriver));
@@ -78,9 +79,7 @@ public class SearchViewModel : INotifyPropertyChanged
             .Build();
 
         var dwgKeys = ((TeklaCacheService)_cacheService).DumpIdentifiers();
-        IsCaching = true;
-        _cacheService.RefreshCache(dwgKey);
-        IsCaching = false;
+        ((TeklaCacheService)_cacheService).RefreshCache(DrawingHandler.Instance.GetActiveDrawing());
     }
 
     // TODO: Figure out why IsCaching binding not working for search button. Should be disabled when caching is active.

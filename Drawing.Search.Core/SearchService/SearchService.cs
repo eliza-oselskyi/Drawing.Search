@@ -1,4 +1,5 @@
 ﻿using System;
+using Drawing.Search.Common.Interfaces;
 using Drawing.Search.Core.CADIntegrationService.Interfaces;
 using Drawing.Search.Core.SearchService.Interfaces;
 
@@ -7,13 +8,14 @@ namespace Drawing.Search.Core.SearchService;
 public class SearchService
 {
     private readonly IDrawingHandler _drawingHandler;
-    private static readonly Lazy<ISearchLogger> LoggerInstance = new Lazy<ISearchLogger>(() => new SearchLogger());
+    private static Lazy<ISearchLogger> LoggerInstance;
     
     public static ISearchLogger GetLoggerInstance() => LoggerInstance.Value;
 
-    public SearchService(IDrawingHandler drawingHandler)
+    public SearchService(IDrawingHandler drawingHandler, ISearchLogger logger)
     {
         _drawingHandler = drawingHandler;
+        LoggerInstance = new Lazy<ISearchLogger>(() => logger);
     }
 
     public void PerformSearch()

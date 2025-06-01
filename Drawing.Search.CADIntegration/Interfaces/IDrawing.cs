@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Drawing.Search.Core.CADIntegrationService.Interfaces;
+namespace Drawing.Search.CADIntegration.Interfaces;
 
 public interface IDrawing
 {

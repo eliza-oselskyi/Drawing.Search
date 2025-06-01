@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using Drawing.Search.CADIntegration.Interfaces;
+using Drawing.Search.Core.CADIntegrationService;
 using Drawing.Search.Core.CADIntegrationService.Interfaces;
-using Drawing.Search.Core.SearchService;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
 
-namespace Drawing.Search.Core.CADIntegrationService;
+namespace Drawing.Search.CADIntegration;
 
 public class TeklaDrawingHandler : IDrawingHandler
 {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Drawing.Search.CADIntegration.Interfaces;
 
 namespace Drawing.Search.Core.CADIntegrationService.Interfaces;
 

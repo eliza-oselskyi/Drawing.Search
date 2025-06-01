@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Caching.Memory;
 
-namespace Drawing.Search.Core.CacheService.Interfaces;
+namespace Drawing.Search.Caching.Interfaces;
 
 public interface ICacheService
 {
@@ -14,6 +13,5 @@ public interface ICacheService
     void RemoveEntryByMainKey(string mainKey, string entryKey);
     object GetFromCache(string mainKey, string key);
     List<string> DumpIdentifiers(string drawingKey);
-    bool IsCaching();
     public event EventHandler<bool>? IsCachingChanged; 
 }

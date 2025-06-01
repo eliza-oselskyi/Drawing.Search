@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Drawing.Search.Core.CADIntegrationService.Interfaces;
+using Drawing.Search.CADIntegration.Interfaces;
 using Tekla.Structures.DrawingInternal;
 
-namespace Drawing.Search.Core.CADIntegrationService;
+namespace Drawing.Search.CADIntegration;
 
 
 public class TeklaDrawingWrapper : IDrawing

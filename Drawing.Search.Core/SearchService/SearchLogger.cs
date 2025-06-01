@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Drawing.Search.Common.Interfaces;
 using Drawing.Search.Core.SearchService.Interfaces;
 
 namespace Drawing.Search.Core.SearchService
