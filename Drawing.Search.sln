@@ -5,10 +5,18 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing.Search.Core", "Drawing.Search.Core\Drawing.Search.Core.csproj", "{042C7355-F82D-4035-ACB3-70E72F5A019D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing.Search.Caching", "Drawing.Search.Caching\Drawing.Search.Caching.csproj", "{022A9742-6CB0-4639-9875-532C530FDC6B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7CECBCAE-4636-41C1-9080-C59A93A34068} = {7CECBCAE-4636-41C1-9080-C59A93A34068}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing.Search.CADIntegration", "Drawing.Search.CADIntegration\Drawing.Search.CADIntegration.csproj", "{86B87741-F878-4647-99F8-F50D557BBCC4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing.Search.Common", "Drawing.Search.Common\Drawing.Search.Common.csproj", "{7CECBCAE-4636-41C1-9080-C59A93A34068}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing.Search.Searching", "Drawing.Search.Searching\Drawing.Search.Searching.csproj", "{3CA8FA64-249A-4BD8-8CF3-A15B47890046}"
+	ProjectSection(ProjectDependencies) = postProject
+		{022A9742-6CB0-4639-9875-532C530FDC6B} = {022A9742-6CB0-4639-9875-532C530FDC6B}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +44,9 @@ Global
 		{7CECBCAE-4636-41C1-9080-C59A93A34068}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CECBCAE-4636-41C1-9080-C59A93A34068}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CECBCAE-4636-41C1-9080-C59A93A34068}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CA8FA64-249A-4BD8-8CF3-A15B47890046}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CA8FA64-249A-4BD8-8CF3-A15B47890046}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CA8FA64-249A-4BD8-8CF3-A15B47890046}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CA8FA64-249A-4BD8-8CF3-A15B47890046}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

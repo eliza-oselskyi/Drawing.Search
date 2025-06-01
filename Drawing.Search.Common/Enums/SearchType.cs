@@ -1,4 +1,4 @@
-﻿namespace Drawing.Search.Core.SearchService;
+﻿namespace Drawing.Search.Common.Enums;
 
 public enum SearchType
 {

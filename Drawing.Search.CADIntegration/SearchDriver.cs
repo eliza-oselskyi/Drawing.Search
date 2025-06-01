@@ -4,11 +4,16 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Drawing.Search.Caching;
+using Drawing.Search.Caching.Interfaces;
+using Drawing.Search.CADIntegration;
+using Drawing.Search.Common.Enums;
 using Drawing.Search.Common.Interfaces;
+using Drawing.Search.Common.Observers;
+using Drawing.Search.Common.SearchTypes;
 using Drawing.Search.Core.CacheService;
 using Drawing.Search.Core.CacheService.Interfaces;
 using Drawing.Search.Core.SearchService.Interfaces;
-using Microsoft.Extensions.Caching.Memory;
+using Drawing.Search.Searching;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
 using Tekla.Structures.Model;
@@ -48,8 +53,7 @@ namespace Drawing.Search.Core.SearchService
         private const string ASSEMBLY_CACHE_KEY = "assembly_objects";
         private const string DRAWING_OBJECTS_CACHE_KEY = "drawing_objects";
         private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
-        private readonly IMemoryCache _cache;
-        private readonly TeklaCacheService _cacheService;
+        private readonly ICacheService _cacheService;
         private readonly DrawingHandler _drawingHandler;
         private readonly Events _events;
         private readonly object _lockObject = new();
@@ -66,20 +70,20 @@ namespace Drawing.Search.Core.SearchService
         /// <param name="cache">The memory cache used for caching objects during searches.</param>
         /// <param name="uiContext">The synchronization context used for UI-related updates.</param>
         /// <exception cref="ApplicationException">Thrown when Tekla connection cannot be established.</exception>
-        public SearchDriver(TeklaCacheService cacheService, SynchronizationContext uiContext)
+        public SearchDriver(ICacheService cacheService, SynchronizationContext uiContext, ISearchLogger logger)
         {
             _drawingHandler = new DrawingHandler();
             _model = new Model();
             _events = new Events();
             _cacheService = cacheService;
-            _logger = SearchService.GetLoggerInstance();
+            _logger = logger;
             CacheObserver = new CachingObserver(SynchronizationContext.Current);
             _cacheObserver = CacheObserver;
 
             if (!_model.GetConnectionStatus())
                 throw new ApplicationException("Tekla connection not established.");
             
-            ((TeklaCacheService)_cacheService).WriteAllObjectsInDrawingToCache(_drawingHandler.GetActiveDrawing());
+            _cacheService.WriteAllObjectsInDrawingToCache(_drawingHandler.GetActiveDrawing());
 
             InitializeEvents();
         }
@@ -142,7 +146,7 @@ namespace Drawing.Search.Core.SearchService
         {
             var dwgKey = new CacheKeyBuilder(DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ToString())
                 .UseDrawingKey().AppendObjectId().Build();
-            ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
+            _cacheService.RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
             
             // lock (_lockObject)
             // {
@@ -181,41 +185,6 @@ namespace Drawing.Search.Core.SearchService
             InvalidateCache();
         }
 
-        /// <summary>
-        /// Fetches all drawing objects from the active drawing and caches them.
-        /// </summary>
-        /// <param name="drawing">The drawing to fetch objects from.</param>
-        private void RefreshCache(Tekla.Structures.Drawing.Drawing drawing)
-        {
-            lock (_lockObject)
-            {
-                _isCaching = true;
-                _cacheObserver.OnMatchFound(_isCaching);
-
-                if (_cacheInvalidated)
-                {
-                    var stopwatch = Stopwatch.StartNew();
-
-                    _logger.LogInformation("Refreshing drawing objects cache...");
-                    var objects = FetchAllDrawingObjects(drawing);
-                    var drawingId = drawing.GetIdentifier().ToString();
-                    var cacheKey = $"{drawingId}_{DRAWING_OBJECTS_CACHE_KEY}";
-
-                    _cache.Set(cacheKey, objects, TimeSpan.FromMinutes(15));
-                    _currentDrawingId = drawingId;
-                    _cacheInvalidated = false;
-
-                    stopwatch.Stop();
-                    _logger.LogInformation($"Drawing objects cache refreshed with {objects.Count} objects.");
-                    _logger.DebugInfo($"Cache refreshed in {stopwatch.ElapsedMilliseconds} ms.");
-                }
-
-                _isCaching = false;
-                _cacheObserver.OnMatchFound(_isCaching);
-            }
-        }
-
-        /// <summary>
         /// Retrieves all objects from the specified drawing.
         /// </summary>
         /// <param name="drawing">The Tekla drawing to search in.</param>
@@ -278,47 +247,7 @@ namespace Drawing.Search.Core.SearchService
                 SearchType = SearchType.Assembly
             };
         }
-
-        private SearchResult ExecuteAssemblySearch(SearchConfiguration config)
-        {
-            var modelObjects = GetCachedAssemblyObjects();
-
-            var searcher = CreateSearcher<ModelObject>(config);
-            var contentCollector = new ContentCollectingObserver(new ModelObjectExtractor());
-            searcher.Subscribe(contentCollector);
-
-            var results = searcher.Search(modelObjects, CreateSearchQuery(config));
-
-            SelectResults(results.Cast<ModelObject>().ToList());
-            foreach (var content in contentCollector.MatchedContent)
-                _cache.GetOrCreate(MATCHED_CONTENT_CACHE_KEY,
-                    entry => new HashSet<string>(StringComparer.OrdinalIgnoreCase)).Add(content);
-
-            return new SearchResult()
-            {
-                MatchCount = results.Count(),
-                ElapsedMilliseconds = 0, // Set by caller
-                SearchType = SearchType.Assembly
-            };
-        }
-
-        private List<ModelObject> GetCachedAssemblyObjects()
-        {
-            // always check if cache needs refresh
-            if (_cacheInvalidated ||
-                !_cache.TryGetValue($"{_currentDrawingId}_{DRAWING_OBJECTS_CACHE_KEY}",
-                    out List<DrawingObject> _))
-                RefreshCache(_drawingHandler.GetActiveDrawing());
-            return _cache.GetOrCreate(ASSEMBLY_CACHE_KEY, entry =>
-            {
-                entry.SlidingExpiration = TimeSpan.FromMinutes(15);
-                lock (_lockObject)
-                {
-                    return GetModelObjects();
-                }
-            });
-        }
-
+        
         private SearchResult NewExecuteTextSearch(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
         {
             var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString())
@@ -336,29 +265,6 @@ namespace Drawing.Search.Core.SearchService
             var results = searcher.Search(texts, CreateSearchQuery(config));
             
             SelectResults(results.Cast<DrawingObject>().ToList());
-
-            return new SearchResult()
-            {
-                MatchCount = results.Count(),
-                ElapsedMilliseconds = 0, // Set by caller
-                SearchType = SearchType.Text
-            };
-        }
-        private SearchResult ExecuteTextSearch(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
-        {
-            var texts = GetFilteredObjects<Text>(drawing);
-
-            var searcher = CreateSearcher<Text>(config);
-            var contentCollector = new ContentCollectingObserver(new TextExtractor());
-            searcher.Subscribe(contentCollector);
-
-            var results = searcher.Search(texts, CreateSearchQuery(config));
-
-            SelectResults(results.Cast<DrawingObject>().ToList());
-
-            foreach (var content in contentCollector.MatchedContent)
-                _cache.GetOrCreate(MATCHED_CONTENT_CACHE_KEY,
-                    entry => new HashSet<string>(StringComparer.OrdinalIgnoreCase)).Add(content);
 
             return new SearchResult()
             {
@@ -393,76 +299,6 @@ namespace Drawing.Search.Core.SearchService
                 SearchType = SearchType.PartMark
             };
         }
-        private SearchResult ExecutePartMarkSearch(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
-        {
-            var marks = GetFilteredObjects<Mark>(drawing);
-            var searcher = CreateSearcher<Mark>(config);
-            var contentCollector = new ContentCollectingObserver(new MarkExtractor());
-            searcher.Subscribe(contentCollector);
-
-            var results = searcher.Search(marks, CreateSearchQuery(config)).ToList();
-
-            SelectResults(results.Cast<DrawingObject>().ToList());
-
-            foreach (var content in contentCollector.MatchedContent)
-                _cache.GetOrCreate(MATCHED_CONTENT_CACHE_KEY,
-                    entry => new HashSet<string>(StringComparer.OrdinalIgnoreCase)).Add(content);
-
-            return new SearchResult
-            {
-                MatchCount = results.Count(),
-                ElapsedMilliseconds = 0, // Set by caller
-                SearchType = SearchType.PartMark
-            };
-        }
-
-        private IEnumerable<T> GetFilteredObjects<T>(Tekla.Structures.Drawing.Drawing drawing) where T : DrawingObject
-        {
-            // always check if cache needs refresh
-            if (_cacheInvalidated ||
-                !_cache.TryGetValue($"{_currentDrawingId}_{DRAWING_OBJECTS_CACHE_KEY}",
-                    out List<DrawingObject> _))
-                RefreshCache(drawing);
-
-            var cacheKey = $"{drawing.GetIdentifier()}_{typeof(T).Name}_filtered";
-            return _cache.GetOrCreate(cacheKey, entry =>
-            {
-                entry.SlidingExpiration = TimeSpan.FromMinutes(15);
-                _logger.LogInformation($"Fetching {typeof(T).Name} objects from drawing...");
-
-                var objects = new List<T>();
-                var enumerator = drawing.GetSheet().GetAllObjects();
-                while (enumerator.MoveNext())
-                    if (enumerator.Current is T typedObject)
-                        objects.Add(typedObject);
-
-                _logger.LogInformation($"Fetched and cached {objects.Count} {typeof(T).Name} objects from drawing.");
-                return objects;
-            });
-        }
-
-        private List<T> GetCachedDrawingObjects<T>(string cacheKey)
-        {
-            var drawing = _drawingHandler.GetActiveDrawing();
-            var drawingId = drawing.GetIdentifier().ToString();
-            var cacheKeyWithDrawing = $"{drawingId}_{cacheKey}";
-
-            lock (_lockObject)
-            {
-                _currentDrawingId = drawingId;
-            }
-
-            return _cache.Get<List<T>>(cacheKeyWithDrawing) ??
-                   throw new InvalidOperationException("Cache unexpectedly empty. This should not happen.");
-        }
-
-        private List<ModelObject> GetModelObjects()
-        {
-            var drawing = _drawingHandler.GetActiveDrawing();
-            var identifiers = _drawingHandler.GetModelObjectIdentifiers(drawing);
-            return _model.FetchModelObjects(identifiers, false);
-        }
-
         private void SelectResults<T>(List<T> results) where T : class
         {
             var drawing = _drawingHandler.GetActiveDrawing();
@@ -480,7 +316,7 @@ namespace Drawing.Search.Core.SearchService
             }
         }
 
-        private SearchQuery CreateSearchQuery(SearchConfiguration config)
+        private ISearchQuery CreateSearchQuery(SearchConfiguration config)
         {
             return new SearchQuery(config.SearchTerm)
             {

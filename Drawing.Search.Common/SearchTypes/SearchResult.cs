@@ -1,4 +1,6 @@
-﻿namespace Drawing.Search.Core.SearchService
+﻿using Drawing.Search.Common.Enums;
+
+namespace Drawing.Search.Common.SearchTypes
 {
     /// <summary>
     /// Represents the result of a search operation, including details such as the 

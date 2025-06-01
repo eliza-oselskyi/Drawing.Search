@@ -9,6 +9,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Drawing.Search.Caching;
+using Drawing.Search.CADIntegration;
+using Drawing.Search.Common.Enums;
+using Drawing.Search.Common.Interfaces;
+using Drawing.Search.Common.Observers;
+using Drawing.Search.Common.SearchTypes;
 using Drawing.Search.Core.CacheService;
 using Drawing.Search.Core.CacheService.Interfaces;
 using Drawing.Search.Core.SearchService;
@@ -24,7 +29,7 @@ public class SearchViewModel : INotifyPropertyChanged
 {
     private readonly SearchService.SearchService _searchService;
     private readonly SearchDriver _searchDriver;
-    private readonly TeklaCacheService _cacheService;
+    private readonly ISearchCache _cacheService;
     
     private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
     private ContentCollectingObserver _contentCollector;
@@ -41,7 +46,7 @@ public class SearchViewModel : INotifyPropertyChanged
     private readonly Events _drawingEvents = new();
     private readonly Tekla.Structures.Drawing.UI.Events _uiEvents = new();
 
-    public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver, TeklaCacheService cacheService)
+    public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver, ISearchCache cacheService)
     {
         _searchService = searchService ?? throw new ArgumentNullException(nameof(searchService));
         _searchDriver = searchDriver ?? throw new ArgumentNullException(nameof(searchDriver));

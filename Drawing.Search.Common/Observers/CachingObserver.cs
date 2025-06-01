@@ -2,7 +2,7 @@
 using System.Threading;
 using Drawing.Search.Core.SearchService.Interfaces;
 
-namespace Drawing.Search.Core
+namespace Drawing.Search.Common.Observers
 {
     /// <summary>
     /// An observer that tracks the caching process and updates its status message accordingly.

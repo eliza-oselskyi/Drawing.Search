@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Drawing.Search.Core.SearchService.Interfaces;
 
-namespace Drawing.Search.Core
+namespace Drawing.Search.Common.Observers
 {
     /// <summary>
     /// An observer that collects content matched during a search operation.

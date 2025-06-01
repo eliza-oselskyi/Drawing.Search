@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:Drawing.Search"
         xmlns:core="clr-namespace:Drawing.Search.Core;assembly=Drawing.Search.Core"
         xmlns:searchService="clr-namespace:Drawing.Search.Core.SearchService;assembly=Drawing.Search.Core"
+        xmlns:enums="clr-namespace:Drawing.Search.Common.Enums;assembly=Drawing.Search.Common"
         Background="{DynamicResource BackgroundBrush}"
         mc:Ignorable="d"
         Title="Drawing Peeker"
@@ -42,7 +43,7 @@
                          Margin="0,0,10,0"
                          IsChecked="{Binding SelectedSearchType, 
                             Converter={StaticResource EnumToBoolConverter}, 
-                            ConverterParameter={x:Static searchService:SearchType.Assembly}}"
+                            ConverterParameter={x:Static enums:SearchType.Assembly}}"
                          ToolTip="Selects the main part of an assembly in the drawing"
                          Click="RadioButton_Click" />
             <RadioButton GroupName="SearchType"
@@ -50,14 +51,14 @@
                          Margin="0,0,10,0"
                          IsChecked="{Binding SelectedSearchType, 
                             Converter={StaticResource EnumToBoolConverter}, 
-                            ConverterParameter={x:Static searchService:SearchType.Text}}"
+                            ConverterParameter={x:Static enums:SearchType.Text}}"
                          ToolTip="Includes any text object, including manually added CED bubbles"
                          Click="RadioButton_Click" />
             <RadioButton GroupName="SearchType"
                          Content="Part Marks"
                          IsChecked="{Binding SelectedSearchType, 
                             Converter={StaticResource EnumToBoolConverter}, 
-                            ConverterParameter={x:Static searchService:SearchType.PartMark}}"
+                            ConverterParameter={x:Static enums:SearchType.PartMark}}"
                          ToolTip="Includes any mark object"
                          Click="RadioButton_Click" />
         </StackPanel>

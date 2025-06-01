@@ -13,5 +13,8 @@ public interface ICacheService
     void RemoveEntryByMainKey(string mainKey, string entryKey);
     object GetFromCache(string mainKey, string key);
     List<string> DumpIdentifiers(string drawingKey);
-    public event EventHandler<bool>? IsCachingChanged; 
+    public event EventHandler<bool>? IsCachingChanged;
+    void WriteAllObjectsInDrawingToCache(object activeDrawing);
+    void RefreshCache(string drawingKey, object activeDrawing);
+    IEnumerable<object> GetRelatedObjects(string drawingId, string objectId);
 }

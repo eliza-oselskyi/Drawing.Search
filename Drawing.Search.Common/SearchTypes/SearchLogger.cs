@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using Drawing.Search.Common.Interfaces;
-using Drawing.Search.Core.SearchService.Interfaces;
 
-namespace Drawing.Search.Core.SearchService
+namespace Drawing.Search.Common.SearchTypes
 {
     /// <summary>
     /// A simple logger implementation used to log search-related information,

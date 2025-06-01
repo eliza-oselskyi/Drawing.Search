@@ -1,4 +1,4 @@
-namespace Drawing.Search.Core.SearchService.Interfaces;
+namespace Drawing.Search.Common.Interfaces;
 
 /// <summary>
 ///     Declares methods for matching strategies.
@@ -6,5 +6,5 @@ namespace Drawing.Search.Core.SearchService.Interfaces;
 /// <typeparam name="T">Type.</typeparam>
 public interface ISearchStrategy
 {
-    bool Match(string obj, SearchQuery query);
+    bool Match(string obj, ISearchQuery query);
 }

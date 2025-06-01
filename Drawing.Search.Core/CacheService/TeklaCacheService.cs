@@ -13,12 +13,12 @@ namespace Drawing.Search.Core.CacheService;
 
 public class TeklaCacheService : ICacheService
 {
-    private readonly TeklaSearchCache _searchCache;
+    private readonly ISearchCache _searchCache;
     private readonly object _cacheLock = new();
     private bool _isCaching;
     public event EventHandler<bool> IsCachingChanged;
     
-    public TeklaCacheService(TeklaSearchCache searchCache)
+    public TeklaCacheService(ISearchCache searchCache)
     {
         _searchCache = searchCache ?? throw new ArgumentNullException(nameof(searchCache));
 
@@ -99,19 +99,20 @@ public class TeklaCacheService : ICacheService
         return tCache.GetRelatedObjects(dwgKey, objectId);
     }
 
-    public void WriteAllObjectsInDrawingToCache(Tekla.Structures.Drawing.Drawing drawing)
+    public void WriteAllObjectsInDrawingToCache(object drawing)
     {
-        if (drawing == null) throw new ArgumentNullException(nameof(drawing));
+        var teklaDrawing = drawing as Tekla.Structures.Drawing.Drawing;
+        if (teklaDrawing == null) throw new ArgumentNullException(nameof(teklaDrawing));
 
         lock (_cacheLock)
         {
             try
             {
                 IsCaching = true;
-                LogCacheAction("Start write cache", $"Drawing ID: {drawing.GetIdentifier().ToString()}");
+                LogCacheAction("Start write cache", $"Drawing ID: {teklaDrawing.GetIdentifier().ToString()}");
                 
-                _searchCache.WriteAllObjectsInDrawingToCache(drawing);
-                LogCacheAction("Start write cache", $"Drawing ID: {drawing.GetIdentifier().ToString()}");
+                ((TeklaSearchCache)_searchCache).WriteAllObjectsInDrawingToCache(teklaDrawing);
+                LogCacheAction("Start write cache", $"Drawing ID: {teklaDrawing.GetIdentifier().ToString()}");
                 
             }
             finally
@@ -152,13 +153,13 @@ public class TeklaCacheService : ICacheService
         return tCache.GetSelectablePartsFromCache(drawingKey, ids);
     }
     
-    public void RefreshCache(string drawingKey, Tekla.Structures.Drawing.Drawing drawing)
+    public void RefreshCache(string drawingKey, object drawing)
     {
+        var teklaDrawing = drawing as Tekla.Structures.Drawing.Drawing;
         SearchService.SearchService.GetLoggerInstance().LogInformation("Refreshing cache");
         _searchCache.RefreshCache();
         //_searchCache.RemoveMainKeyFromCache(drawingKey);
-        WriteAllObjectsInDrawingToCache(drawing);
-        
+        if (teklaDrawing != null) WriteAllObjectsInDrawingToCache(teklaDrawing);
     }
 
 

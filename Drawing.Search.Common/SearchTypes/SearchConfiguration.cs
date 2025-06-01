@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Drawing.Search.Common.Enums;
+using Drawing.Search.Common.Interfaces;
 using Drawing.Search.Core.SearchService.Interfaces;
 
-namespace Drawing.Search.Core.SearchService
+namespace Drawing.Search.Common.SearchTypes
 {
     /// <summary>
     /// Represents the configuration for a search operation, including parameters such as search term, case sensitivity,

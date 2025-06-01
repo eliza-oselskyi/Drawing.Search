@@ -1,6 +1,10 @@
-﻿using Drawing.Search.Core.SearchService.Interfaces;
+﻿using Drawing.Search.Common.Enums;
+using Drawing.Search.Common.Interfaces;
+using Drawing.Search.Common.SearchTypes;
+using Drawing.Search.Core.SearchService;
+using Drawing.Search.Core.SearchService.Interfaces;
 
-namespace Drawing.Search.Core.SearchService
+namespace Drawing.Search.Searching.SearchElements
 {
     /// <summary>
     /// A builder class for creating and configuring instances of <see cref="SearchConfiguration"/>.
