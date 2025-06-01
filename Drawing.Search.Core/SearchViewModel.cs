@@ -18,6 +18,7 @@ namespace Drawing.Search.Core;
 
 public class SearchViewModel : INotifyPropertyChanged
 {
+    private readonly SearchService.SearchService _searchService;
     private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
 
     private readonly SearchDriver _searchDriver;
@@ -35,8 +36,9 @@ public class SearchViewModel : INotifyPropertyChanged
     private string _statusMessage;
     private string _version;
 
-    public SearchViewModel()
+    public SearchViewModel(SearchService.SearchService searchService)
     {
+        _searchService = searchService ?? throw new ArgumentNullException(nameof(searchService));
         _cache = new MemoryCache(new MemoryCacheOptions());
 
         var uiContext = SynchronizationContext.Current ??
