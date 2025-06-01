@@ -1,4 +1,4 @@
-namespace Drawing.Search.Core.SearchService.Interfaces;
+namespace Drawing.Search.Common.Interfaces;
 
 /// <summary>
 ///     Declares methods for implementing observers into a search class.

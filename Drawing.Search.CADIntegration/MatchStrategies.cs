@@ -4,7 +4,7 @@ using Drawing.Search.Common.Interfaces;
 
 namespace Drawing.Search.CADIntegration;
 
-public class ExactMatchStrategy<T>(double cacheExpiration = 30) : ISearchStrategy
+public class ExactMatchStrategy : ISearchStrategy
 {
     public bool Match(string obj, ISearchQuery query)
     {
@@ -13,11 +13,11 @@ public class ExactMatchStrategy<T>(double cacheExpiration = 30) : ISearchStrateg
     }
 }
 
-public class ContainsMatchStrategy<T> : ISearchStrategy
+public class ContainsMatchStrategy : ISearchStrategy
 {
     public bool Match(string obj, ISearchQuery query)
     {
-        var s = string.Empty;
+        string s;
         if (query.CaseSensitive == StringComparison.OrdinalIgnoreCase)
         {
             s = obj.ToString().ToLower();
@@ -45,14 +45,13 @@ public class RegexMatchStrategy<T> : ISearchStrategy
     /// <returns>True on a successful match.</returns>
     public bool Match(string obj, ISearchQuery query)
     {
-        var s = obj?.ToString();
+        var s = obj.ToString();
 
-        return s != null &&
-               Regex.IsMatch(s,
-                   query.Term,
-                   query.CaseSensitive == StringComparison.OrdinalIgnoreCase
-                       ? RegexOptions.IgnoreCase
-                       : RegexOptions.None);
+        return Regex.IsMatch(s,
+            query.Term,
+            query.CaseSensitive == StringComparison.OrdinalIgnoreCase
+                ? RegexOptions.IgnoreCase
+                : RegexOptions.None);
     }
 }
 
@@ -60,14 +59,13 @@ public class WildcardMatchStrategy<T> : ISearchStrategy
 {
     public bool Match(string obj, ISearchQuery query)
     {
-        var s = obj?.ToString();
+        var s = obj.ToString();
         var reg = WildcardToRegex(query.Term);
-        return s != null &&
-               Regex.IsMatch(s,
-                   reg,
-                   query.CaseSensitive == StringComparison.OrdinalIgnoreCase
-                       ? RegexOptions.IgnoreCase
-                       : RegexOptions.None);
+        return Regex.IsMatch(s,
+            reg,
+            query.CaseSensitive == StringComparison.OrdinalIgnoreCase
+                ? RegexOptions.IgnoreCase
+                : RegexOptions.None);
     }
 
     private static string WildcardToRegex(string wildcard)

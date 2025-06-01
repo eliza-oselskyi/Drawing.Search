@@ -1,6 +1,6 @@
-using Drawing.Search.Core.SearchService.Interfaces;
+using Drawing.Search.Common.Interfaces;
 
-namespace Drawing.Search.Core;
+namespace Drawing.Search.Searching;
 
 /// <summary>
 ///     An observer class that listens to an IObservableState object

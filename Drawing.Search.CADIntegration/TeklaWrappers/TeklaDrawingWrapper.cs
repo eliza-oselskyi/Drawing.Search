@@ -2,34 +2,29 @@
 using Drawing.Search.CADIntegration.Interfaces;
 using Tekla.Structures.DrawingInternal;
 
-namespace Drawing.Search.CADIntegration;
-
+namespace Drawing.Search.CADIntegration.TeklaWrappers;
 
 public class TeklaDrawingWrapper : IDrawing
 {
-    public Tekla.Structures.Drawing.Drawing Drawing { get; set; }
-    public string ID { get; private set; }
-
     public TeklaDrawingWrapper(Tekla.Structures.Drawing.Drawing drawing)
     {
         Drawing = drawing;
-        ID = GetIdentifier();
+        Id = GetIdentifier();
     }
 
-    private string GetIdentifier()
-    {
-        return Drawing.GetIdentifier().ToString();
-    }
+    public Tekla.Structures.Drawing.Drawing Drawing { get; set; }
+    public string Id { get; private set; }
 
     public IEnumerable<object> GetAllObjects()
     {
         var enumerator = Drawing.GetSheet().GetAllObjects();
         while (enumerator.MoveNext())
-        {
             if (enumerator.Current is not null)
-            {
                 yield return enumerator.Current;
-            }   
-        }
+    }
+
+    private string GetIdentifier()
+    {
+        return Drawing.GetIdentifier().ToString();
     }
 }

@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Drawing.Search"
         xmlns:core="clr-namespace:Drawing.Search.Core;assembly=Drawing.Search.Core"
-        xmlns:searchService="clr-namespace:Drawing.Search.Core.SearchService;assembly=Drawing.Search.Core"
         xmlns:enums="clr-namespace:Drawing.Search.Common.Enums;assembly=Drawing.Search.Common"
+        xmlns:utility="clr-namespace:Drawing.Search.Core.Utility;assembly=Drawing.Search.Core"
         Background="{DynamicResource BackgroundBrush}"
         mc:Ignorable="d"
         Title="Drawing Peeker"
@@ -20,8 +20,8 @@
         FocusManager.FocusedElement="{Binding ElementName=SearchTextBox}">
 
     <Window.Resources>
-        <core:EnumToBoolConverter x:Key="EnumToBoolConverter" />
-        <core:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <utility:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+        <utility:InverseBooleanConverter x:Key="InverseBooleanConverter" />
     </Window.Resources>
 
     <Grid Background="{DynamicResource BackgroundBrush}"
@@ -100,8 +100,8 @@
                     -->
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsCaching}" Value="True">
-                                <Setter Property="Tag" Value="Caching..."></Setter>
-                                <Setter Property="IsEnabled" Value="False"></Setter>
+                                <Setter Property="Tag" Value="Caching..." />
+                                <Setter Property="IsEnabled" Value="False" />
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsSearching}" Value="True">
                                 <Setter Property="Tag" Value="Searching..." />
@@ -128,7 +128,7 @@
                             <Style TargetType="ProgressBar">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsCaching}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"></Setter>
+                                        <Setter Property="Visibility" Value="Visible" />
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding IsSearching}" Value="False">
                                         <Setter Property="Visibility" Value="Collapsed" />

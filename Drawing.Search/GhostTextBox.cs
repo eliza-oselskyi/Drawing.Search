@@ -8,13 +8,13 @@ using System.Windows.Media;
 namespace Drawing.Search
 {
     /// <summary>
-    /// A custom <see cref="TextBox"/> control that displays ghost text (placeholder text) 
-    /// when the text box is empty or partially filled.
+    ///     A custom <see cref="TextBox" /> control that displays ghost text (placeholder text)
+    ///     when the text box is empty or partially filled.
     /// </summary>
     public class GhostTextBox : TextBox
     {
         /// <summary>
-        /// Dependency property for the ghost text that acts as placeholder text.
+        ///     Dependency property for the ghost text that acts as placeholder text.
         /// </summary>
         public static readonly DependencyProperty GhostTextProperty =
             DependencyProperty.Register(
@@ -26,7 +26,7 @@ namespace Drawing.Search
         private TextBlock _ghostTextBlock;
 
         /// <summary>
-        /// Static constructor that sets the default style key for the <see cref="GhostTextBox"/> class.
+        ///     Static constructor that sets the default style key for the <see cref="GhostTextBox" /> class.
         /// </summary>
         static GhostTextBox()
         {
@@ -35,8 +35,8 @@ namespace Drawing.Search
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GhostTextBox"/> class.
-        /// Sets up the event handler for the control's <see cref="Loaded"/> event.
+        ///     Initializes a new instance of the <see cref="GhostTextBox" /> class.
+        ///     Sets up the event handler for the control's <see cref="FrameworkElement.Loaded" /> event.
         /// </summary>
         public GhostTextBox()
         {
@@ -44,7 +44,7 @@ namespace Drawing.Search
         }
 
         /// <summary>
-        /// Gets or sets the placeholder (ghost) text displayed in the text box when it is empty.
+        ///     Gets or sets the placeholder (ghost) text displayed in the text box when it is empty.
         /// </summary>
         public string GhostText
         {
@@ -53,8 +53,8 @@ namespace Drawing.Search
         }
 
         /// <summary>
-        /// Handles the <see cref="Control.Loaded"/> event to initialize ghost text behavior.
-        /// Ensures the ghost text is displayed correctly if needed.
+        ///     Handles the <see cref="Control.Loaded" /> event to initialize ghost text behavior.
+        ///     Ensures the ghost text is displayed correctly if needed.
         /// </summary>
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
@@ -80,7 +80,7 @@ namespace Drawing.Search
         }
 
         /// <summary>
-        /// Called when the <see cref="GhostText"/> property changes. Updates the ghost text display.
+        ///     Called when the <see cref="GhostText" /> property changes. Updates the ghost text display.
         /// </summary>
         /// <param name="d">The dependency object where the property changed.</param>
         /// <param name="e">Details about the property change.</param>
@@ -90,8 +90,8 @@ namespace Drawing.Search
         }
 
         /// <summary>
-        /// Handles the <see cref="TextBox.TextChanged"/> event to update the ghost text 
-        /// when the text in the text box changes.
+        ///     Handles the <see cref="TextBox.TextChanged" /> event to update the ghost text
+        ///     when the text in the text box changes.
         /// </summary>
         private void OnTextChanged(object sender, TextChangedEventArgs e)
         {
@@ -99,8 +99,8 @@ namespace Drawing.Search
         }
 
         /// <summary>
-        /// Updates the text displayed in the ghost text block based on the current 
-        /// text in the text box and the value of the <see cref="GhostText"/>.
+        ///     Updates the text displayed in the ghost text block based on the current
+        ///     text in the text box and the value of the <see cref="GhostText" />.
         /// </summary>
         private void UpdateGhostText()
         {
@@ -112,22 +112,18 @@ namespace Drawing.Search
                 return;
             }
 
-            if (GhostText.StartsWith(Text, StringComparison.OrdinalIgnoreCase))
-                //_ghostTextBlock.Text = GhostText.Substring(Text.Length);
-                // TODO: Currently a workaround for the issue with the TextBlock. Idea is to get it to show only the remainder of the suggestion.
-                _ghostTextBlock.Text = GhostText;
-            // _ghostTextBlock.Text = LeftPad(GhostText.Substring(Text.Length)
-            //                                    .Length -
-            //                                Text.Length) +
-            //                        GhostText.Substring(Text.Length);
-            else
-            {
-                _ghostTextBlock.Text = "";
-            }
+            //_ghostTextBlock.Text = GhostText.Substring(Text.Length);
+            // TODO: Currently a workaround for the issue with the TextBlock. Idea is to get it to show only the remainder of the suggestion.
+            _ghostTextBlock.Text = GhostText.StartsWith(Text, StringComparison.OrdinalIgnoreCase) ? GhostText :
+                // _ghostTextBlock.Text = LeftPad(GhostText.Substring(Text.Length)
+                //                                    .Length -
+                //                                Text.Length) +
+                //                        GhostText.Substring(Text.Length);
+                "";
         }
 
         /// <summary>
-        /// Pads a string with spaces to the specified length.
+        ///     Pads a string with spaces to the specified length.
         /// </summary>
         /// <param name="length">The number of spaces to include in the padding.</param>
         /// <returns>A string consisting of the specified number of spaces.</returns>
@@ -139,8 +135,8 @@ namespace Drawing.Search
         }
 
         /// <summary>
-        /// Handles the <see cref="UIElement.PreviewKeyDown"/> event to allow selecting the ghost text 
-        /// (via the <see cref="Key.Tab"/> key) as the text for the text box.
+        ///     Handles the <see cref="UIElement.PreviewKeyDown" /> event to allow selecting the ghost text
+        ///     (via the <see cref="Key.Tab" /> key) as the text for the text box.
         /// </summary>
         /// <param name="e">The event data.</param>
         protected override void OnPreviewKeyDown(KeyEventArgs e)
@@ -157,15 +153,15 @@ namespace Drawing.Search
     }
 
     /// <summary>
-    /// Extension methods for working with the visual tree in WPF.
+    ///     Extension methods for working with the visual tree in WPF.
     /// </summary>
     public static class VisualTreeHelperExtensions
     {
         /// <summary>
-        /// Safely retrieves the parent of a given <see cref="DependencyObject"/>.
+        ///     Safely retrieves the parent of a given <see cref="DependencyObject" />.
         /// </summary>
         /// <param name="element">The element whose parent is to be retrieved.</param>
-        /// <returns>The parent <see cref="DependencyObject"/>, or <c>null</c> if none exists.</returns>
+        /// <returns>The parent <see cref="DependencyObject" />, or <c>null</c> if none exists.</returns>
         public static DependencyObject GetParent(this DependencyObject element)
         {
             try

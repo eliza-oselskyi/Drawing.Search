@@ -1,4 +1,4 @@
-namespace Drawing.Search.Core.SearchService.Interfaces;
+namespace Drawing.Search.Common.Interfaces;
 
 /// <summary>
 ///     Declares methods for data extraction strategies on different objects.

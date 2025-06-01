@@ -1,7 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Media;
 using Drawing.Search.Core;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Drawing.Search
 {
@@ -14,7 +13,7 @@ namespace Drawing.Search
         {
             InitializeComponent();
             DataContext = searchViewModel;
-            
+
             Loaded += (s, e) => SearchTextBox.Focus();
 
             if (DataContext is SearchViewModel vm) vm.SearchCompleted += (s, e) => SearchTextBox.Focus();

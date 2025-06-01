@@ -4,7 +4,7 @@ using System.Linq;
 using Tekla.Structures.Drawing;
 using ModelObject = Tekla.Structures.Model.ModelObject;
 
-namespace Drawing.Search.Core;
+namespace Drawing.Search.CADIntegration.TeklaWrappers;
 
 /// <summary>
 ///     General class that currently contains useful methods to interact directly with Tekla Structures

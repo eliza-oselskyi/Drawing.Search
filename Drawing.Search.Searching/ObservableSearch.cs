@@ -4,13 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Drawing.Search.Common.Interfaces;
-using Drawing.Search.Core.SearchService.Interfaces;
-using Drawing.Search.Searching.SearchElements;
 
 namespace Drawing.Search.Searching;
 
 /// <summary>
-///     Generic search class, that can be observed using IObserver objects.
+///     Generic search class that can be observed using IObserver objects.
 /// </summary>
 /// <param name="searchStrategies">Array of search strategies to use.</param>
 /// <param name="dataExtractor">Data extractor to use.</param>
@@ -75,11 +73,14 @@ public class ObservableSearch<T>(List<ISearchStrategy> searchStrategies, IDataEx
             {
                 foreach (var item in chunk)
                 {
-                    var data = dataExtractor.ExtractSearchableString(item);
-                    if (compiledStrategies.Any(strategy => strategy.Match(data, query)))
+                    if (item != null)
                     {
-                        matches.Add(item);
-                        NotifyObservers(item);
+                        var data = dataExtractor.ExtractSearchableString(item);
+                        if (compiledStrategies.Any(strategy => strategy.Match(data, query)))
+                        {
+                            matches.Add(item);
+                            NotifyObservers(item);
+                        }
                     }
                 }
             });

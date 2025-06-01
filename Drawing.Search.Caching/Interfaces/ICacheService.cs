@@ -17,4 +17,5 @@ public interface ICacheService
     void WriteAllObjectsInDrawingToCache(object activeDrawing);
     void RefreshCache(string drawingKey, object activeDrawing);
     IEnumerable<object> GetRelatedObjects(string drawingId, string objectId);
+    void RefreshCache(object getActiveDrawing);
 }

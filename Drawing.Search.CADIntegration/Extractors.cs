@@ -1,4 +1,4 @@
-﻿using Drawing.Search.Core.SearchService.Interfaces;
+﻿using Drawing.Search.Common.Interfaces;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.Model;
 using ModelObject = Tekla.Structures.Model.ModelObject;
@@ -58,8 +58,8 @@ public class TextExtractor : IDataExtractor
     /// <returns>Searchable string.</returns>
     public string ExtractSearchableString(object obj)
     {
-        var text = obj as Text;
-        return text.TextString;
+        if (obj is Text text) return text.TextString;
+        return "";
     }
 }
 

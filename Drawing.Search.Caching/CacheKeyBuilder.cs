@@ -3,16 +3,14 @@
 namespace Drawing.Search.Caching;
 
 /// <summary>
-/// Provides a utility for constructing cache keys in a modular and structured manner.
-/// Enables easy reuse of cache keys.
-///
-/// Cache keys are constructed incrementally by chaining utility methods. The key parts are added in sequence and
-/// combined into a single string at the end, separated by underscores.
+///     Provides a utility for constructing cache keys in a modular and structured manner.
+///     Enables easy reuse of cache keys.
+///     Cache keys are constructed incrementally by chaining utility methods. The key parts are added in sequence and
+///     combined into a single string at the end, separated by underscores.
 /// </summary>
 /// <example>
-/// Building a cache key for a specific drawing with relationships
-/// 
-/// <code>
+///     Building a cache key for a specific drawing with relationships
+///     <code>
 /// var builder = new CacheKeyBuilder("12345");
 /// string cacheKey = builder
 ///     .UseDrawingObjectKey()
@@ -30,21 +28,21 @@ namespace Drawing.Search.Caching;
 /// </example>
 public class CacheKeyBuilder
 {
-    
     /// <summary>
-    /// Cache keys for different types of objects.
+    ///     Cache keys for different types of objects.
     /// </summary>
     private const string DRAWING_OBJECT_CACHE_KEY = "drawing_object";
+
     private const string ASSEMBLY_OBJECT_CACHE_KEY = "assembly_object";
     private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
     private const string RELATIONSHIP_CACHE_KEY = "relationship";
     private const string DRAWING_CACHE_KEY = "drawing";
-    
+
     private readonly List<string> _keyComponents = new();
     private readonly string _objectId;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CacheKeyBuilder"/> class with the specified object id.
+    ///     Initializes a new instance of the <see cref="CacheKeyBuilder" /> class with the specified object id.
     /// </summary>
     /// <param name="objectId"> The unique identifier of the primary object for which the cache key is being built</param>
     public CacheKeyBuilder(string objectId)
@@ -53,7 +51,7 @@ public class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Adds the drawing_object cache key to the key components.
+    ///     Adds the drawing_object cache key to the key components.
     /// </summary>
     /// <returns></returns>
     public CacheKeyBuilder UseDrawingObjectKey()
@@ -61,9 +59,9 @@ public class CacheKeyBuilder
         _keyComponents.Add(DRAWING_OBJECT_CACHE_KEY);
         return this;
     }
-    
+
     /// <summary>
-    /// Adds the assembly_object cache key to the key components.
+    ///     Adds the assembly_object cache key to the key components.
     /// </summary>
     /// <returns></returns>
     public CacheKeyBuilder UseAssemblyObjectKey()
@@ -71,9 +69,9 @@ public class CacheKeyBuilder
         _keyComponents.Add(ASSEMBLY_OBJECT_CACHE_KEY);
         return this;
     }
-    
+
     /// <summary>
-    /// Adds the matched_content cache key to the key components.
+    ///     Adds the matched_content cache key to the key components.
     /// </summary>
     /// <returns></returns>
     public CacheKeyBuilder UseMatchedContentKey()
@@ -81,9 +79,9 @@ public class CacheKeyBuilder
         _keyComponents.Add(MATCHED_CONTENT_CACHE_KEY);
         return this;
     }
-    
+
     /// <summary>
-    /// Adds the drawing cache key to the key components.
+    ///     Adds the drawing cache key to the key components.
     /// </summary>
     /// <returns></returns>
     public CacheKeyBuilder UseDrawingKey()
@@ -93,7 +91,7 @@ public class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Appends a relationship components to the key in the format <c>relationship_{objectId}:{relatedObjectId}</c>
+    ///     Appends a relationship components to the key in the format <c>relationship_{objectId}:{relatedObjectId}</c>
     /// </summary>
     /// <param name="relatedObjectId">The identifier of the related object.</param>
     /// <returns></returns>
@@ -104,7 +102,7 @@ public class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Appends the objectId (specified during initialization) to the cache key.
+    ///     Appends the objectId (specified during initialization) to the cache key.
     /// </summary>
     /// <returns></returns>
     public CacheKeyBuilder AppendObjectId()
@@ -114,7 +112,7 @@ public class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Appends a custom string to the cache key.
+    ///     Appends a custom string to the cache key.
     /// </summary>
     /// <param name="key">The string to append.</param>
     /// <returns></returns>
@@ -125,7 +123,7 @@ public class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Combines all the key components into a single cache key string and returns it.
+    ///     Combines all the key components into a single cache key string and returns it.
     /// </summary>
     /// <returns>The final cache key.</returns>
     public string Build()
