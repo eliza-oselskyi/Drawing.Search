@@ -1,21 +1,17 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Drawing.Search.Core.CacheService.Interfaces;
 
-public interface ISearchCache
+public interface ICacheService
 {
-    void RefreshCache();
-    void ClearCache();
+    void RefreshCache(string drawingKey);
+    void InvalidateCacheByKey(string key);
     void AddMainKeyToCache(string mainKey);
     void AddEntryByMainKey(string mainKey, string entryKey, object entryValue);
-    
     void RemoveMainKeyFromCache(string mainKey);
     void RemoveEntryByMainKey(string mainKey, string entryKey);
-     void InvalidateCache(string key);
-     
-     object GetFromCache(string mainKey, string key);
-     List<string> DumpIdentifiers();
-     List<string> DumpIdentifiers(string mainKey);
+    object GetFromCache(string mainKey, string key);
+    List<string> DumpIdentifiers(string drawingKey);
 }

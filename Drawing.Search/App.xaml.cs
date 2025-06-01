@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Threading;
 using System.Windows;
 using Drawing.Search.Core;
+using Drawing.Search.Core.CacheService;
+using Drawing.Search.Core.CacheService.Interfaces;
 using Drawing.Search.Core.CADIntegrationService;
 using Drawing.Search.Core.CADIntegrationService.Interfaces;
 using Drawing.Search.Core.SearchService;
@@ -51,6 +54,14 @@ namespace Drawing.Search
 
             // Registers the search service
             services.AddSingleton<SearchService>();
+            
+            // Registers the search cache service
+            services.AddSingleton<ICacheService, TeklaCacheService>();
+            services.AddSingleton<ISearchCache, TeklaSearchCache>();
+            
+            // Registers the search driver
+            services.AddTransient<SearchDriver>();
+            services.AddTransient<SynchronizationContext>();
 
             // Registers the search view model
             services.AddSingleton<SearchViewModel>();

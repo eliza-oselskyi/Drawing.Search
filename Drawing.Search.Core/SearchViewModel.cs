@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Drawing.Search.Core.CacheService.Interfaces;
 using Drawing.Search.Core.SearchService;
 using Drawing.Search.Core.SearchService.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
@@ -19,11 +20,10 @@ namespace Drawing.Search.Core;
 public class SearchViewModel : INotifyPropertyChanged
 {
     private readonly SearchService.SearchService _searchService;
-    private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
-
     private readonly SearchDriver _searchDriver;
-    private readonly MemoryCache _cache;
-
+    private readonly ICacheService _cacheService;
+    
+    private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
     private ContentCollectingObserver _contentCollector;
     private string _ghostSuggestion; // for autocomplete
     private bool _isCaching;
@@ -36,14 +36,14 @@ public class SearchViewModel : INotifyPropertyChanged
     private string _statusMessage;
     private string _version;
 
-    public SearchViewModel(SearchService.SearchService searchService)
+    public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver, ICacheService cacheService)
     {
         _searchService = searchService ?? throw new ArgumentNullException(nameof(searchService));
-        _cache = new MemoryCache(new MemoryCacheOptions());
+        _searchDriver = searchDriver ?? throw new ArgumentNullException(nameof(searchDriver));
+        _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
 
         var uiContext = SynchronizationContext.Current ??
                         throw new InvalidOperationException("SearchViewModel must be created on UI thread.");
-        _searchDriver = new SearchDriver(_cache, uiContext);
         _searchDriver.CacheObserver.StatusMessageChanged += (sender, message) => { StatusMessage = message; };
         SearchCommand = new AsyncRelayCommand(
             ExecuteSearchAsync,
@@ -151,8 +151,11 @@ public class SearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        Debug.Assert(_cache != null, nameof(_cache) + " != null");
-        _cache.TryGetValue(MATCHED_CONTENT_CACHE_KEY, out HashSet<string> cachedContent);
+        // TODO: Implement matched_content caching to work with new cache system
+       // Debug.Assert(_cache != null, nameof(_cache) + " != null");
+  //      _cache.TryGetValue(MATCHED_CONTENT_CACHE_KEY, out HashSet<string> cachedContent);
+  var cachedContent = new HashSet<string>();
+  cachedContent.Add("NOT IMPLEMENTED");
 
         cachedContent ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 

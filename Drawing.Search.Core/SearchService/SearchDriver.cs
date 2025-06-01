@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Drawing.Search.Core.CacheService;
+using Drawing.Search.Core.CacheService.Interfaces;
 using Drawing.Search.Core.SearchService.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Tekla.Structures.Drawing;
@@ -10,6 +12,7 @@ using Tekla.Structures.DrawingInternal;
 using Tekla.Structures.Model;
 using Events = Tekla.Structures.Drawing.Events;
 using ModelObject = Tekla.Structures.Model.ModelObject;
+using Part = Tekla.Structures.Drawing.Part;
 
 namespace Drawing.Search.Core.SearchService
 {
@@ -44,6 +47,7 @@ namespace Drawing.Search.Core.SearchService
         private const string DRAWING_OBJECTS_CACHE_KEY = "drawing_objects";
         private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
         private readonly IMemoryCache _cache;
+        private readonly ICacheService _cacheService;
         private readonly DrawingHandler _drawingHandler;
         private readonly Events _events;
         private readonly object _lockObject = new();
@@ -60,18 +64,20 @@ namespace Drawing.Search.Core.SearchService
         /// <param name="cache">The memory cache used for caching objects during searches.</param>
         /// <param name="uiContext">The synchronization context used for UI-related updates.</param>
         /// <exception cref="ApplicationException">Thrown when Tekla connection cannot be established.</exception>
-        public SearchDriver(IMemoryCache cache, SynchronizationContext uiContext)
+        public SearchDriver(ICacheService cacheService, SynchronizationContext uiContext)
         {
             _drawingHandler = new DrawingHandler();
             _model = new Model();
             _events = new Events();
-            _cache = cache;
+            _cacheService = cacheService;
             _logger = SearchService.GetLoggerInstance();
             CacheObserver = new CachingObserver(SynchronizationContext.Current);
             _cacheObserver = CacheObserver;
 
             if (!_model.GetConnectionStatus())
                 throw new ApplicationException("Tekla connection not established.");
+            
+            ((TeklaCacheService)_cacheService).WriteAllObjectsInDrawingToCache(_drawingHandler.GetActiveDrawing());
 
             InitializeEvents();
         }
@@ -112,9 +118,9 @@ namespace Drawing.Search.Core.SearchService
             {
                 var result = config.Type switch
                 {
-                    SearchType.PartMark => ExecutePartMarkSearch(config, drawing),
-                    SearchType.Text => ExecuteTextSearch(config, drawing),
-                    SearchType.Assembly => ExecuteAssemblySearch(config),
+                    SearchType.PartMark => NewExecutePartMarkSearch(config, drawing),
+                    SearchType.Text => NewExecuteTextSearch(config, drawing),
+                    SearchType.Assembly => NewExecuteAssemblySearch(config),
                     _ => throw new ArgumentException($"Unsupported search type: {config.Type}")
                 };
 
@@ -218,6 +224,54 @@ namespace Drawing.Search.Core.SearchService
             return list;
         }
 
+        private SearchResult NewExecuteAssemblySearch(SearchConfiguration config)
+        {
+            var activeDrawing = _drawingHandler.GetActiveDrawing();
+            if (activeDrawing == null)
+                throw new InvalidOperationException("No active drawing found.");
+
+            var drawingKey = new CacheKeyBuilder(activeDrawing.GetIdentifier().ToString())
+                .UseDrawingKey()
+                .AppendObjectId()
+                .Build();
+
+            // Fetch all model object identifiers for the current drawing
+            var cachedModelObjectIds = _cacheService.DumpIdentifiers(drawingKey);
+            
+            // Fetch associated ModelObject instances
+            var cachedModelObjects = cachedModelObjectIds
+                .Select(id => _cacheService.GetFromCache(drawingKey, id) as ModelObject)
+                .Where(obj => obj != null)
+                .ToList();
+
+            // Perform search using the search configuration on ModelObjects
+            var searcher = CreateSearcher<ModelObject>(config);
+            var searchResults = searcher.Search(cachedModelObjects, CreateSearchQuery(config)).ToList();
+
+            // For each matched ModelObject, find associated Part objects
+            var selectableParts = new List<Part>();
+            foreach (var modelObject in searchResults)
+            {
+                var modelObjectCacheKey = new CacheKeyBuilder(modelObject.Identifier.ToString())
+                    .UseDrawingKey()
+                    .UseAssemblyObjectKey()
+                    .AppendObjectId()
+                    .Build();
+                var relatedDrawingObjects = ((TeklaCacheService)_cacheService).GetRelatedObjects(drawingKey, modelObject.Identifier.ToString());
+                selectableParts.AddRange(relatedDrawingObjects.OfType<Part>());
+            }
+
+            // Select the associated Part objects in the drawing
+            TeklaWrapper.DrawingObjectListToSelection(selectableParts.Cast<DrawingObject>().ToList(), activeDrawing);
+
+            return new SearchResult
+            {
+                MatchCount = selectableParts.Count,
+                ElapsedMilliseconds = 0, // To be measured by the caller
+                SearchType = SearchType.Assembly
+            };
+        }
+
         private SearchResult ExecuteAssemblySearch(SearchConfiguration config)
         {
             var modelObjects = GetCachedAssemblyObjects();
@@ -258,6 +312,31 @@ namespace Drawing.Search.Core.SearchService
             });
         }
 
+        private SearchResult NewExecuteTextSearch(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
+        {
+            var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString())
+                .UseDrawingKey()
+                .AppendObjectId()
+                .Build();
+
+            var ids = _cacheService.DumpIdentifiers(dwgKey);
+
+            var texts = ids.Where(t => _cacheService.GetFromCache(dwgKey, t) is Text).Select(t => _cacheService.GetFromCache(dwgKey, t) as Text).ToList();
+            var searcher = CreateSearcher<Text>(config);
+            var contentCollector = new ContentCollectingObserver(new TextExtractor());
+            searcher.Subscribe(contentCollector);
+            
+            var results = searcher.Search(texts, CreateSearchQuery(config));
+            
+            SelectResults(results.Cast<DrawingObject>().ToList());
+
+            return new SearchResult()
+            {
+                MatchCount = results.Count(),
+                ElapsedMilliseconds = 0, // Set by caller
+                SearchType = SearchType.Text
+            };
+        }
         private SearchResult ExecuteTextSearch(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
         {
             var texts = GetFilteredObjects<Text>(drawing);
@@ -282,6 +361,31 @@ namespace Drawing.Search.Core.SearchService
             };
         }
 
+        private SearchResult NewExecutePartMarkSearch(SearchConfiguration config,
+            Tekla.Structures.Drawing.Drawing drawing)
+        {
+            var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString())
+                .UseDrawingKey()
+                .AppendObjectId()
+                .Build();
+            
+            var ids = _cacheService.DumpIdentifiers(dwgKey);
+            var marks = ids.Where(t => _cacheService.GetFromCache(dwgKey, t) is Mark).Select(t => _cacheService.GetFromCache(dwgKey, t) as Mark).ToList();
+            var searcher = CreateSearcher<Mark>(config);
+            var contentCollector = new ContentCollectingObserver(new MarkExtractor());
+            searcher.Subscribe(contentCollector);
+            
+            var results = searcher.Search(marks, CreateSearchQuery(config));
+            
+            SelectResults(results.Cast<DrawingObject>().ToList());
+
+            return new SearchResult
+            {
+                MatchCount = results.Count(),
+                ElapsedMilliseconds = 0, // Set by caller
+                SearchType = SearchType.PartMark
+            };
+        }
         private SearchResult ExecutePartMarkSearch(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
         {
             var marks = GetFilteredObjects<Mark>(drawing);
@@ -299,7 +403,7 @@ namespace Drawing.Search.Core.SearchService
 
             return new SearchResult
             {
-                MatchCount = results.Count,
+                MatchCount = results.Count(),
                 ElapsedMilliseconds = 0, // Set by caller
                 SearchType = SearchType.PartMark
             };

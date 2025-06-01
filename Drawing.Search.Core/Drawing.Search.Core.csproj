@@ -59,6 +59,8 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="CacheService\CacheKeyBuilder.cs" />
+        <Compile Include="CacheService\TeklaCacheService.cs" />
+        <Compile Include="CacheService\Interfaces\ICacheService.cs" />
         <Compile Include="CacheService\Interfaces\ISearchCache.cs" />
         <Compile Include="CacheService\TeklaSearchCache.cs" />
         <Compile Include="CacheService\TestCache.cs" />

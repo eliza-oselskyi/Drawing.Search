@@ -154,17 +154,18 @@ public class TeklaSearchCache : ISearchCache
         {
             _cache.TryGetValue(mainKey, out var objects);
 
-            foreach (var id in objects)
-            {
-                foreach (var obj in GetRelatedObjects(id.Key))
+            if (objects != null)
+                foreach (var id in objects)
                 {
-                    var dwgObj = GetFromCache(mainKey, id.Key) as DrawingObject;
-                    if (dwgObj is Part)
+                    foreach (var obj in GetRelatedObjects(id.Key))
                     {
-                        moList.Add(dwgObj);
+                        var dwgObj = GetFromCache(mainKey, id.Key) as DrawingObject;
+                        if (dwgObj is Part)
+                        {
+                            moList.Add(dwgObj);
+                        }
                     }
                 }
-            }
         }
         return moList;
     }
@@ -279,7 +280,7 @@ public class TeklaSearchCache : ISearchCache
     /// </summary>
     /// <param name="mainKey">The main cache key.</param>
     /// <param name="entryKey">The key of the entry to remove.</param>
-    public void RemoveFromCache(string mainKey, string entryKey)
+    public void RemoveEntryByMainKey(string mainKey, string entryKey)
     {
         _isCaching = true;
         lock (_lockObject)
