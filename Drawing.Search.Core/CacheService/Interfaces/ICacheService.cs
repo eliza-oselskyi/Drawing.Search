@@ -14,4 +14,6 @@ public interface ICacheService
     void RemoveEntryByMainKey(string mainKey, string entryKey);
     object GetFromCache(string mainKey, string key);
     List<string> DumpIdentifiers(string drawingKey);
+    bool IsCaching();
+    public event EventHandler<bool>? IsCachingChanged; 
 }

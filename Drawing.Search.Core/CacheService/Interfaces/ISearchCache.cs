@@ -18,4 +18,6 @@ public interface ISearchCache
      object GetFromCache(string mainKey, string key);
      List<string> DumpIdentifiers();
      List<string> DumpIdentifiers(string mainKey);
+     bool IsCaching();
+     event EventHandler<bool> IsCachingChanged;
 }

@@ -138,12 +138,16 @@ namespace Drawing.Search.Core.SearchService
         /// </summary>
         private void InvalidateCache()
         {
-            lock (_lockObject)
-            {
-                _cache.Remove($"{_currentDrawingId}_{DRAWING_OBJECTS_CACHE_KEY}");
-                _cacheInvalidated = true;
-                _logger.LogInformation($"Drawing cache invalidated.");
-            }
+            var dwgKey = new CacheKeyBuilder(DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ToString())
+                .UseDrawingKey().AppendObjectId().Build();
+            ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
+            
+            // lock (_lockObject)
+            // {
+            //     _cache.Remove($"{_currentDrawingId}_{DRAWING_OBJECTS_CACHE_KEY}");
+            //     _cacheInvalidated = true;
+            //     _logger.LogInformation($"Drawing cache invalidated.");
+            // }
         }
 
         /// <summary>
@@ -151,8 +155,9 @@ namespace Drawing.Search.Core.SearchService
         /// </summary>
         private void InitializeEvents()
         {
-            _events.DrawingChanged += OnDrawingModified;
-            _events.DrawingUpdated += OnDrawingUpdated;
+            // TODO: Refresh cache only when deletion happens in the active drawing. Currently any modification refreshes cache
+            //_events.DrawingChanged += OnDrawingModified;
+            //_events.DrawingUpdated += OnDrawingUpdated;
             _events.Register();
         }
 

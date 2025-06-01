@@ -57,9 +57,10 @@ public class TeklaSearchCache : ISearchCache
     /// </summary>
     public void RefreshCache()
     {
+        _isDirty = true;
         if (_isDirty) 
         {
-            _isCaching = true;
+            SetIsCaching(true);
             lock (_lockObject)
             {
                 _cache.Clear();
@@ -67,7 +68,7 @@ public class TeklaSearchCache : ISearchCache
             }
 
             _isDirty = false;
-            _isCaching = false;
+            SetIsCaching(false);
         }
     }
 
@@ -199,13 +200,13 @@ public class TeklaSearchCache : ISearchCache
     /// <param name="mainKey">The main key to add to the cache.</param>
     public void AddMainKeyToCache(string mainKey)
     {
-        _isCaching = true;
+        SetIsCaching(true);
         lock (_lockObject)
         {
             var dict = new ConcurrentDictionary<string, object>();
             _cache.TryAdd(mainKey, dict);
         }
-        _isCaching = false;
+        SetIsCaching(false);
     }
 
     
@@ -217,13 +218,13 @@ public class TeklaSearchCache : ISearchCache
     /// <param name="value">The object to add to the cache.</param>
     public void AddEntryByMainKey(string mainKey, string objectKey, object value)
     {
-        _isCaching = true;
+        SetIsCaching(true);
         lock (_lockObject)
         {
             _cache.TryGetValue(mainKey, out var objects);
-            objects.TryAdd(objectKey, value);
+            if (objects != null) objects.TryAdd(objectKey, value);
         }
-        _isCaching = false;
+        SetIsCaching(false);
     }
     
     
@@ -249,7 +250,7 @@ public class TeklaSearchCache : ISearchCache
     /// <param name="mainKey">The main cache key to remove.</param>
     public void RemoveMainKeyFromCache(string mainKey)
     {
-        _isCaching = true;
+        SetIsCaching(true);
         lock (_lockObject)
         {
             var rels = DumpRelationships(mainKey);
@@ -271,7 +272,7 @@ public class TeklaSearchCache : ISearchCache
                 _cache.TryRemove(mainKey, out _);
             }
         }
-        _isCaching = false;
+        SetIsCaching(false);
     }
     
     
@@ -282,7 +283,7 @@ public class TeklaSearchCache : ISearchCache
     /// <param name="entryKey">The key of the entry to remove.</param>
     public void RemoveEntryByMainKey(string mainKey, string entryKey)
     {
-        _isCaching = true;
+        SetIsCaching(true);
         lock (_lockObject)
         {
             var rels = DumpRelationships(mainKey);
@@ -308,7 +309,7 @@ public class TeklaSearchCache : ISearchCache
                 if (objects != null) objects.TryRemove(entryKey, out _);
             }
         }
-        _isCaching = false;
+        SetIsCaching(false);
     }
 
     private string BuildRelationshipKey(string objectKey1, string objectKey2)
@@ -326,7 +327,7 @@ public class TeklaSearchCache : ISearchCache
     /// <param name="objectKey2">The second object key to relate.</param>
     public void AddRelationship(string mainKey, string objectKey1, string objectKey2)
     {
-        _isCaching = true;
+        SetIsCaching(true);
         lock (_lockObject)
         {
             var relationshipKey = BuildRelationshipKey(objectKey1, objectKey2);
@@ -340,7 +341,7 @@ public class TeklaSearchCache : ISearchCache
             relSet[relationshipKey].Add(objectKey1);
             relSet[relationshipKey].Add(objectKey2);
         }
-        _isCaching = false;
+        SetIsCaching(false);
     }
 
     
@@ -479,4 +480,22 @@ public class TeklaSearchCache : ISearchCache
 
         return ids;
     }
+
+    
+    public event EventHandler<bool> IsCachingChanged; 
+    
+    public bool IsCaching()
+    {
+        return _isCaching;
+    }
+    
+    public void SetIsCaching(bool value)
+    {
+        if (_isCaching != value)
+        {
+            _isCaching = value;
+            IsCachingChanged?.Invoke(this, _isCaching);
+        }
+    }
+    
 }

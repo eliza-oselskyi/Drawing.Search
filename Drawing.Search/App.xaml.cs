@@ -60,8 +60,8 @@ namespace Drawing.Search
             services.AddSingleton<ISearchCache, TeklaSearchCache>();
             
             // Registers the search driver
-            services.AddTransient<SearchDriver>();
-            services.AddTransient<SynchronizationContext>();
+            services.AddSingleton<SearchDriver>();
+            services.AddSingleton<SynchronizationContext>();
 
             // Registers the search view model
             services.AddSingleton<SearchViewModel>();

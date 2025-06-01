@@ -10,9 +10,19 @@ public class TeklaCacheService : ICacheService
 {
     private readonly ISearchCache _searchCache;
     
+    public event EventHandler<bool> IsCachingChanged;
+    
     public TeklaCacheService(ISearchCache searchCache)
     {
         _searchCache = searchCache;
+
+        if (_searchCache is TeklaSearchCache teklaSearchCache)
+        {
+            teklaSearchCache.IsCachingChanged += (sender, isCaching) =>
+            {
+                IsCachingChanged?.Invoke(this, isCaching);
+            };
+        }
     }
 
     public void AddMainKeyToCache(string mainKey)
@@ -68,12 +78,25 @@ public class TeklaCacheService : ICacheService
 
     public void RefreshCache(string drawingKey)
     {
-        throw new NotImplementedException();
+    }
+
+    public void RefreshCache(string drawingKey, Tekla.Structures.Drawing.Drawing drawing)
+    {
+        SearchService.SearchService.GetLoggerInstance().LogInformation("Refreshing cache");
+        _searchCache.RefreshCache();
+        //_searchCache.RemoveMainKeyFromCache(drawingKey);
+        WriteAllObjectsInDrawingToCache(drawing);
+        
     }
 
     public IEnumerable<object> GetRelatedObjects(string drawingKey, string objectId)
     {
         var tCache = _searchCache as TeklaSearchCache;
         return tCache.GetRelatedObjects(drawingKey, objectId);
+    }
+
+    public bool IsCaching()
+    {
+        return _searchCache.IsCaching();
     }
 }

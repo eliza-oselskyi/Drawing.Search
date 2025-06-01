@@ -8,11 +8,13 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Drawing.Search.Core.CacheService;
 using Drawing.Search.Core.CacheService.Interfaces;
 using Drawing.Search.Core.SearchService;
 using Drawing.Search.Core.SearchService.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Tekla.Structures.Drawing;
+using Tekla.Structures.DrawingInternal;
 using ModelObject = Tekla.Structures.Model.ModelObject;
 
 namespace Drawing.Search.Core;
@@ -35,12 +37,18 @@ public class SearchViewModel : INotifyPropertyChanged
     private SearchType _selectedSearchType;
     private string _statusMessage;
     private string _version;
+    private readonly Events _events = new();
 
     public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver, ICacheService cacheService)
     {
         _searchService = searchService ?? throw new ArgumentNullException(nameof(searchService));
         _searchDriver = searchDriver ?? throw new ArgumentNullException(nameof(searchDriver));
         _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
+        
+        _events.DrawingChanged += OnDrawingModified;
+        _events.DrawingUpdated += OnDrawingUpdated;
+        _events.Register();
+        _cacheService.IsCachingChanged += (_cacheService, isCaching) => { IsCaching = isCaching; };
 
         var uiContext = SynchronizationContext.Current ??
                         throw new InvalidOperationException("SearchViewModel must be created on UI thread.");
@@ -51,10 +59,33 @@ public class SearchViewModel : INotifyPropertyChanged
         );
         Version = $"v{Assembly.GetExecutingAssembly().GetName().Version}";
 
+
         PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(SearchTerm)) UpdateGhostSuggestion(SearchTerm);
         };
+    }
+
+    // TODO: Figure out why IsCaching binding not working for search button. Should be disabled when caching is active.
+    private void OnDrawingUpdated(Tekla.Structures.Drawing.Drawing drawing, Events.DrawingUpdateTypeEnum type)
+    {
+        IsCaching = true;
+        StatusMessage = "Caching drawing objects...";
+        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).UseDrawingKey().AppendObjectId().Build();
+        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, drawing);
+        StatusMessage = "Ready";
+        IsCaching = false;
+    }
+
+    private void OnDrawingModified()
+    {
+        IsCaching = true;
+        StatusMessage = "Caching drawing objects...";
+        var dwgId = DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ToString();
+        var dwgKey = new CacheKeyBuilder(dwgId).UseDrawingKey().AppendObjectId().Build();
+        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
+        StatusMessage = "Ready";
+        IsCaching = false;
     }
 
     public string Version
@@ -175,11 +206,16 @@ public class SearchViewModel : INotifyPropertyChanged
 
     private bool CanExecuteSearch()
     {
-        return !string.IsNullOrEmpty(SearchTerm) && !IsSearching;
+        return !string.IsNullOrEmpty(SearchTerm) && !IsSearching && !IsCaching;
     }
 
     private async Task ExecuteSearchAsync()
     {
+        if (IsCaching)
+        {
+            StatusMessage = "Cannot search while caching is active.";
+            return;
+        }
         try
         {
             IsSearching = true;
