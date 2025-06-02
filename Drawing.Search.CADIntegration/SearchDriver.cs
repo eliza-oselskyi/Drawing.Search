@@ -140,13 +140,6 @@ public class SearchDriver : IDisposable
         var dwgKey = new CacheKeyBuilder(DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ToString())
             .UseDrawingKey().AppendObjectId().Build();
         _cacheService.RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
-
-        // lock (_lockObject)
-        // {
-        //     _cache.Remove($"{_currentDrawingId}_{DRAWING_OBJECTS_CACHE_KEY}");
-        //     _cacheInvalidated = true;
-        //     _logger.LogInformation($"Drawing cache invalidated.");
-        // }
     }
 
     /// <summary>
@@ -193,39 +186,39 @@ public class SearchDriver : IDisposable
             .AppendObjectId()
             .Build();
 
-        // Fetch all model object identifiers for the current drawing
-        var cachedModelObjectIds = _cacheService.DumpIdentifiers(activeDrawing.GetIdentifier().ToString());
+        // Instead of searching ModelObjects directly, search the cached assembly positions
+        var assemblyPositions = _cacheService.DumpAssemblyPositions();
+        var searcher = CreateSearcher<string>(config);
+        var contentCollector = new ContentCollectingObserver(new StringExtractor());
+        searcher.Subscribe(contentCollector);
 
-        // Fetch associated ModelObject instances
-        var cachedModelObjects = cachedModelObjectIds
-            .Select(id => _cacheService.GetFromCache(drawingKey, id) as ModelObject)
-            .Where(obj => obj != null)
-            .ToList();
+        // Search through assembly positions
+        var matchedAssemblyPositions = searcher.Search(assemblyPositions, CreateSearchQuery(config));
 
-        // Perform search using the search configuration on ModelObjects
-        var searcher = CreateSearcher<ModelObject>(config);
+        // Get all parts related to matched assembly positions
+        var selectableParts = new List<Part>();
+        foreach (var assemblyPos in matchedAssemblyPositions)
         {
-            var searchResults = searcher.Search(cachedModelObjects!, CreateSearchQuery(config)).ToList();
-
-            // For each matched ModelObject, find associated Part objects
-            var selectableParts = new List<Part>();
-            foreach (var modelObject in searchResults)
+            var relatedIdentifiers = _cacheService.FetchAssemblyPosition(assemblyPos) as HashSet<string>;
+                
+            
+            foreach (var identifier in relatedIdentifiers)
             {
-                var relatedDrawingObjects = _cacheService.GetRelatedObjects(activeDrawing.GetIdentifier().ToString(),
-                    modelObject.Identifier.ToString());
-                selectableParts.AddRange(relatedDrawingObjects.OfType<Part>());
+                var relatedObjects = _cacheService.GetRelatedObjects(
+                    activeDrawing.GetIdentifier().ToString(),
+                    identifier);
+                selectableParts.AddRange(relatedObjects.OfType<Part>());
             }
-
-            // Select the associated Part objects in the drawing
-            TeklaWrapper.DrawingObjectListToSelection(selectableParts.Cast<DrawingObject>().ToList(), activeDrawing);
-
-            return new SearchResult
-            {
-                MatchCount = selectableParts.Count,
-                ElapsedMilliseconds = 0, // To be measured by the caller
-                SearchType = SearchType.Assembly
-            };
         }
+
+        TeklaWrapper.DrawingObjectListToSelection(selectableParts.Cast<DrawingObject>().ToList(), activeDrawing);
+
+        return new SearchResult
+        {
+            MatchCount = selectableParts.Count,
+            ElapsedMilliseconds = 0,
+            SearchType = SearchType.Assembly
+        };
     }
 
     private SearchResult NewExecuteTextSearch(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
@@ -323,6 +316,7 @@ public class SearchDriver : IDisposable
             { } t when t == typeof(Mark) => new MarkExtractor(),
             { } t when t == typeof(Text) => new TextExtractor(),
             { } t when t == typeof(ModelObject) => new ModelObjectExtractor(),
+            { } t when t == typeof(string) => new StringExtractor(),
             _ => throw new ArgumentException($"No extractor available for type {typeof(T)}")
         };
     }

@@ -1,5 +1,9 @@
-﻿using Drawing.Search.Common.Interfaces;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Drawing.Search.Caching.Interfaces;
+using Drawing.Search.Common.Interfaces;
 using Tekla.Structures.Drawing;
+using Tekla.Structures.DrawingInternal;
 using Tekla.Structures.Model;
 using ModelObject = Tekla.Structures.Model.ModelObject;
 
@@ -60,6 +64,15 @@ public class TextExtractor : IDataExtractor
     {
         if (obj is Text text) return text.TextString;
         return "";
+    }
+}
+
+public class StringExtractor : IDataExtractor
+{
+    public string ExtractSearchableString(object obj)
+    {
+        var s = obj as string;
+        return s ?? string.Empty;
     }
 }
 

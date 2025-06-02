@@ -49,6 +49,7 @@ public class TeklaSearchCache : ISearchCache
 {
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, object>> _cache = new();
     private readonly ConcurrentDictionary<string, bool> _dirtyDrawingsCache = new();
+    private readonly Dictionary<string, HashSet<string>> _assemblyPositionsToIdentifiers = new();
     private readonly object _lockObject = new();
     private readonly ISearchLogger _logger;
 
@@ -61,6 +62,43 @@ public class TeklaSearchCache : ISearchCache
     public TeklaSearchCache(ISearchLogger logger)
     {
         _logger = logger;
+    }
+
+    public void CacheAssemblyPosition(string identifier, string assemblyPosition)
+    {
+        if (string.IsNullOrEmpty(assemblyPosition)) return;
+
+        if (!_assemblyPositionsToIdentifiers.TryGetValue(assemblyPosition, out var identifiers))
+        {
+            identifiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            _assemblyPositionsToIdentifiers[assemblyPosition] = identifiers;
+        }
+        identifiers.Add(identifier);
+    }
+
+    public IEnumerable<string> FindByAssemblyPosition(string drawingId, string assemblyPosition)
+    {
+        var dwgKey = new CacheKeyBuilder(drawingId).UseDrawingKey().AppendObjectId().Build();
+        var allIds = DumpIdentifiers(dwgKey);
+        var allAssmeblyIds = DumpAssemblyPositions();
+        var match = allIds.Find(m => m.Contains(assemblyPosition));
+        return _assemblyPositionsToIdentifiers.TryGetValue(match, out var identifiers)
+            ? identifiers
+            : Enumerable.Empty<string>();
+    }
+
+    public List<string> DumpAssemblyPositions()
+    {
+        var ids = new List<string>();
+        lock (_lockObject)
+        {
+            foreach (var id in _assemblyPositionsToIdentifiers)
+            {
+                ids.Add(id.Key);
+            }
+        }
+
+        return ids;
     }
 
     /// <summary>
@@ -298,34 +336,59 @@ public class TeklaSearchCache : ISearchCache
         stopwatch.Start();
         var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).UseDrawingKey().AppendObjectId().Build();
         var objects = drawing.GetSheet().GetAllObjects();
-
-
+        
+        SetIsCaching(true);
         AddMainKeyToCache(dwgKey);
-        foreach (DrawingObject o in objects)
-        {
-            var key = new CacheKeyBuilder(o.GetIdentifier().ToString())
-                .Append(dwgKey)
-                .UseDrawingObjectKey()
-                .AppendObjectId()
-                .Build();
 
-            if (o != null) AddEntryByMainKey(dwgKey, key, o);
-            if (o is Part p)
+        lock (_lockObject)
+        {
+            foreach (DrawingObject o in objects)
             {
-                var modelObject = GetRelatedModelObjectFromPart(p);
-                var moKey = new CacheKeyBuilder(modelObject.Identifier.ToString())
+                var key = new CacheKeyBuilder(o.GetIdentifier().ToString())
                     .Append(dwgKey)
-                    .UseAssemblyObjectKey()
+                    .UseDrawingObjectKey()
                     .AppendObjectId()
                     .Build();
 
-                AddEntryByMainKey(dwgKey, moKey, modelObject);
-                AddRelationship(dwgKey, key, moKey);
+                if (o != null) AddEntryByMainKey(dwgKey, key, o);
+                if (o is Part p)
+                {
+                    var modelObject = GetRelatedModelObjectFromPart(p);
+                    var moKey = new CacheKeyBuilder(modelObject.Identifier.ToString())
+                        .Append(dwgKey)
+                        .UseAssemblyObjectKey()
+                        .AppendObjectId()
+                        .Build();
+
+                    AddEntryByMainKey(dwgKey, moKey, modelObject);
+                    AddRelationship(dwgKey, key, moKey);
+                    
+                    // Cache the assembly position
+                    string assemblyPostion = "";
+                    modelObject.GetReportProperty("ASSEMBLY_POS", ref assemblyPostion);
+                    if (!string.IsNullOrEmpty(assemblyPostion))
+                    {
+                        CacheAssemblyPosition(moKey, assemblyPostion);;
+
+                        var assemblyPosKey = new CacheKeyBuilder(moKey)
+                            .Append($"ASSEMBLY_POS_{assemblyPostion}")
+                            .AppendObjectId()
+                            .Build();
+                        AddEntryByMainKey(dwgKey, assemblyPosKey, assemblyPostion);
+                    }
+                }
             }
         }
 
+        SetIsCaching(false);
         stopwatch.Stop();
         _logger.LogInformation($"Reading and caching took {stopwatch.ElapsedMilliseconds} ms.");
+    }
+
+    public IEnumerable<object> FetchAssemblyPosition(string assemblyPosition)
+    {
+        _assemblyPositionsToIdentifiers.TryGetValue(assemblyPosition, out var identifiers);
+        return identifiers;
     }
 
     /// <summary>

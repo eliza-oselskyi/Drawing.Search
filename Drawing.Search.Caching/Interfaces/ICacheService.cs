@@ -18,4 +18,7 @@ public interface ICacheService
     void RefreshCache(string drawingKey, object activeDrawing);
     IEnumerable<object> GetRelatedObjects(string drawingId, string objectId);
     void RefreshCache(object getActiveDrawing);
+    IEnumerable<string> FindByAssemblyPosition(string drawingId, string assemblyPos);
+    IEnumerable<string> DumpAssemblyPositions();
+    IEnumerable<object> FetchAssemblyPosition(string assemblyPosition);
 }

@@ -76,8 +76,10 @@ public class ObservableSearch<T>(List<ISearchStrategy> searchStrategies, IDataEx
                     if (item != null)
                     {
                         var data = dataExtractor.ExtractSearchableString(item);
+                        Console.WriteLine($"Searching item: {item}, extracted: {data}");
                         if (compiledStrategies.Any(strategy => strategy.Match(data, query)))
                         {
+                            Console.WriteLine($"Matched item: {item}, to : {data}");
                             matches.Add(item);
                             NotifyObservers(item);
                         }

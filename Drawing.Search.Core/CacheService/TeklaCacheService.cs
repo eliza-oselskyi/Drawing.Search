@@ -150,6 +150,22 @@ public class TeklaCacheService : ICacheService
         }
     }
 
+    public IEnumerable<string> FindByAssemblyPosition(string drawingId, string assemblyPos)
+    {
+        return _searchCache.FindByAssemblyPosition(drawingId, assemblyPos);
+    }
+
+    public IEnumerable<string> DumpAssemblyPositions()
+    {
+        var tCache = _searchCache as TeklaSearchCache;
+        return tCache.DumpAssemblyPositions();
+    }
+
+    public IEnumerable<object> FetchAssemblyPosition(string assemblyPos)
+    {
+        return _searchCache.FetchAssemblyPosition(assemblyPos);
+    }
+
     public ArrayList GetSelectablePartsFromCache(string drawingKey, List<string> ids)
     {
         var tCache = _searchCache as TeklaSearchCache;
