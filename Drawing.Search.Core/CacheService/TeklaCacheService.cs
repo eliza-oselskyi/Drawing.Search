@@ -100,7 +100,6 @@ public class TeklaCacheService : ICacheService
                 LogCacheAction("Start write cache", $"Drawing ID: {teklaDrawing.GetIdentifier().ToString()}");
 
                 ((TeklaSearchCache)_searchCache).WriteAllObjectsInDrawingToCache(teklaDrawing);
-                LogCacheAction("Start write cache", $"Drawing ID: {teklaDrawing.GetIdentifier().ToString()}");
             }
             finally
             {

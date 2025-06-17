@@ -58,10 +58,12 @@ public class TeklaSearchCache : ISearchCache
 
     private bool _isCaching;
     private bool _isDirty;
+    private bool _isInitialCachingDone;
 
     public TeklaSearchCache(ISearchLogger logger)
     {
         _logger = logger;
+        _isInitialCachingDone = false;
     }
 
     public void CacheAssemblyPosition(string identifier, string assemblyPosition)
@@ -112,12 +114,37 @@ public class TeklaSearchCache : ISearchCache
             SetIsCaching(true);
             lock (_lockObject)
             {
-                _cache.Clear();
-                _relationshipsCache.Clear();
+                if (_isInitialCachingDone)
+                {
+                    ClearDrawingObjectsOnly();
+                }
+                else
+                {
+                    _cache.Clear();
+                    _relationshipsCache.Clear();
+                }
             }
 
             _isDirty = false;
             SetIsCaching(false);
+        }
+    }
+
+    private void ClearDrawingObjectsOnly()
+    {
+        var relCacheKeyList = _relationshipsCache.Keys.ToList();
+        var cacheKeyListMain = _cache.Keys.ToList();
+        foreach (var cacheKey in cacheKeyListMain)
+        {
+            var cacheKeyListSecondary = _cache[cacheKey].Keys.ToList();
+            var relKeyListSecondary = _relationshipsCache[cacheKey].Keys.ToList();
+            foreach (var k in cacheKeyListSecondary)
+            {
+                if (!relKeyListSecondary.Contains(k))
+                {
+                    _cache[cacheKey].TryRemove(k, out _);
+                }
+            }
         }
     }
 
@@ -336,7 +363,7 @@ public class TeklaSearchCache : ISearchCache
         stopwatch.Start();
         var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).UseDrawingKey().AppendObjectId().Build();
         var objects = drawing.GetSheet().GetAllObjects();
-        
+        _isInitialCachingDone = _cache.ContainsKey(dwgKey);
         SetIsCaching(true);
         AddMainKeyToCache(dwgKey);
 
@@ -351,7 +378,7 @@ public class TeklaSearchCache : ISearchCache
                     .Build();
 
                 if (o != null) AddEntryByMainKey(dwgKey, key, o);
-                if (o is Part p)
+                if (o is Part p && !_isInitialCachingDone)
                 {
                     var modelObject = GetRelatedModelObjectFromPart(p);
                     var moKey = new CacheKeyBuilder(modelObject.Identifier.ToString())
@@ -378,6 +405,7 @@ public class TeklaSearchCache : ISearchCache
                     }
                 }
             }
+            _isInitialCachingDone = true;
         }
 
         SetIsCaching(false);
