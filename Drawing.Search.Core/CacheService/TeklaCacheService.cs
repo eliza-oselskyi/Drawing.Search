@@ -139,7 +139,7 @@ public class TeklaCacheService : ICacheService
                 var teklaDrawing = drawing as Tekla.Structures.Drawing.Drawing;
                 var drawingKey = GenerateDrawingCacheKey(teklaDrawing.GetIdentifier().ToString());
                 LogCacheAction("Start refresh cache", $"Drawing ID: {drawingKey}");
-                _searchCache.RemoveMainKeyFromCache(drawingKey);
+                //_searchCache.RemoveMainKeyFromCache(drawingKey);
                 if (teklaDrawing != null) WriteAllObjectsInDrawingToCache(teklaDrawing);
             }
             finally

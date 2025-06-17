@@ -136,13 +136,20 @@ public class TeklaSearchCache : ISearchCache
         var cacheKeyListMain = _cache.Keys.ToList();
         foreach (var cacheKey in cacheKeyListMain)
         {
-            var cacheKeyListSecondary = _cache[cacheKey].Keys.ToList();
-            var relKeyListSecondary = _relationshipsCache[cacheKey].Keys.ToList();
-            foreach (var k in cacheKeyListSecondary)
+            _cache.TryGetValue(cacheKey, out var objects);
+            _relationshipsCache.TryGetValue(cacheKey, out var relSet);
+
+            if (objects == null) continue;
+            var cacheKeyListSecondary = (objects.Keys ?? []).ToList();
+            if (relSet != null)
             {
-                if (!relKeyListSecondary.Contains(k))
+                var relKeyListSecondary = relSet.Keys.ToList();
+                foreach (var k in cacheKeyListSecondary)
                 {
-                    _cache[cacheKey].TryRemove(k, out _);
+                    if (!relKeyListSecondary.Contains(k))
+                    {
+                        _cache[cacheKey].TryRemove(k, out _);
+                    }
                 }
             }
         }
