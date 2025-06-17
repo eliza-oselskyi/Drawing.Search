@@ -20,6 +20,8 @@ namespace Drawing.Search
     /// </summary>
     public partial class App
     {
+        private Mutex _mutex;
+
         /// <summary>
         ///     Gets the global service provider for the application.
         ///     Allows resolving services and handling dependency injection.
@@ -33,13 +35,33 @@ namespace Drawing.Search
         /// <param name="e">Event arguments for the application startup event.</param>
         protected override void OnStartup(StartupEventArgs e)
         {
-            var serviceCollection = new ServiceCollection();
-            ConfigureServices(serviceCollection);
-            ServiceProvider = serviceCollection.BuildServiceProvider();
-
-            var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            mainWindow.Show();
             base.OnStartup(e);
+
+            const string appName = "Drawing.Search";
+            _mutex = new Mutex(true, appName, out var createdNew);
+            if (!createdNew)
+            {
+                MessageBox.Show("Application is already running.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Current.Shutdown();
+                return;
+            }
+
+            try
+            {
+                var serviceCollection = new ServiceCollection();
+                ConfigureServices(serviceCollection);
+                ServiceProvider = serviceCollection.BuildServiceProvider();
+
+                var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+                mainWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to start application: {ex.Message}", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                Current.Shutdown();
+                return;
+            }
         }
 
         /// <summary>
@@ -71,6 +93,16 @@ namespace Drawing.Search
 
             // Registers the main application window
             services.AddSingleton<MainWindow>();
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            base.OnExit(e);
+            if (_mutex != null)
+            {
+                _mutex.ReleaseMutex();
+                _mutex.Dispose();
+            }
         }
     }
 }

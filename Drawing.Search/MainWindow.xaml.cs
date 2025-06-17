@@ -15,7 +15,10 @@ namespace Drawing.Search
             DataContext = searchViewModel;
 
             Loaded += (s, e) => SearchTextBox.Focus();
-
+            searchViewModel.QuitRequested += (sender, _) =>
+            {
+                Dispatcher.Invoke(() => Application.Current.Shutdown());
+            };
             if (DataContext is SearchViewModel vm) vm.SearchCompleted += (s, e) => SearchTextBox.Focus();
         }
 

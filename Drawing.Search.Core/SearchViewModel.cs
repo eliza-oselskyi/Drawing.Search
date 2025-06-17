@@ -43,6 +43,8 @@ public class SearchViewModel : INotifyPropertyChanged
     private string _statusMessage;
     private string _version;
 
+    public EventHandler<bool> QuitRequested;
+
     public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver,
         ICacheService cacheService)
     {
@@ -50,12 +52,7 @@ public class SearchViewModel : INotifyPropertyChanged
         _searchDriver = searchDriver ?? throw new ArgumentNullException(nameof(searchDriver));
         _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
 
-        _drawingEvents.DrawingChanged += OnDrawingModified;
-        _drawingEvents.DrawingUpdated += OnDrawingUpdated;
-        _uiEvents.DrawingLoaded += UiEventsOnDrawingLoaded;
-        _drawingEvents.Register();
-        _uiEvents.Register();
-        _cacheService.IsCachingChanged += (_, isCaching) => { IsCaching = isCaching; };
+        InitializeEvents();
 
         var uiContext = SynchronizationContext.Current ??
                         throw new InvalidOperationException("SearchViewModel must be created on UI thread.");
@@ -71,6 +68,17 @@ public class SearchViewModel : INotifyPropertyChanged
         {
             if (e.PropertyName == nameof(SearchTerm)) UpdateGhostSuggestion(SearchTerm);
         };
+    }
+
+    private void InitializeEvents()
+    {
+        _drawingEvents.DrawingChanged += OnDrawingModified;
+        _drawingEvents.DrawingUpdated += OnDrawingUpdated;
+        _uiEvents.DrawingLoaded += UiEventsOnDrawingLoaded;
+        _uiEvents.DrawingEditorClosed += () => { QuitRequested?.Invoke(this, false); };
+        _drawingEvents.Register();
+        _uiEvents.Register();
+        _cacheService.IsCachingChanged += (_, isCaching) => { IsCaching = isCaching; };
     }
 
     public string Version
