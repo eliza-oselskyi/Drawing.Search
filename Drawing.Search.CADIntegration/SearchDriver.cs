@@ -192,6 +192,7 @@ public class SearchDriver : IDisposable
         var contentCollector = new ContentCollectingObserver(new StringExtractor());
         searcher.Subscribe(contentCollector);
 
+        // TODO: select only main parts of assembly, unless configuration says otherwise
         // Search through assembly positions
         var matchedAssemblyPositions = searcher.Search(assemblyPositions, CreateSearchQuery(config));
 
