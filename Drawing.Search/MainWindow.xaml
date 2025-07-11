@@ -12,11 +12,10 @@
         Title="Search In Drawing"
         Topmost="True"
         Width="500"
-        Height="230"
-        MinHeight="230"
-        MaxHeight="230"
         MinWidth="500"
         MaxWidth="500"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
         FocusManager.FocusedElement="{Binding ElementName=SearchTextBox}">
 
     <Window.Resources>
@@ -30,8 +29,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" /> <!-- Radio buttons -->
             <RowDefinition Height="Auto" /> <!-- Search box and button -->
-            <RowDefinition Height="Auto" /> <!-- Check boxes -->
-            <RowDefinition Height="*" />    <!-- Status message -->
+            <RowDefinition Height="Auto" /> <!-- Check boxes and Advanced Settings -->
+            <RowDefinition Height="Auto" /> <!-- Status message -->
             <RowDefinition Height="Auto" /> <!-- Version and Theme toggle -->
         </Grid.RowDefinitions>
 
@@ -145,41 +144,27 @@
             </Button>
         </Grid>
 
-        <!-- Checkboxes Stack -->
-        <StackPanel Grid.Row="2"
-                    Orientation="Horizontal"
-                    Margin="0,0,0,5">
-            <!--
-            <CheckBox Content="Case sensitive"
-                      IsChecked="{Binding IsCaseSensitive}"
-                      IsEnabled="False"
-                      Visibility="Hidden"
-                      ToolTip="This feature is currently in development"
-                      Margin="0,0,10,0" />
-            <CheckBox Content="Match whole word"
-                      IsChecked="{Binding IsWholeWord}"
-                      IsEnabled="False"
-                      Visibility="Hidden"
-                      ToolTip="This feature is currently in development"
-                      Margin="0,0,10,0" />
-            <CheckBox Content="Fuzzy search"
-                      IsChecked="{Binding IsFuzzySearch}"
-                      Visibility="Hidden"
-                      IsEnabled="False"
-                      ToolTip="This feature is currently in development" />
-            -->
-            <CheckBox Content="Select all assembly parts"
-                      IsChecked="{Binding ShowAllAssemblyParts}"
-                      IsEnabled="{Binding SelectedSearchType, Converter={StaticResource SearchTypeToAssemblyEnabledConverter}}"
-                      ToolTip="When checked, selects all parts in the assembly. When unchecked, selects only main parts." 
-                      Margin="10,0,0,0"/>
-            <Expander Header="Advanced Settings" Margin="5">
-                <StackPanel Margin="10,5,5,5">
-                    <CheckBox Content="Use Regex Search"
-                              IsChecked="{Binding UseRegexSearch}"
-                              ToolTip="Enable regex pattern matching instead of wildcard search."></CheckBox>
-                </StackPanel>
-            </Expander>
+        <!-- Checkboxes and Advanced Settings -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,5">
+            <DockPanel>
+                <CheckBox DockPanel.Dock="Left"
+                          Content="Select all assembly parts"
+                          IsChecked="{Binding ShowAllAssemblyParts}"
+                          IsEnabled="{Binding SelectedSearchType, Converter={StaticResource SearchTypeToAssemblyEnabledConverter}}"
+                          ToolTip="When checked, selects all parts in the assembly. When unchecked, selects only main parts." 
+                          Margin="0,0,10,0"/>
+                  
+                <Expander DockPanel.Dock="Right"
+                          Header="Advanced Settings"
+                          Margin="0,0,0,0"
+                          HorizontalAlignment="Left">
+                    <StackPanel Margin="10,5,5,5">
+                        <CheckBox Content="Use Regex Search"
+                                  IsChecked="{Binding UseRegexSearch}"
+                                  ToolTip="Enable regex pattern matching instead of wildcard search"/>
+                    </StackPanel>
+                </Expander>
+            </DockPanel>
         </StackPanel>
 
         <!-- Status Message -->

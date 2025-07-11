@@ -3,7 +3,7 @@
 
     <!-- Colors -->
     <Color x:Key="BackgroundColor">#FFFFFF</Color>
-    <Color x:Key="SecondaryBackgroundColor">#F5F5F5</Color>
+    <Color x:Key="SecondaryBackgroundColor">#DCDCDC</Color>
     <Color x:Key="ForegroundColor">#000000</Color>
     <Color x:Key="BorderColor">#CCCCCC</Color>
     <Color x:Key="HighlightColor">#007ACC</Color>
@@ -26,12 +26,6 @@
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
     </Style>
 
-    <Style TargetType="TextBox">
-        <Setter Property="Background" Value="{StaticResource BackgroundBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
-    </Style>
-
     <Style TargetType="CheckBox">
         <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
         <Style.Triggers>
@@ -39,6 +33,12 @@
                 <Setter Property="Foreground" Value="{StaticResource DisabledForegroundBrush}" />
             </Trigger>
         </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Expander">
+        <Setter Property="Background" Value="#FFFFFF" />
+        <Setter Property="BorderBrush" Value="#CCCCCC" />
+        <Setter Property="Foreground" Value="#000000" />
     </Style>
 
     <Style TargetType="RadioButton">
