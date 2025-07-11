@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using Tekla.Structures.Drawing;
-using Tekla.Structures.Model;
-using ModelObject = Tekla.Structures.Model.ModelObject;
-using Text = Tekla.Structures.Drawing.Text;
-
-namespace Drawing.Search.Core.Interfaces;
+﻿namespace Drawing.Search.Common.Interfaces;
 
 /// <summary>
-/// Declares methods for observers of search classes.
+///     Declares methods for observers of search classes.
 /// </summary>
 public interface IObserver
 {
@@ -18,7 +9,6 @@ public interface IObserver
 }
 
 // TODO: Remove unnecessary comment
-
 /*
 public class Driver
 {
@@ -53,7 +43,7 @@ public class Driver
 
         var searchObserver = new SearchResultObserver();
         searcher.Subscribe(searchObserver);
-        
+
         var results = searcher.Search(dolist, new SearchQuery("ltmesa"));
 
         var texts = results.ToList();
@@ -71,4 +61,3 @@ public class Driver
 
 }
 */
-

@@ -12,8 +12,9 @@
         <AssemblyName>Drawing.Search.Core</AssemblyName>
         <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
-        <LangVersion>default</LangVersion>
+        <LangVersion>12</LangVersion>
         <Nullable>enable</Nullable>
+        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,62 +36,80 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="mscorlib" />
+        <Reference Include="Microsoft.Bcl.AsyncInterfaces">
+            <HintPath>..\..\..\..\.nuget\packages\microsoft.bcl.asyncinterfaces\6.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+        </Reference>
+        <Reference Include="Microsoft.Extensions.Caching.Abstractions">
+            <HintPath>..\..\..\..\.nuget\packages\microsoft.extensions.caching.abstractions\6.0.0\lib\net461\Microsoft.Extensions.Caching.Abstractions.dll</HintPath>
+        </Reference>
+        <Reference Include="mscorlib"/>
+        <Reference Include="PresentationFramework"/>
         <Reference Include="System"/>
         <Reference Include="System.Core"/>
+        <Reference Include="System.Runtime.Caching"/>
+        <Reference Include="System.Runtime.CompilerServices.Unsafe">
+            <HintPath>..\..\..\..\.nuget\packages\system.runtime.compilerservices.unsafe\6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+        </Reference>
+        <Reference Include="Tekla.Application.Library">
+          <HintPath>..\packages\Tekla.Application.Library.2023.0.0\lib\net40\Tekla.Application.Library.dll</HintPath>
+        </Reference>
         <Reference Include="Tekla.Structures.Drawing">
-          <HintPath>..\..\..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Tekla.Structures.Drawing\v4.0_2023.0.0.0__2f04dbe497b71114\Tekla.Structures.Drawing.dll</HintPath>
+            <HintPath>..\..\..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Tekla.Structures.Drawing\v4.0_2023.0.0.0__2f04dbe497b71114\Tekla.Structures.Drawing.dll</HintPath>
         </Reference>
         <Reference Include="Tekla.Structures.Model">
-          <HintPath>..\..\..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Tekla.Structures.Model\v4.0_2023.0.0.0__2f04dbe497b71114\Tekla.Structures.Model.dll</HintPath>
+            <HintPath>..\..\..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Tekla.Structures.Model\v4.0_2023.0.0.0__2f04dbe497b71114\Tekla.Structures.Model.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Extractors.cs" />
-        <Compile Include="Interfaces\IDataExtractor.cs" />
-        <Compile Include="Interfaces\IObserver.cs" />
-        <Compile Include="Interfaces\IObserverableSearch.cs" />
-        <Compile Include="Interfaces\ISearchStrategy.cs" />
-        <Compile Include="MatchStrategies.cs" />
-        <Compile Include="ObservableSearch.cs" />
+        <Compile Include="CacheService\TeklaCacheService.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
-        <Compile Include="QueryHandler.cs" />
-        <Compile Include="SearchManager.cs" />
-        <Compile Include="SearchQuery.cs" />
-        <Compile Include="SearchResultObserver.cs" />
-        <Compile Include="TeklaWrapper.cs" />
+        <Compile Include="SearchService\SearchService.cs"/>
+        <Compile Include="SearchSettings.cs" />
+        <Compile Include="SearchViewModel.cs"/>
+        <Compile Include="Utility\EnumToBoolConverter.cs"/>
     </ItemGroup>
     <ItemGroup>
-      <None Include="App.config" />
+        <None Include="App.config"/>
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="DotNetZip" Version="1.13.7" />
-      <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.4" />
-      <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.4" />
-      <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.4" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
-      <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.4" />
-      <PackageReference Include="Microsoft.Extensions.Primitives" Version="9.0.4" />
-      <PackageReference Include="Mono.Cecil" Version="0.9.6.1" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-      <PackageReference Include="System.Buffers" Version="4.5.1" />
-      <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.4" />
-      <PackageReference Include="System.Memory" Version="4.5.5" />
-      <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-      <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
-      <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
-      <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-      <PackageReference Include="Tekla.Structures" Version="2023.0.0" />
-      <PackageReference Include="Tekla.Structures.Catalogs" Version="2023.0.0" />
-      <PackageReference Include="Tekla.Structures.Datatype" Version="2023.0.0" />
-      <PackageReference Include="Tekla.Structures.Dialog" Version="2023.0.0" />
-      <PackageReference Include="Tekla.Structures.Drawing" Version="2023.0.0" />
-      <PackageReference Include="Tekla.Structures.Model" Version="2023.0.0" />
-      <PackageReference Include="Tekla.Structures.Plugins" Version="2023.0.0" />
-      <PackageReference Include="Tekla.Technology.Akit5" Version="5.8.17235.1" />
-      <PackageReference Include="Tekla.Technology.Scripting" Version="5.0.20041" />
-      <PackageReference Include="Tekla.Technology.Scripting.Plugins" Version="5.3.17206" />
+        <PackageReference Include="DotNetZip" Version="1.13.7"/>
+        <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0"/>
+        <PackageReference Include="Mono.Cecil" Version="0.9.6.1"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
+        <PackageReference Include="System.Buffers" Version="4.5.1"/>
+        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.0"/>
+        <PackageReference Include="System.Memory" Version="4.5.5"/>
+        <PackageReference Include="System.Numerics.Vectors" Version="4.5.0"/>
+        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3"/>
+        <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4"/>
+        <PackageReference Include="System.ValueTuple" Version="4.5.0"/>
+        <PackageReference Include="Tekla.Application.Library" Version="2023.0.0" />
+        <PackageReference Include="Tekla.Structures" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Structures.Catalogs" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Structures.Datatype" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Structures.Dialog" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Structures.Drawing" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Structures.Model" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Structures.Plugins" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Technology.Akit5" Version="5.8.17235.1"/>
+        <PackageReference Include="Tekla.Technology.Scripting" Version="5.0.20041"/>
+        <PackageReference Include="Tekla.Technology.Scripting.Plugins" Version="5.3.17206"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Drawing.Search.Caching\Drawing.Search.Caching.csproj">
+            <Project>{022a9742-6cb0-4639-9875-532c530fdc6b}</Project>
+            <Name>Drawing.Search.Caching</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\Drawing.Search.CADIntegration\Drawing.Search.CADIntegration.csproj">
+            <Project>{86b87741-f878-4647-99f8-f50d557bbcc4}</Project>
+            <Name>Drawing.Search.CADIntegration</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\Drawing.Search.Common\Drawing.Search.Common.csproj">
+            <Project>{7cecbcae-4636-41c1-9080-c59a93a34068}</Project>
+            <Name>Drawing.Search.Common</Name>
+        </ProjectReference>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
