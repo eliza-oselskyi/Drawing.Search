@@ -7,12 +7,17 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
+using Drawing.Search.Caching;
+using Drawing.Search.Caching.Interfaces;
+using Drawing.Search.CADIntegration;
+using Drawing.Search.Common.Enums;
+using Drawing.Search.Common.Interfaces;
+using Drawing.Search.Common.Observers;
+using Drawing.Search.Common.SearchTypes;
 using Drawing.Search.Core.CacheService;
-using Drawing.Search.Core.CacheService.Interfaces;
 using Drawing.Search.Core.SearchService;
-using Drawing.Search.Core.SearchService.Interfaces;
-using Microsoft.Extensions.Caching.Memory;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
 using ModelObject = Tekla.Structures.Model.ModelObject;
@@ -21,38 +26,40 @@ namespace Drawing.Search.Core;
 
 public class SearchViewModel : INotifyPropertyChanged
 {
-    private readonly SearchService.SearchService _searchService;
-    private readonly SearchDriver _searchDriver;
-    private readonly ICacheService _cacheService;
-    
     private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
+    private readonly ICacheService _cacheService;
+    private readonly Events _drawingEvents = new();
+
+    private readonly HashSet<string> _previousSearches = new(StringComparer.OrdinalIgnoreCase);
+    private readonly SearchDriver _searchDriver;
+    private readonly SearchService.SearchService _searchService;
+    private readonly Tekla.Structures.Drawing.UI.Events _uiEvents = new();
     private ContentCollectingObserver _contentCollector;
     private string _ghostSuggestion; // for autocomplete
     private bool _isCaching;
     private bool _isCaseSensitive;
     private bool _isSearching;
-
-    private readonly HashSet<string> _previousSearches = new(StringComparer.OrdinalIgnoreCase);
     private string _searchTerm;
     private SearchType _selectedSearchType;
     private string _statusMessage;
     private string _version;
-    private readonly Events _events = new();
+    private SearchSettings _settings;
 
-    public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver, ICacheService cacheService)
+    public EventHandler<bool> QuitRequested;
+
+    public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver,
+        ICacheService cacheService)
     {
         _searchService = searchService ?? throw new ArgumentNullException(nameof(searchService));
         _searchDriver = searchDriver ?? throw new ArgumentNullException(nameof(searchDriver));
         _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
-        
-        _events.DrawingChanged += OnDrawingModified;
-        _events.DrawingUpdated += OnDrawingUpdated;
-        _events.Register();
-        _cacheService.IsCachingChanged += (_cacheService, isCaching) => { IsCaching = isCaching; };
+
+        LoadSearchSettings();
+        InitializeEvents();
 
         var uiContext = SynchronizationContext.Current ??
                         throw new InvalidOperationException("SearchViewModel must be created on UI thread.");
-        _searchDriver.CacheObserver.StatusMessageChanged += (sender, message) => { StatusMessage = message; };
+        _searchDriver.CacheObserver.StatusMessageChanged += (_, message) => { StatusMessage = message; };
         SearchCommand = new AsyncRelayCommand(
             ExecuteSearchAsync,
             CanExecuteSearch
@@ -60,32 +67,51 @@ public class SearchViewModel : INotifyPropertyChanged
         Version = $"v{Assembly.GetExecutingAssembly().GetName().Version}";
 
 
-        PropertyChanged += (s, e) =>
+        PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(SearchTerm)) UpdateGhostSuggestion(SearchTerm);
         };
     }
 
-    // TODO: Figure out why IsCaching binding not working for search button. Should be disabled when caching is active.
-    private void OnDrawingUpdated(Tekla.Structures.Drawing.Drawing drawing, Events.DrawingUpdateTypeEnum type)
+    private void LoadSearchSettings()
     {
-        IsCaching = true;
-        StatusMessage = "Caching drawing objects...";
-        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).UseDrawingKey().AppendObjectId().Build();
-        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, drawing);
-        StatusMessage = "Ready";
-        IsCaching = false;
+        _settings = SearchSettings.Load();
+        _showAllAssemblyParts = _settings.ShowAllAssemblyPositions;
+        _isDarkMode = _settings.IsDarkMode;
+
+        ApplyTheme(_isDarkMode);
     }
 
-    private void OnDrawingModified()
+    private void ApplyTheme(bool isDark)
     {
-        IsCaching = true;
-        StatusMessage = "Caching drawing objects...";
-        var dwgId = DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ToString();
-        var dwgKey = new CacheKeyBuilder(dwgId).UseDrawingKey().AppendObjectId().Build();
-        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
-        StatusMessage = "Ready";
-        IsCaching = false;
+        var theme = isDark ? "Dark" : "Light";
+        
+        // Find and remove only the theme dictionary
+        var themeDict = Application.Current.Resources.MergedDictionaries
+            .FirstOrDefault(d => d.Source?.ToString().Contains("/Themes/Dark.xaml") == true 
+                             || d.Source?.ToString().Contains("/Themes/Light.xaml") == true);
+        
+        if (themeDict != null)
+        {
+            Application.Current.Resources.MergedDictionaries.Remove(themeDict);
+        }
+
+        // Add the new theme dictionary
+        Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri($"/Drawing.Search;component/Themes/{theme}.xaml", UriKind.Relative)
+        });
+    }
+
+    private void InitializeEvents()
+    {
+        _drawingEvents.DrawingChanged += OnDrawingModified;
+        _drawingEvents.DrawingUpdated += OnDrawingUpdated;
+        _uiEvents.DrawingLoaded += UiEventsOnDrawingLoaded;
+        _uiEvents.DrawingEditorClosed += () => { QuitRequested?.Invoke(this, false); };
+        _drawingEvents.Register();
+        _uiEvents.Register();
+        _cacheService.IsCachingChanged += (_, isCaching) => { IsCaching = isCaching; };
     }
 
     public string Version
@@ -171,7 +197,66 @@ public class SearchViewModel : INotifyPropertyChanged
         }
     }
 
+    private bool _isDarkMode;
+
+    public bool IsDarkMode
+    {
+        get => _isDarkMode;
+        set
+        {
+            if (_isDarkMode == value) return;
+            _isDarkMode = value;
+            _settings.IsDarkMode = value;
+            _settings.Save();
+            ApplyTheme(value);
+            OnPropertyChanged(nameof(IsDarkMode));
+        }
+    }
+
+    private bool _showAllAssemblyParts;
+
+    public bool ShowAllAssemblyParts
+    {
+        get => _showAllAssemblyParts;
+        set
+        {
+            if (_showAllAssemblyParts == value) return;
+            _showAllAssemblyParts = value;
+            _settings.ShowAllAssemblyPositions = value;
+            _settings.Save();
+            OnPropertyChanged(nameof(ShowAllAssemblyParts));
+        }
+    }
+
     public event PropertyChangedEventHandler PropertyChanged;
+
+    private void UiEventsOnDrawingLoaded()
+    {
+        _cacheService.RefreshCache(DrawingHandler.Instance.GetActiveDrawing());
+    }
+
+    // TODO: Figure out why IsCaching binding not working for search button. Should be disabled when caching is active.
+    private void OnDrawingUpdated(Tekla.Structures.Drawing.Drawing drawing, Events.DrawingUpdateTypeEnum type)
+    {
+        IsCaching = true;
+        StatusMessage = "Caching drawing objects...";
+        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).UseDrawingKey().AppendObjectId().Build();
+        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, drawing);
+        StatusMessage = "Ready";
+        IsCaching = false;
+    }
+
+    private void OnDrawingModified()
+    {
+        IsCaching = true;
+        StatusMessage = "Caching drawing objects...";
+        var dwgId = DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ToString();
+        var dwgKey = new CacheKeyBuilder(dwgId).UseDrawingKey().AppendObjectId().Build();
+        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
+        StatusMessage = "Ready";
+        IsCaching = false;
+    }
+
     public event EventHandler SearchCompleted;
 
     private void UpdateGhostSuggestion(string input)
@@ -183,13 +268,10 @@ public class SearchViewModel : INotifyPropertyChanged
         }
 
         // TODO: Implement matched_content caching to work with new cache system
-       // Debug.Assert(_cache != null, nameof(_cache) + " != null");
-  //      _cache.TryGetValue(MATCHED_CONTENT_CACHE_KEY, out HashSet<string> cachedContent);
-  var cachedContent = new HashSet<string>();
-  cachedContent.Add("NOT IMPLEMENTED");
-
-        cachedContent ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
+        // Debug.Assert(_cache != null, nameof(_cache) + " != null");
+        //      _cache.TryGetValue(MATCHED_CONTENT_CACHE_KEY, out HashSet<string> cachedContent);
+        var cachedContent = new HashSet<string>();
+        cachedContent.Add("NOT IMPLEMENTED");
 
         var allSuggestions = _previousSearches.Union(cachedContent);
 
@@ -216,6 +298,7 @@ public class SearchViewModel : INotifyPropertyChanged
             StatusMessage = "Cannot search while caching is active.";
             return;
         }
+
         try
         {
             IsSearching = true;
@@ -228,13 +311,7 @@ public class SearchViewModel : INotifyPropertyChanged
 
             var result = await Task.Run(() =>
             {
-                var config = new SearchConfiguration
-                {
-                    SearchTerm = SearchTerm,
-                    Type = SelectedSearchType,
-                    SearchStrategies = GetSearchStrategies(),
-                    Observer = _contentCollector
-                };
+                var config = CreateSearchConfiguration();
 
                 return _searchDriver.ExecuteSearch(config);
             });
@@ -259,6 +336,19 @@ public class SearchViewModel : INotifyPropertyChanged
             IsSearching = false;
             SearchCompleted?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    private SearchConfiguration CreateSearchConfiguration()
+    {
+        var config = new SearchConfiguration
+        {
+            SearchTerm = SearchTerm,
+            Type = SelectedSearchType,
+            SearchStrategies = GetSearchStrategies(),
+            Observer = _contentCollector,
+            ShowAllAssemblyParts = ShowAllAssemblyParts
+        };
+        return config;
     }
 
     private IDataExtractor GetExtractor(SearchType type)

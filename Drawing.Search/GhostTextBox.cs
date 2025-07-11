@@ -8,13 +8,13 @@ using System.Windows.Media;
 namespace Drawing.Search
 {
     /// <summary>
-    /// A custom <see cref="TextBox"/> control that displays ghost text (placeholder text) 
-    /// when the text box is empty or partially filled.
+    ///     A custom <see cref="TextBox" /> control that displays ghost text (placeholder text)
+    ///     when the text box is empty or partially filled.
     /// </summary>
     public class GhostTextBox : TextBox
     {
         /// <summary>
-        /// Dependency property for the ghost text that acts as placeholder text.
+        ///     Dependency property for the ghost text that acts as placeholder text.
         /// </summary>
         public static readonly DependencyProperty GhostTextProperty =
             DependencyProperty.Register(
@@ -22,11 +22,26 @@ namespace Drawing.Search
                 typeof(string),
                 typeof(GhostTextBox),
                 new PropertyMetadata(string.Empty, OnGhostTextChanged));
+        
+        public static readonly DependencyProperty GhostTextColorProperty = DependencyProperty.Register(
+            nameof(GhostTextColor),
+            typeof(Brush),
+            typeof(GhostTextBox),
+            new FrameworkPropertyMetadata(
+                new SolidColorBrush(Color.FromRgb(153,153,153)), 
+                FrameworkPropertyMetadataOptions.AffectsRender,
+                OnGhostTextColorChanged));
+
+        public Brush GhostTextColor
+        {
+            get { return (Brush)GetValue(GhostTextColorProperty); }
+            set { SetValue(GhostTextColorProperty, value); }
+        }
 
         private TextBlock _ghostTextBlock;
 
         /// <summary>
-        /// Static constructor that sets the default style key for the <see cref="GhostTextBox"/> class.
+        ///     Static constructor that sets the default style key for the <see cref="GhostTextBox" /> class.
         /// </summary>
         static GhostTextBox()
         {
@@ -35,8 +50,8 @@ namespace Drawing.Search
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GhostTextBox"/> class.
-        /// Sets up the event handler for the control's <see cref="Loaded"/> event.
+        ///     Initializes a new instance of the <see cref="GhostTextBox" /> class.
+        ///     Sets up the event handler for the control's <see cref="FrameworkElement.Loaded" /> event.
         /// </summary>
         public GhostTextBox()
         {
@@ -44,7 +59,7 @@ namespace Drawing.Search
         }
 
         /// <summary>
-        /// Gets or sets the placeholder (ghost) text displayed in the text box when it is empty.
+        ///     Gets or sets the placeholder (ghost) text displayed in the text box when it is empty.
         /// </summary>
         public string GhostText
         {
@@ -52,10 +67,35 @@ namespace Drawing.Search
             set => SetValue(GhostTextProperty, value);
         }
 
-        /// <summary>
-        /// Handles the <see cref="Control.Loaded"/> event to initialize ghost text behavior.
-        /// Ensures the ghost text is displayed correctly if needed.
-        /// </summary>
+        private static void OnGhostTextColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is GhostTextBox ghostTextBox && ghostTextBox._ghostTextBlock != null)
+            {
+                ghostTextBox._ghostTextBlock.Foreground = (Brush)e.NewValue;
+            }
+        }
+
+        private void UpdateGhostText()
+        {
+            if (_ghostTextBlock == null) return;
+
+            if (string.IsNullOrEmpty(Text))
+            {
+                _ghostTextBlock.Text = GhostText;
+                _ghostTextBlock.Visibility = Visibility.Visible;
+            }
+            else if (!string.IsNullOrEmpty(GhostText) && GhostText.StartsWith(Text, StringComparison.OrdinalIgnoreCase))
+            {
+                _ghostTextBlock.Text = GhostText;
+                _ghostTextBlock.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                _ghostTextBlock.Text = string.Empty;
+                _ghostTextBlock.Visibility = Visibility.Collapsed;
+            }
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             if (_ghostTextBlock != null) return;
@@ -65,12 +105,13 @@ namespace Drawing.Search
             {
                 _ghostTextBlock = new TextBlock
                 {
-                    Foreground = Brushes.Gray,
+                    Foreground = GhostTextColor,
                     Opacity = 0.5,
                     IsHitTestVisible = false,
                     Margin = new Thickness(4, 0, 4, 0),
                     VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Left
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Visibility = string.IsNullOrEmpty(Text) ? Visibility.Visible : Visibility.Collapsed
                 };
 
                 grid.Children.Add(_ghostTextBlock);
@@ -80,7 +121,7 @@ namespace Drawing.Search
         }
 
         /// <summary>
-        /// Called when the <see cref="GhostText"/> property changes. Updates the ghost text display.
+        ///     Called when the <see cref="GhostText" /> property changes. Updates the ghost text display.
         /// </summary>
         /// <param name="d">The dependency object where the property changed.</param>
         /// <param name="e">Details about the property change.</param>
@@ -90,8 +131,8 @@ namespace Drawing.Search
         }
 
         /// <summary>
-        /// Handles the <see cref="TextBox.TextChanged"/> event to update the ghost text 
-        /// when the text in the text box changes.
+        ///     Handles the <see cref="TextBox.TextChanged" /> event to update the ghost text
+        ///     when the text in the text box changes.
         /// </summary>
         private void OnTextChanged(object sender, TextChangedEventArgs e)
         {
@@ -99,35 +140,7 @@ namespace Drawing.Search
         }
 
         /// <summary>
-        /// Updates the text displayed in the ghost text block based on the current 
-        /// text in the text box and the value of the <see cref="GhostText"/>.
-        /// </summary>
-        private void UpdateGhostText()
-        {
-            if (_ghostTextBlock == null) return;
-
-            if (string.IsNullOrEmpty(Text) || string.IsNullOrEmpty(GhostText))
-            {
-                _ghostTextBlock.Text = "";
-                return;
-            }
-
-            if (GhostText.StartsWith(Text, StringComparison.OrdinalIgnoreCase))
-                //_ghostTextBlock.Text = GhostText.Substring(Text.Length);
-                // TODO: Currently a workaround for the issue with the TextBlock. Idea is to get it to show only the remainder of the suggestion.
-                _ghostTextBlock.Text = GhostText;
-            // _ghostTextBlock.Text = LeftPad(GhostText.Substring(Text.Length)
-            //                                    .Length -
-            //                                Text.Length) +
-            //                        GhostText.Substring(Text.Length);
-            else
-            {
-                _ghostTextBlock.Text = "";
-            }
-        }
-
-        /// <summary>
-        /// Pads a string with spaces to the specified length.
+        ///     Pads a string with spaces to the specified length.
         /// </summary>
         /// <param name="length">The number of spaces to include in the padding.</param>
         /// <returns>A string consisting of the specified number of spaces.</returns>
@@ -139,8 +152,8 @@ namespace Drawing.Search
         }
 
         /// <summary>
-        /// Handles the <see cref="UIElement.PreviewKeyDown"/> event to allow selecting the ghost text 
-        /// (via the <see cref="Key.Tab"/> key) as the text for the text box.
+        ///     Handles the <see cref="UIElement.PreviewKeyDown" /> event to allow selecting the ghost text
+        ///     (via the <see cref="Key.Tab" /> key) as the text for the text box.
         /// </summary>
         /// <param name="e">The event data.</param>
         protected override void OnPreviewKeyDown(KeyEventArgs e)
@@ -157,15 +170,15 @@ namespace Drawing.Search
     }
 
     /// <summary>
-    /// Extension methods for working with the visual tree in WPF.
+    ///     Extension methods for working with the visual tree in WPF.
     /// </summary>
     public static class VisualTreeHelperExtensions
     {
         /// <summary>
-        /// Safely retrieves the parent of a given <see cref="DependencyObject"/>.
+        ///     Safely retrieves the parent of a given <see cref="DependencyObject" />.
         /// </summary>
         /// <param name="element">The element whose parent is to be retrieved.</param>
-        /// <returns>The parent <see cref="DependencyObject"/>, or <c>null</c> if none exists.</returns>
+        /// <returns>The parent <see cref="DependencyObject" />, or <c>null</c> if none exists.</returns>
         public static DependencyObject GetParent(this DependencyObject element)
         {
             try

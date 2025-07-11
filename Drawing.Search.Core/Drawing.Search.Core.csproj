@@ -50,6 +50,9 @@
         <Reference Include="System.Runtime.CompilerServices.Unsafe">
             <HintPath>..\..\..\..\.nuget\packages\system.runtime.compilerservices.unsafe\6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
         </Reference>
+        <Reference Include="Tekla.Application.Library">
+          <HintPath>..\packages\Tekla.Application.Library.2023.0.0\lib\net40\Tekla.Application.Library.dll</HintPath>
+        </Reference>
         <Reference Include="Tekla.Structures.Drawing">
             <HintPath>..\..\..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Tekla.Structures.Drawing\v4.0_2023.0.0.0__2f04dbe497b71114\Tekla.Structures.Drawing.dll</HintPath>
         </Reference>
@@ -58,67 +61,55 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="CacheService\CacheKeyBuilder.cs" />
-        <Compile Include="CacheService\TeklaCacheService.cs" />
-        <Compile Include="CacheService\Interfaces\ICacheService.cs" />
-        <Compile Include="CacheService\Interfaces\ISearchCache.cs" />
-        <Compile Include="CacheService\TeklaSearchCache.cs" />
-        <Compile Include="CacheService\TestCache.cs" />
-        <Compile Include="CachingObserver.cs" />
-        <Compile Include="CADIntegrationService\Interfaces\IDrawing.cs" />
-        <Compile Include="CADIntegrationService\Interfaces\IDrawingHandler.cs" />
-        <Compile Include="CADIntegrationService\TeklaDrawingHandler.cs" />
-        <Compile Include="CADIntegrationService\TeklaDrawingWrapper.cs" />
-        <Compile Include="ContentCollectingObserver.cs" />
-        <Compile Include="Extractors.cs" />
-        <Compile Include="MatchStrategies.cs" />
-        <Compile Include="ObservableSearch.cs" />
-        <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="SearchQuery.cs" />
-        <Compile Include="SearchResultObserver.cs" />
-        <Compile Include="SearchService\Interfaces\IDataExtractor.cs" />
-        <Compile Include="SearchService\Interfaces\IObserver.cs" />
-        <Compile Include="SearchService\Interfaces\IObserverableSearch.cs" />
-        <Compile Include="SearchService\Interfaces\ISearchLogger.cs" />
-        <Compile Include="SearchService\Interfaces\ISearchStrategy.cs" />
-        <Compile Include="SearchService\SearchBuilder.cs" />
-        <Compile Include="SearchService\SearchConfiguration.cs" />
-        <Compile Include="SearchService\SearchDriver.cs" />
-        <Compile Include="SearchService\SearchLogger.cs" />
-        <Compile Include="SearchService\SearchResult.cs" />
-        <Compile Include="SearchService\SearchService.cs" />
-        <Compile Include="SearchService\SearchType.cs" />
-        <Compile Include="SearchViewModel.cs" />
-        <Compile Include="TeklaWrapper.cs" />
-        <Compile Include="Utility\EnumToBoolConverter.cs" />
+        <Compile Include="CacheService\TeklaCacheService.cs"/>
+        <Compile Include="Properties\AssemblyInfo.cs"/>
+        <Compile Include="SearchService\SearchService.cs"/>
+        <Compile Include="SearchSettings.cs" />
+        <Compile Include="SearchViewModel.cs"/>
+        <Compile Include="Utility\EnumToBoolConverter.cs"/>
     </ItemGroup>
     <ItemGroup>
-        <None Include="App.config" />
+        <None Include="App.config"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="DotNetZip" Version="1.13.7" />
-        <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
-        <PackageReference Include="Mono.Cecil" Version="0.9.6.1" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-        <PackageReference Include="System.Buffers" Version="4.5.1" />
-        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.0" />
-        <PackageReference Include="System.Memory" Version="4.5.5" />
-        <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3" />
-        <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
-        <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-        <PackageReference Include="Tekla.Structures" Version="2023.0.0" />
-        <PackageReference Include="Tekla.Structures.Catalogs" Version="2023.0.0" />
-        <PackageReference Include="Tekla.Structures.Datatype" Version="2023.0.0" />
-        <PackageReference Include="Tekla.Structures.Dialog" Version="2023.0.0" />
-        <PackageReference Include="Tekla.Structures.Drawing" Version="2023.0.0" />
-        <PackageReference Include="Tekla.Structures.Model" Version="2023.0.0" />
-        <PackageReference Include="Tekla.Structures.Plugins" Version="2023.0.0" />
-        <PackageReference Include="Tekla.Technology.Akit5" Version="5.8.17235.1" />
-        <PackageReference Include="Tekla.Technology.Scripting" Version="5.0.20041" />
-        <PackageReference Include="Tekla.Technology.Scripting.Plugins" Version="5.3.17206" />
+        <PackageReference Include="DotNetZip" Version="1.13.7"/>
+        <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0"/>
+        <PackageReference Include="Mono.Cecil" Version="0.9.6.1"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
+        <PackageReference Include="System.Buffers" Version="4.5.1"/>
+        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.0"/>
+        <PackageReference Include="System.Memory" Version="4.5.5"/>
+        <PackageReference Include="System.Numerics.Vectors" Version="4.5.0"/>
+        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3"/>
+        <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4"/>
+        <PackageReference Include="System.ValueTuple" Version="4.5.0"/>
+        <PackageReference Include="Tekla.Application.Library" Version="2023.0.0" />
+        <PackageReference Include="Tekla.Structures" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Structures.Catalogs" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Structures.Datatype" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Structures.Dialog" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Structures.Drawing" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Structures.Model" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Structures.Plugins" Version="2023.0.0"/>
+        <PackageReference Include="Tekla.Technology.Akit5" Version="5.8.17235.1"/>
+        <PackageReference Include="Tekla.Technology.Scripting" Version="5.0.20041"/>
+        <PackageReference Include="Tekla.Technology.Scripting.Plugins" Version="5.3.17206"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Drawing.Search.Caching\Drawing.Search.Caching.csproj">
+            <Project>{022a9742-6cb0-4639-9875-532c530fdc6b}</Project>
+            <Name>Drawing.Search.Caching</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\Drawing.Search.CADIntegration\Drawing.Search.CADIntegration.csproj">
+            <Project>{86b87741-f878-4647-99f8-f50d557bbcc4}</Project>
+            <Name>Drawing.Search.CADIntegration</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\Drawing.Search.Common\Drawing.Search.Common.csproj">
+            <Project>{7cecbcae-4636-41c1-9080-c59a93a34068}</Project>
+            <Name>Drawing.Search.Common</Name>
+        </ProjectReference>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

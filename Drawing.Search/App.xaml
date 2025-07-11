@@ -3,69 +3,36 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Drawing.Search">
     <Application.Resources>
-        <!-- Light Theme -->
+        <!--
+        ~1~ Light Theme @1@
         <SolidColorBrush x:Key="BackgroundBrush" Color="#FFFFFF" />
         <SolidColorBrush x:Key="ForegroundBrush" Color="#000000" />
         <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#e6ecf5" />
         <SolidColorBrush x:Key="BorderBrush" Color="#CCCCCC" />
         <SolidColorBrush x:Key="DisabledForegroundBrush" Color="#666666" />
 
-        <!-- Dark Theme -->
+        ~1~ Dark Theme @1@
         <SolidColorBrush x:Key="DarkBackgroundBrush" Color="#1E1E1E" />
         <SolidColorBrush x:Key="DarkForegroundBrush" Color="#FFFFFF" />
         <SolidColorBrush x:Key="DarkSecondaryBackgroundBrush" Color="#2D2D2D" />
         <SolidColorBrush x:Key="DarkBorderBrush" Color="#404040" />
         <SolidColorBrush x:Key="DarkDisabledForegroundBrush" Color="#999999" />
+        -->
 
         <!-- Default styles -->
-        <Style TargetType="Window">
-            <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Drawing.Search;component/Themes/Generic.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Drawing.Search;component/Themes/Light.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Drawing.Search;component/Themes/Dark.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="Window">
+                <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+            </Style>
+
+        </ResourceDictionary>
 
 
-        <Style x:Key="BaseTextBoxStyle" TargetType="TextBox">
-            <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}" />
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-        </Style>
-
-        <Style TargetType="TextBox" BasedOn="{StaticResource BaseTextBoxStyle}" />
-
-        <Style TargetType="{x:Type local:GhostTextBox}" BasedOn="{StaticResource BaseTextBoxStyle}">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type local:GhostTextBox}">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
-                            <Grid>
-                                <ScrollViewer x:Name="PART_ContentHost"
-                                              Margin="{TemplateBinding Padding}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                              HorizontalAlignment="Left" />
-                            </Grid>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}" />
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-        </Style>
-        <Style TargetType="RadioButton">
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-        </Style>
-        <Style TargetType="CheckBox">
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-            <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
-            <Style.Triggers>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
     </Application.Resources>
 </Application>
