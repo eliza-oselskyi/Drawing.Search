@@ -156,8 +156,11 @@ public class TeklaCacheService : ICacheService
 
     public IEnumerable<string> DumpAssemblyPositions()
     {
-        var tCache = _searchCache as TeklaSearchCache;
-        return tCache.DumpAssemblyPositions();
+        if (_searchCache is TeklaSearchCache tCache) return tCache.DumpAssemblyPositions();
+        else
+        {
+            throw new ArgumentNullException(nameof(tCache), "Cache not initialized.");
+        }
     }
 
     public IEnumerable<object> FetchAssemblyPosition(string assemblyPos)
@@ -173,7 +176,7 @@ public class TeklaCacheService : ICacheService
     }
 
 
-    private string GenerateDrawingCacheKey(string drawingId)
+    private static string GenerateDrawingCacheKey(string drawingId)
     {
         return new CacheKeyBuilder(drawingId).UseDrawingKey().AppendObjectId().Build();
     }
@@ -195,7 +198,7 @@ public class TeklaCacheService : ICacheService
         IsCachingChanged?.Invoke(this, isCaching);
     }
 
-    private void LogCacheAction(string action, string key)
+    private static void LogCacheAction(string action, string key)
     {
         var logger = SearchService.SearchService.GetLoggerInstance();
         logger.LogInformation($"Cache action: {action} with key {key}");

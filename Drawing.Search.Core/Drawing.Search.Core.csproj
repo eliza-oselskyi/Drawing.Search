@@ -64,6 +64,7 @@
         <Compile Include="CacheService\TeklaCacheService.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
         <Compile Include="SearchService\SearchService.cs"/>
+        <Compile Include="SearchSettings.cs" />
         <Compile Include="SearchViewModel.cs"/>
         <Compile Include="Utility\EnumToBoolConverter.cs"/>
     </ItemGroup>

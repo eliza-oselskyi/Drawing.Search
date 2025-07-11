@@ -349,13 +349,22 @@ public class TeklaSearchCache : ISearchCache
             }
     }
 
-    private static ModelObject GetRelatedModelObjectFromPart(Part part)
+    private static ModelObject GetRelatedModelObjectFromPart(Part part, out bool isMainPart)
     {
         var model = new Model();
         var id = part.ModelIdentifier;
         var modelObjectList = model.FetchModelObjects([id], false);
         var modelObject = modelObjectList.FirstOrDefault();
-        return modelObject;
+        if (modelObject is Tekla.Structures.Model.Part moPart)
+        {
+            var mainPart = moPart.GetAssembly().GetMainPart().Identifier.ID;
+            isMainPart = modelObject.Identifier.ID == mainPart;
+            return modelObject;
+        }
+        else
+        {
+            throw new Exception("Could not find model object for part");
+        }
     }
 
 
@@ -387,12 +396,17 @@ public class TeklaSearchCache : ISearchCache
                 if (o != null) AddEntryByMainKey(dwgKey, key, o);
                 if (o is Part p && !_isInitialCachingDone)
                 {
-                    var modelObject = GetRelatedModelObjectFromPart(p);
-                    var moKey = new CacheKeyBuilder(modelObject.Identifier.ToString())
+                    var modelObject = GetRelatedModelObjectFromPart(p, out var isMainPart);
+                    var moKeyRaw = new CacheKeyBuilder(modelObject.Identifier.ToString())
                         .Append(dwgKey)
                         .UseAssemblyObjectKey()
-                        .AppendObjectId()
-                        .Build();
+                        .AppendObjectId();
+                    if (isMainPart)
+                    {
+                        moKeyRaw.IsMainPart();
+                    }
+
+                    var moKey = moKeyRaw.Build();
 
                     AddEntryByMainKey(dwgKey, moKey, modelObject);
                     AddRelationship(dwgKey, key, moKey);

@@ -201,9 +201,13 @@ public class SearchDriver : IDisposable
         foreach (var assemblyPos in matchedAssemblyPositions)
         {
             var relatedIdentifiers = _cacheService.FetchAssemblyPosition(assemblyPos) as HashSet<string>;
-                
-            
-            foreach (var identifier in relatedIdentifiers)
+
+
+            if (relatedIdentifiers == null) continue;
+            var identifiersToProcess = config.ShowAllAssemblyParts
+                ? relatedIdentifiers
+                : relatedIdentifiers.Where(r => r.Contains("main"));
+            foreach (var identifier in identifiersToProcess)
             {
                 var relatedObjects = _cacheService.GetRelatedObjects(
                     activeDrawing.GetIdentifier().ToString(),

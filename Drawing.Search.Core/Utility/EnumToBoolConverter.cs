@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows.Data;
+using Drawing.Search.Common.Enums;
 
 namespace Drawing.Search.Core.Utility;
 
@@ -35,5 +36,21 @@ public class InverseBooleanConverter : IValueConverter
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         throw new NotSupportedException();
+    }
+}
+public class SearchTypeToAssemblyEnabledConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is SearchType searchType)
+        {
+            return searchType == SearchType.Assembly;
+        }
+        return false;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
     }
 }

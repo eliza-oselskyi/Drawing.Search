@@ -22,6 +22,21 @@ namespace Drawing.Search
                 typeof(string),
                 typeof(GhostTextBox),
                 new PropertyMetadata(string.Empty, OnGhostTextChanged));
+        
+        public static readonly DependencyProperty GhostTextColorProperty = DependencyProperty.Register(
+            nameof(GhostTextColor),
+            typeof(Brush),
+            typeof(GhostTextBox),
+            new FrameworkPropertyMetadata(
+                new SolidColorBrush(Color.FromRgb(153,153,153)), 
+                FrameworkPropertyMetadataOptions.AffectsRender,
+                OnGhostTextColorChanged));
+
+        public Brush GhostTextColor
+        {
+            get { return (Brush)GetValue(GhostTextColorProperty); }
+            set { SetValue(GhostTextColorProperty, value); }
+        }
 
         private TextBlock _ghostTextBlock;
 
@@ -52,10 +67,35 @@ namespace Drawing.Search
             set => SetValue(GhostTextProperty, value);
         }
 
-        /// <summary>
-        ///     Handles the <see cref="Control.Loaded" /> event to initialize ghost text behavior.
-        ///     Ensures the ghost text is displayed correctly if needed.
-        /// </summary>
+        private static void OnGhostTextColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is GhostTextBox ghostTextBox && ghostTextBox._ghostTextBlock != null)
+            {
+                ghostTextBox._ghostTextBlock.Foreground = (Brush)e.NewValue;
+            }
+        }
+
+        private void UpdateGhostText()
+        {
+            if (_ghostTextBlock == null) return;
+
+            if (string.IsNullOrEmpty(Text))
+            {
+                _ghostTextBlock.Text = GhostText;
+                _ghostTextBlock.Visibility = Visibility.Visible;
+            }
+            else if (!string.IsNullOrEmpty(GhostText) && GhostText.StartsWith(Text, StringComparison.OrdinalIgnoreCase))
+            {
+                _ghostTextBlock.Text = GhostText;
+                _ghostTextBlock.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                _ghostTextBlock.Text = string.Empty;
+                _ghostTextBlock.Visibility = Visibility.Collapsed;
+            }
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             if (_ghostTextBlock != null) return;
@@ -65,12 +105,13 @@ namespace Drawing.Search
             {
                 _ghostTextBlock = new TextBlock
                 {
-                    Foreground = Brushes.Gray,
+                    Foreground = GhostTextColor,
                     Opacity = 0.5,
                     IsHitTestVisible = false,
                     Margin = new Thickness(4, 0, 4, 0),
                     VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Left
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Visibility = string.IsNullOrEmpty(Text) ? Visibility.Visible : Visibility.Collapsed
                 };
 
                 grid.Children.Add(_ghostTextBlock);
@@ -96,30 +137,6 @@ namespace Drawing.Search
         private void OnTextChanged(object sender, TextChangedEventArgs e)
         {
             UpdateGhostText();
-        }
-
-        /// <summary>
-        ///     Updates the text displayed in the ghost text block based on the current
-        ///     text in the text box and the value of the <see cref="GhostText" />.
-        /// </summary>
-        private void UpdateGhostText()
-        {
-            if (_ghostTextBlock == null) return;
-
-            if (string.IsNullOrEmpty(Text) || string.IsNullOrEmpty(GhostText))
-            {
-                _ghostTextBlock.Text = "";
-                return;
-            }
-
-            //_ghostTextBlock.Text = GhostText.Substring(Text.Length);
-            // TODO: Currently a workaround for the issue with the TextBlock. Idea is to get it to show only the remainder of the suggestion.
-            _ghostTextBlock.Text = GhostText.StartsWith(Text, StringComparison.OrdinalIgnoreCase) ? GhostText :
-                // _ghostTextBlock.Text = LeftPad(GhostText.Substring(Text.Length)
-                //                                    .Length -
-                //                                Text.Length) +
-                //                        GhostText.Substring(Text.Length);
-                "";
         }
 
         /// <summary>

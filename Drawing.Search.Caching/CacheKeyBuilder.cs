@@ -122,6 +122,12 @@ public class CacheKeyBuilder
         return this;
     }
 
+    public CacheKeyBuilder IsMainPart()
+    {
+        _keyComponents.Add("main");
+        return this;
+    }
+
     /// <summary>
     ///     Combines all the key components into a single cache key string and returns it.
     /// </summary>

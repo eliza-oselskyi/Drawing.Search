@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using Drawing.Search.Caching;
 using Drawing.Search.Caching.Interfaces;
@@ -42,6 +43,7 @@ public class SearchViewModel : INotifyPropertyChanged
     private SearchType _selectedSearchType;
     private string _statusMessage;
     private string _version;
+    private SearchSettings _settings;
 
     public EventHandler<bool> QuitRequested;
 
@@ -52,6 +54,7 @@ public class SearchViewModel : INotifyPropertyChanged
         _searchDriver = searchDriver ?? throw new ArgumentNullException(nameof(searchDriver));
         _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
 
+        LoadSearchSettings();
         InitializeEvents();
 
         var uiContext = SynchronizationContext.Current ??
@@ -68,6 +71,36 @@ public class SearchViewModel : INotifyPropertyChanged
         {
             if (e.PropertyName == nameof(SearchTerm)) UpdateGhostSuggestion(SearchTerm);
         };
+    }
+
+    private void LoadSearchSettings()
+    {
+        _settings = SearchSettings.Load();
+        _showAllAssemblyParts = _settings.ShowAllAssemblyPositions;
+        _isDarkMode = _settings.IsDarkMode;
+
+        ApplyTheme(_isDarkMode);
+    }
+
+    private void ApplyTheme(bool isDark)
+    {
+        var theme = isDark ? "Dark" : "Light";
+        
+        // Find and remove only the theme dictionary
+        var themeDict = Application.Current.Resources.MergedDictionaries
+            .FirstOrDefault(d => d.Source?.ToString().Contains("/Themes/Dark.xaml") == true 
+                             || d.Source?.ToString().Contains("/Themes/Light.xaml") == true);
+        
+        if (themeDict != null)
+        {
+            Application.Current.Resources.MergedDictionaries.Remove(themeDict);
+        }
+
+        // Add the new theme dictionary
+        Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri($"/Drawing.Search;component/Themes/{theme}.xaml", UriKind.Relative)
+        });
     }
 
     private void InitializeEvents()
@@ -164,6 +197,37 @@ public class SearchViewModel : INotifyPropertyChanged
         }
     }
 
+    private bool _isDarkMode;
+
+    public bool IsDarkMode
+    {
+        get => _isDarkMode;
+        set
+        {
+            if (_isDarkMode == value) return;
+            _isDarkMode = value;
+            _settings.IsDarkMode = value;
+            _settings.Save();
+            ApplyTheme(value);
+            OnPropertyChanged(nameof(IsDarkMode));
+        }
+    }
+
+    private bool _showAllAssemblyParts;
+
+    public bool ShowAllAssemblyParts
+    {
+        get => _showAllAssemblyParts;
+        set
+        {
+            if (_showAllAssemblyParts == value) return;
+            _showAllAssemblyParts = value;
+            _settings.ShowAllAssemblyPositions = value;
+            _settings.Save();
+            OnPropertyChanged(nameof(ShowAllAssemblyParts));
+        }
+    }
+
     public event PropertyChangedEventHandler PropertyChanged;
 
     private void UiEventsOnDrawingLoaded()
@@ -247,13 +311,7 @@ public class SearchViewModel : INotifyPropertyChanged
 
             var result = await Task.Run(() =>
             {
-                var config = new SearchConfiguration
-                {
-                    SearchTerm = SearchTerm,
-                    Type = SelectedSearchType,
-                    SearchStrategies = GetSearchStrategies(),
-                    Observer = _contentCollector
-                };
+                var config = CreateSearchConfiguration();
 
                 return _searchDriver.ExecuteSearch(config);
             });
@@ -278,6 +336,19 @@ public class SearchViewModel : INotifyPropertyChanged
             IsSearching = false;
             SearchCompleted?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    private SearchConfiguration CreateSearchConfiguration()
+    {
+        var config = new SearchConfiguration
+        {
+            SearchTerm = SearchTerm,
+            Type = SelectedSearchType,
+            SearchStrategies = GetSearchStrategies(),
+            Observer = _contentCollector,
+            ShowAllAssemblyParts = ShowAllAssemblyParts
+        };
+        return config;
     }
 
     private IDataExtractor GetExtractor(SearchType type)

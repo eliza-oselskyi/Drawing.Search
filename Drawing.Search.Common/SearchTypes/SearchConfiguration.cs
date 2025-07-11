@@ -50,6 +50,10 @@ public class SearchConfiguration
     ///     Gets or sets a value indicating whether wildcards are enabled for the search term.
     /// </summary>
     public bool Wildcard { get; set; }
+    /// <summary>
+    /// Gets or sets a value indicating whether to show all assembly parts.
+    /// </summary>
+    public bool ShowAllAssemblyParts { get; set; }
 
     /// <summary>
     ///     Gets or sets the list of search strategies to be used during the search operation.
@@ -73,6 +77,7 @@ public class SearchConfiguration
     ///     Gets or sets the observer that listens to the search operation result notifications.
     /// </summary>
     public IObserver Observer { get; set; }
+
 
     /// <summary>
     ///     Returns a string representation of the search configuration, containing all properties.
