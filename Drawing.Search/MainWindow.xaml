@@ -173,6 +173,13 @@
                       IsEnabled="{Binding SelectedSearchType, Converter={StaticResource SearchTypeToAssemblyEnabledConverter}}"
                       ToolTip="When checked, selects all parts in the assembly. When unchecked, selects only main parts." 
                       Margin="10,0,0,0"/>
+            <Expander Header="Advanced Settings" Margin="5">
+                <StackPanel Margin="10,5,5,5">
+                    <CheckBox Content="Use Regex Search"
+                              IsChecked="{Binding UseRegexSearch}"
+                              ToolTip="Enable regex pattern matching instead of wildcard search."></CheckBox>
+                </StackPanel>
+            </Expander>
         </StackPanel>
 
         <!-- Status Message -->

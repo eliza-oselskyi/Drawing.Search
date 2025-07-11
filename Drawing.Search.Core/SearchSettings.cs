@@ -16,6 +16,8 @@ public class SearchSettings
     
     public bool ShowAllAssemblyPositions { get; set; } = false;
     public bool IsDarkMode { get; set; } = true;
+
+    public bool WildcardSearch { get; set; } = true;
     
 
     public static SearchSettings Load()

@@ -213,6 +213,18 @@ public class SearchViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool UseRegexSearch
+    {
+        get => !_settings.WildcardSearch;
+        set
+        {
+            if (_settings.WildcardSearch == !value) return;
+            _settings.WildcardSearch = !value;
+            _settings.Save();
+            OnPropertyChanged(nameof(UseRegexSearch));
+        }
+    }
+
     private bool _showAllAssemblyParts;
 
     public bool ShowAllAssemblyParts
@@ -346,7 +358,8 @@ public class SearchViewModel : INotifyPropertyChanged
             Type = SelectedSearchType,
             SearchStrategies = GetSearchStrategies(),
             Observer = _contentCollector,
-            ShowAllAssemblyParts = ShowAllAssemblyParts
+            ShowAllAssemblyParts = ShowAllAssemblyParts,
+            Wildcard = _settings.WildcardSearch
         };
         return config;
     }
@@ -368,15 +381,21 @@ public class SearchViewModel : INotifyPropertyChanged
         {
             SearchType.PartMark => new List<ISearchStrategy>
             {
-                new RegexMatchStrategy<Mark>()
+                _settings.WildcardSearch
+                ? new WildcardMatchStrategy<Mark>()
+                : new RegexMatchStrategy<Mark>()
             },
             SearchType.Text => new List<ISearchStrategy>
             {
-                new RegexMatchStrategy<Text>()
+                _settings.WildcardSearch
+                    ? new WildcardMatchStrategy<Text>()
+                    : new RegexMatchStrategy<Text>()
             },
             SearchType.Assembly => new List<ISearchStrategy>
             {
-                new RegexMatchStrategy<ModelObject>()
+                _settings.WildcardSearch
+                    ? new WildcardMatchStrategy<ModelObject>()
+                    : new RegexMatchStrategy<ModelObject>()
             },
             _ => throw new ArgumentException($"Unsupported search type: {SelectedSearchType}")
         };
