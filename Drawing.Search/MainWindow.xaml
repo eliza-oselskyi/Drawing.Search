@@ -148,10 +148,10 @@
         <StackPanel Grid.Row="2" Margin="0,0,0,5">
             <DockPanel>
                 <CheckBox DockPanel.Dock="Left"
-                          Content="Select all assembly parts"
+                          Content="Select all parts in assembly"
                           IsChecked="{Binding ShowAllAssemblyParts}"
                           IsEnabled="{Binding SelectedSearchType, Converter={StaticResource SearchTypeToAssemblyEnabledConverter}}"
-                          ToolTip="When checked, selects all parts in the assembly. When unchecked, selects only main parts." 
+                          ToolTip="When checked, selects all parts in the assembly. When unchecked, selects only main parts" 
                           Margin="0,0,10,0"/>
                   
                 <Expander DockPanel.Dock="Right"
