@@ -39,7 +39,7 @@ public class SearchConfiguration
     /// <summary>
     ///     Gets or sets the search term to be used in the search operation.
     /// </summary>
-    public string SearchTerm { get; set; }
+    public string? SearchTerm { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether the search is case-sensitive.

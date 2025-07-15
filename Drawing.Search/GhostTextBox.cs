@@ -34,8 +34,8 @@ namespace Drawing.Search
 
         public Brush GhostTextColor
         {
-            get { return (Brush)GetValue(GhostTextColorProperty); }
-            set { SetValue(GhostTextColorProperty, value); }
+            get => (Brush)GetValue(GhostTextColorProperty);
+            set => SetValue(GhostTextColorProperty, value);
         }
 
         private TextBlock _ghostTextBlock;
