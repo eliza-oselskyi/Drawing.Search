@@ -206,8 +206,12 @@ public class SearchViewModel : INotifyPropertyChanged
         {
             if (_isDarkMode == value) return;
             _isDarkMode = value;
-            _settings.IsDarkMode = value;
-            _settings.Save();
+            if (_settings != null)
+            {
+                _settings.IsDarkMode = value;
+                _settings.Save();
+            }
+
             ApplyTheme(value);
             OnPropertyChanged(nameof(IsDarkMode));
         }
@@ -215,12 +219,16 @@ public class SearchViewModel : INotifyPropertyChanged
 
     public bool UseRegexSearch
     {
-        get => !_settings.WildcardSearch;
+        get => _settings is { WildcardSearch: false };
         set
         {
-            if (_settings.WildcardSearch == !value) return;
-            _settings.WildcardSearch = !value;
-            _settings.Save();
+            if (_settings != null && _settings.WildcardSearch == !value) return;
+            if (_settings != null)
+            {
+                _settings.WildcardSearch = !value;
+                _settings.Save();
+            }
+
             OnPropertyChanged(nameof(UseRegexSearch));
         }
     }
@@ -234,8 +242,12 @@ public class SearchViewModel : INotifyPropertyChanged
         {
             if (_showAllAssemblyParts == value) return;
             _showAllAssemblyParts = value;
-            _settings.ShowAllAssemblyPositions = value;
-            _settings.Save();
+            if (_settings != null)
+            {
+                _settings.ShowAllAssemblyPositions = value;
+                _settings.Save();
+            }
+
             OnPropertyChanged(nameof(ShowAllAssemblyParts));
         }
     }
@@ -359,7 +371,7 @@ public class SearchViewModel : INotifyPropertyChanged
             SearchStrategies = GetSearchStrategies(),
             Observer = _contentCollector,
             ShowAllAssemblyParts = ShowAllAssemblyParts,
-            Wildcard = _settings.WildcardSearch
+            Wildcard = _settings is { WildcardSearch: true }
         };
         return config;
     }
@@ -381,19 +393,19 @@ public class SearchViewModel : INotifyPropertyChanged
         {
             SearchType.PartMark => new List<ISearchStrategy>
             {
-                _settings.WildcardSearch
+                _settings is { WildcardSearch: true }
                 ? new WildcardMatchStrategy<Mark>()
                 : new RegexMatchStrategy<Mark>()
             },
             SearchType.Text => new List<ISearchStrategy>
             {
-                _settings.WildcardSearch
+                _settings is { WildcardSearch: true }
                     ? new WildcardMatchStrategy<Text>()
                     : new RegexMatchStrategy<Text>()
             },
             SearchType.Assembly => new List<ISearchStrategy>
             {
-                _settings.WildcardSearch
+                _settings is { WildcardSearch: true }
                     ? new WildcardMatchStrategy<ModelObject>()
                     : new RegexMatchStrategy<ModelObject>()
             },
