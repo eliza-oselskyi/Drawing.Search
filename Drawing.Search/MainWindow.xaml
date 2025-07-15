@@ -16,6 +16,7 @@
         MaxWidth="500"
         SizeToContent="Height"
         ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
         FocusManager.FocusedElement="{Binding ElementName=SearchTextBox}">
 
     <Window.Resources>
