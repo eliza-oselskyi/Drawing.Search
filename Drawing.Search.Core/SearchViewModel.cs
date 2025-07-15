@@ -34,18 +34,18 @@ public class SearchViewModel : INotifyPropertyChanged
     private readonly SearchDriver _searchDriver;
     private readonly SearchService.SearchService _searchService;
     private readonly Tekla.Structures.Drawing.UI.Events _uiEvents = new();
-    private ContentCollectingObserver _contentCollector;
-    private string _ghostSuggestion; // for autocomplete
+    private ContentCollectingObserver? _contentCollector;
+    private string _ghostSuggestion = ""; // for autocomplete
     private bool _isCaching;
     private bool _isCaseSensitive;
     private bool _isSearching;
-    private string _searchTerm;
+    private string _searchTerm = "";
     private SearchType _selectedSearchType;
-    private string _statusMessage;
-    private string _version;
-    private SearchSettings _settings;
+    private string _statusMessage = "";
+    private string _version = "";
+    private SearchSettings? _settings;
 
-    public EventHandler<bool> QuitRequested;
+    public EventHandler<bool>? QuitRequested;
 
     public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver,
         ICacheService cacheService)
@@ -269,7 +269,7 @@ public class SearchViewModel : INotifyPropertyChanged
         IsCaching = false;
     }
 
-    public event EventHandler SearchCompleted;
+    public event EventHandler? SearchCompleted;
 
     private void UpdateGhostSuggestion(string input)
     {
@@ -417,11 +417,11 @@ public class SearchViewModel : INotifyPropertyChanged
 
 public class AsyncRelayCommand : ICommand
 {
-    private readonly Func<bool> _canExecute;
+    private readonly Func<bool>? _canExecute;
     private readonly Func<Task> _execute;
     private bool _isExecuting;
 
-    public AsyncRelayCommand(Func<Task> execute, Func<bool> canExecute = null)
+    public AsyncRelayCommand(Func<Task> execute, Func<bool>? canExecute = null)
     {
         _execute = execute ?? throw new ArgumentNullException(nameof(execute));
         _canExecute = canExecute;

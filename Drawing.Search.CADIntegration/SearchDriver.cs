@@ -302,7 +302,7 @@ public class SearchDriver : IDisposable
         }
     }
 
-    private ISearchQuery CreateSearchQuery(SearchConfiguration config)
+    private static ISearchQuery CreateSearchQuery(SearchConfiguration config)
     {
         if (config.SearchTerm == null) return new SearchQuery("");
         return new SearchQuery(config.SearchTerm)
@@ -311,13 +311,13 @@ public class SearchDriver : IDisposable
         };
     }
 
-    private ObservableSearch<T> CreateSearcher<T>(SearchConfiguration config)
+    private static ObservableSearch<T> CreateSearcher<T>(SearchConfiguration config)
     {
         var extractor = GetExtractor<T>();
         return new ObservableSearch<T>(config.SearchStrategies, extractor);
     }
 
-    private IDataExtractor GetExtractor<T>()
+    private static IDataExtractor GetExtractor<T>()
     {
         return typeof(T) switch
         {

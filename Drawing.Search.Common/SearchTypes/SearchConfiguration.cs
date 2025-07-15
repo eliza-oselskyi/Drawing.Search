@@ -76,7 +76,7 @@ public class SearchConfiguration
     /// <summary>
     ///     Gets or sets the observer that listens to the search operation result notifications.
     /// </summary>
-    public IObserver Observer { get; set; }
+    public IObserver? Observer { get; set; }
 
 
     /// <summary>
