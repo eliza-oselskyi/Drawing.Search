@@ -23,7 +23,7 @@ using ModelObject = Tekla.Structures.Model.ModelObject;
 
 namespace Drawing.Search.Core;
 
-public class SearchViewModel : INotifyPropertyChanged
+public sealed class SearchViewModel : INotifyPropertyChanged
 {
     private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
     private readonly ICacheService _cacheService;
@@ -409,12 +409,12 @@ public class SearchViewModel : INotifyPropertyChanged
         };
     }
 
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;
         field = value;
