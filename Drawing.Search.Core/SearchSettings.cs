@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using Newtonsoft.Json;
 
 namespace Drawing.Search.Core;
@@ -7,18 +8,18 @@ namespace Drawing.Search.Core;
 public class SearchSettings
 {
     private static readonly string ConfigFolderPath =
-        Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? string.Empty,
+        Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty,
             "config");
 
     private static readonly string ConfigFileName = "config.json";
 
-    private static readonly string ConfigFilePath = Path.Combine(ConfigFolderPath, ConfigFileName);   
-    
+    private static readonly string ConfigFilePath = Path.Combine(ConfigFolderPath, ConfigFileName);
+
     public bool ShowAllAssemblyPositions { get; set; } = false;
     public bool IsDarkMode { get; set; } = true;
 
-    public bool WildcardSearch { get; set; } = true;
-    
+    public bool WildcardSearch { get; set; } = false;
+
 
     public static SearchSettings Load()
     {
@@ -27,7 +28,7 @@ public class SearchSettings
         try
         {
             var jsonString = File.ReadAllText(ConfigFilePath);
-                return JsonConvert.DeserializeObject<SearchSettings>(jsonString) ?? new SearchSettings();
+            return JsonConvert.DeserializeObject<SearchSettings>(jsonString) ?? new SearchSettings();
         }
         catch
         {
@@ -40,7 +41,7 @@ public class SearchSettings
         try
         {
             var jsonString = JsonConvert.SerializeObject(this, Formatting.Indented);
-             File.WriteAllText(ConfigFilePath, jsonString);
+            File.WriteAllText(ConfigFilePath, jsonString);
         }
         catch (Exception e)
         {

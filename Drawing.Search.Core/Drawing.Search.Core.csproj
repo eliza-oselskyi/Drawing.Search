@@ -51,7 +51,7 @@
             <HintPath>..\..\..\..\.nuget\packages\system.runtime.compilerservices.unsafe\6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
         </Reference>
         <Reference Include="Tekla.Application.Library">
-          <HintPath>..\packages\Tekla.Application.Library.2023.0.0\lib\net40\Tekla.Application.Library.dll</HintPath>
+            <HintPath>..\packages\Tekla.Application.Library.2023.0.0\lib\net40\Tekla.Application.Library.dll</HintPath>
         </Reference>
         <Reference Include="Tekla.Structures.Drawing">
             <HintPath>..\..\..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Tekla.Structures.Drawing\v4.0_2023.0.0.0__2f04dbe497b71114\Tekla.Structures.Drawing.dll</HintPath>
@@ -64,7 +64,7 @@
         <Compile Include="CacheService\TeklaCacheService.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
         <Compile Include="SearchService\SearchService.cs"/>
-        <Compile Include="SearchSettings.cs" />
+        <Compile Include="SearchSettings.cs"/>
         <Compile Include="SearchViewModel.cs"/>
         <Compile Include="Utility\EnumToBoolConverter.cs"/>
     </ItemGroup>
@@ -82,10 +82,10 @@
         <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.0"/>
         <PackageReference Include="System.Memory" Version="4.5.5"/>
         <PackageReference Include="System.Numerics.Vectors" Version="4.5.0"/>
-        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3"/>
+        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0"/>
         <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4"/>
         <PackageReference Include="System.ValueTuple" Version="4.5.0"/>
-        <PackageReference Include="Tekla.Application.Library" Version="2023.0.0" />
+        <PackageReference Include="Tekla.Application.Library" Version="2023.0.0"/>
         <PackageReference Include="Tekla.Structures" Version="2023.0.0"/>
         <PackageReference Include="Tekla.Structures.Catalogs" Version="2023.0.0"/>
         <PackageReference Include="Tekla.Structures.Datatype" Version="2023.0.0"/>

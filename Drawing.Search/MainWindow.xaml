@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Drawing.Search"
-        xmlns:core="clr-namespace:Drawing.Search.Core;assembly=Drawing.Search.Core"
         xmlns:enums="clr-namespace:Drawing.Search.Common.Enums;assembly=Drawing.Search.Common"
         xmlns:utility="clr-namespace:Drawing.Search.Core.Utility;assembly=Drawing.Search.Core"
         Background="{DynamicResource BackgroundBrush}"
@@ -16,6 +15,7 @@
         MaxWidth="500"
         SizeToContent="Height"
         ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
         FocusManager.FocusedElement="{Binding ElementName=SearchTextBox}">
 
     <Window.Resources>
@@ -148,12 +148,12 @@
         <StackPanel Grid.Row="2" Margin="0,0,0,5">
             <DockPanel>
                 <CheckBox DockPanel.Dock="Left"
-                          Content="Select all assembly parts"
+                          Content="Select all parts in assembly"
                           IsChecked="{Binding ShowAllAssemblyParts}"
                           IsEnabled="{Binding SelectedSearchType, Converter={StaticResource SearchTypeToAssemblyEnabledConverter}}"
-                          ToolTip="When checked, selects all parts in the assembly. When unchecked, selects only main parts." 
-                          Margin="0,0,10,0"/>
-                  
+                          ToolTip="When checked, selects all parts in the assembly. When unchecked, selects only main parts"
+                          Margin="0,0,10,0" />
+
                 <Expander DockPanel.Dock="Right"
                           Header="Advanced Settings"
                           Margin="0,0,0,0"
@@ -161,7 +161,7 @@
                     <StackPanel Margin="10,5,5,5">
                         <CheckBox Content="Use Regex Search"
                                   IsChecked="{Binding UseRegexSearch}"
-                                  ToolTip="Enable regex pattern matching instead of wildcard search"/>
+                                  ToolTip="Enable regex pattern matching instead of wildcard search" />
                     </StackPanel>
                 </Expander>
             </DockPanel>

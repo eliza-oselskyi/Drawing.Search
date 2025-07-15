@@ -54,7 +54,6 @@ public class SearchDriver : IDisposable
     private readonly object _lockObject = new();
     private readonly ISearchLogger _logger;
     private bool _cacheInvalidated = true;
-    private string _currentDrawingId;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="SearchDriver" /> class.
@@ -172,7 +171,7 @@ public class SearchDriver : IDisposable
     }
 
     /// <summary>
-    /// Retrieves all objects from the specified drawing.
+    ///     Retrieves all objects from the specified drawing.
     /// </summary>
     /// <returns>A list of all <see cref="DrawingObject" /> objects in the drawing.</returns>
     private SearchResult NewExecuteAssemblySearch(SearchConfiguration config)
@@ -200,6 +199,7 @@ public class SearchDriver : IDisposable
         var selectableParts = new List<Part>();
         foreach (var assemblyPos in matchedAssemblyPositions)
         {
+            if (assemblyPos == null) continue;
             var relatedIdentifiers = _cacheService.FetchAssemblyPosition(assemblyPos) as HashSet<string>;
 
 
@@ -242,7 +242,8 @@ public class SearchDriver : IDisposable
         searcher.Subscribe(contentCollector);
 
         Debug.Assert(texts != null, nameof(texts) + " != null");
-        var results = searcher.Search(texts, CreateSearchQuery(config));
+        var results = searcher.Search(texts ?? throw new InvalidOperationException("No search term"),
+            CreateSearchQuery(config));
 
         var enumerable = results.ToList();
         SelectResults(enumerable.Cast<DrawingObject>().ToList());
@@ -271,6 +272,7 @@ public class SearchDriver : IDisposable
         searcher.Subscribe(contentCollector);
 
         Debug.Assert(marks != null, nameof(marks) + " != null");
+        if (marks == null) return new SearchResult();
         var results = searcher.Search(marks, CreateSearchQuery(config));
 
         var enumerable = results.ToList();
@@ -291,30 +293,27 @@ public class SearchDriver : IDisposable
         selector.UnselectAllObjects();
 
         if (typeof(T) == typeof(ModelObject))
-        {
             TeklaWrapper.ModelObjectListToSelection(results.Cast<ModelObject>().ToList(), drawing);
-        }
         else
-        {
             TeklaWrapper.DrawingObjectListToSelection(results.Cast<DrawingObject>().ToList(), drawing);
-        }
     }
 
-    private ISearchQuery CreateSearchQuery(SearchConfiguration config)
+    private static ISearchQuery CreateSearchQuery(SearchConfiguration config)
     {
+        if (config.SearchTerm == null) return new SearchQuery("");
         return new SearchQuery(config.SearchTerm)
         {
             CaseSensitive = config.StringComparison
         };
     }
 
-    private ObservableSearch<T> CreateSearcher<T>(SearchConfiguration config)
+    private static ObservableSearch<T> CreateSearcher<T>(SearchConfiguration config)
     {
         var extractor = GetExtractor<T>();
         return new ObservableSearch<T>(config.SearchStrategies, extractor);
     }
 
-    private IDataExtractor GetExtractor<T>()
+    private static IDataExtractor GetExtractor<T>()
     {
         return typeof(T) switch
         {

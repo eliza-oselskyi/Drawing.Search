@@ -47,9 +47,9 @@ namespace Drawing.Search.CADIntegration;
 /// </example>
 public class TeklaSearchCache : ISearchCache
 {
+    private readonly Dictionary<string, HashSet<string>> _assemblyPositionsToIdentifiers = new();
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, object>> _cache = new();
     private readonly ConcurrentDictionary<string, bool> _dirtyDrawingsCache = new();
-    private readonly Dictionary<string, HashSet<string>> _assemblyPositionsToIdentifiers = new();
     private readonly object _lockObject = new();
     private readonly ISearchLogger _logger;
 
@@ -75,6 +75,7 @@ public class TeklaSearchCache : ISearchCache
             identifiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             _assemblyPositionsToIdentifiers[assemblyPosition] = identifiers;
         }
+
         identifiers.Add(identifier);
     }
 
@@ -87,20 +88,6 @@ public class TeklaSearchCache : ISearchCache
         return _assemblyPositionsToIdentifiers.TryGetValue(match, out var identifiers)
             ? identifiers
             : Enumerable.Empty<string>();
-    }
-
-    public List<string> DumpAssemblyPositions()
-    {
-        var ids = new List<string>();
-        lock (_lockObject)
-        {
-            foreach (var id in _assemblyPositionsToIdentifiers)
-            {
-                ids.Add(id.Key);
-            }
-        }
-
-        return ids;
     }
 
     /// <summary>
@@ -127,31 +114,6 @@ public class TeklaSearchCache : ISearchCache
 
             _isDirty = false;
             SetIsCaching(false);
-        }
-    }
-
-    private void ClearDrawingObjectsOnly()
-    {
-        var relCacheKeyList = _relationshipsCache.Keys.ToList();
-        var cacheKeyListMain = _cache.Keys.ToList();
-        foreach (var cacheKey in cacheKeyListMain)
-        {
-            _cache.TryGetValue(cacheKey, out var objects);
-            _relationshipsCache.TryGetValue(cacheKey, out var relSet);
-
-            if (objects == null) continue;
-            var cacheKeyListSecondary = (objects.Keys ?? []).ToList();
-            if (relSet != null)
-            {
-                var relKeyListSecondary = relSet.Keys.ToList();
-                foreach (var k in cacheKeyListSecondary)
-                {
-                    if (!relKeyListSecondary.Contains(k))
-                    {
-                        _cache[cacheKey].TryRemove(k, out _);
-                    }
-                }
-            }
         }
     }
 
@@ -333,6 +295,44 @@ public class TeklaSearchCache : ISearchCache
         return _isCaching;
     }
 
+    public IEnumerable<object> FetchAssemblyPosition(string assemblyPosition)
+    {
+        _assemblyPositionsToIdentifiers.TryGetValue(assemblyPosition, out var identifiers);
+        return identifiers;
+    }
+
+    public List<string> DumpAssemblyPositions()
+    {
+        var ids = new List<string>();
+        lock (_lockObject)
+        {
+            foreach (var id in _assemblyPositionsToIdentifiers) ids.Add(id.Key);
+        }
+
+        return ids;
+    }
+
+    private void ClearDrawingObjectsOnly()
+    {
+        var relCacheKeyList = _relationshipsCache.Keys.ToList();
+        var cacheKeyListMain = _cache.Keys.ToList();
+        foreach (var cacheKey in cacheKeyListMain)
+        {
+            _cache.TryGetValue(cacheKey, out var objects);
+            _relationshipsCache.TryGetValue(cacheKey, out var relSet);
+
+            if (objects == null) continue;
+            var cacheKeyListSecondary = (objects.Keys ?? []).ToList();
+            if (relSet != null)
+            {
+                var relKeyListSecondary = relSet.Keys.ToList();
+                foreach (var k in cacheKeyListSecondary)
+                    if (!relKeyListSecondary.Contains(k))
+                        _cache[cacheKey].TryRemove(k, out _);
+            }
+        }
+    }
+
     /// <summary>
     ///     Refreshes specific cache keys within the cache.
     /// </summary>
@@ -401,22 +401,20 @@ public class TeklaSearchCache : ISearchCache
                         .Append(dwgKey)
                         .UseAssemblyObjectKey()
                         .AppendObjectId();
-                    if (isMainPart)
-                    {
-                        moKeyRaw.IsMainPart();
-                    }
+                    if (isMainPart) moKeyRaw.IsMainPart();
 
                     var moKey = moKeyRaw.Build();
 
                     AddEntryByMainKey(dwgKey, moKey, modelObject);
                     AddRelationship(dwgKey, key, moKey);
-                    
+
                     // Cache the assembly position
-                    string assemblyPostion = "";
+                    var assemblyPostion = "";
                     modelObject.GetReportProperty("ASSEMBLY_POS", ref assemblyPostion);
                     if (!string.IsNullOrEmpty(assemblyPostion))
                     {
-                        CacheAssemblyPosition(moKey, assemblyPostion);;
+                        CacheAssemblyPosition(moKey, assemblyPostion);
+                        ;
 
                         var assemblyPosKey = new CacheKeyBuilder(moKey)
                             .Append($"ASSEMBLY_POS_{assemblyPostion}")
@@ -426,18 +424,13 @@ public class TeklaSearchCache : ISearchCache
                     }
                 }
             }
+
             _isInitialCachingDone = true;
         }
 
         SetIsCaching(false);
         stopwatch.Stop();
         _logger.LogInformation($"Reading and caching took {stopwatch.ElapsedMilliseconds} ms.");
-    }
-
-    public IEnumerable<object> FetchAssemblyPosition(string assemblyPosition)
-    {
-        _assemblyPositionsToIdentifiers.TryGetValue(assemblyPosition, out var identifiers);
-        return identifiers;
     }
 
     /// <summary>

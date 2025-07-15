@@ -47,11 +47,19 @@ public class RegexMatchStrategy<T> : ISearchStrategy
     {
         var s = obj.ToString();
 
-        return Regex.IsMatch(s,
-            query.Term,
-            query.CaseSensitive == StringComparison.OrdinalIgnoreCase
-                ? RegexOptions.IgnoreCase
-                : RegexOptions.None);
+        try
+        {
+            return Regex.IsMatch(s,
+                query.Term,
+                query.CaseSensitive == StringComparison.OrdinalIgnoreCase
+                    ? RegexOptions.IgnoreCase
+                    : RegexOptions.None);
+        }
+        catch (ArgumentException e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
     }
 }
 

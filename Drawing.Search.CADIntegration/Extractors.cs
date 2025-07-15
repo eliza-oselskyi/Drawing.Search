@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Drawing.Search.Caching.Interfaces;
-using Drawing.Search.Common.Interfaces;
+﻿using Drawing.Search.Common.Interfaces;
 using Tekla.Structures.Drawing;
-using Tekla.Structures.DrawingInternal;
 using Tekla.Structures.Model;
 using ModelObject = Tekla.Structures.Model.ModelObject;
 
