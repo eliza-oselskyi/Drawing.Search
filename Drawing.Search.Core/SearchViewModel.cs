@@ -17,14 +17,13 @@ using Drawing.Search.Common.Interfaces;
 using Drawing.Search.Common.Observers;
 using Drawing.Search.Common.SearchTypes;
 using Drawing.Search.Core.CacheService;
-using Drawing.Search.Core.SearchService;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
 using ModelObject = Tekla.Structures.Model.ModelObject;
 
 namespace Drawing.Search.Core;
 
-public class SearchViewModel : INotifyPropertyChanged
+public sealed class SearchViewModel : INotifyPropertyChanged
 {
     private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
     private readonly ICacheService _cacheService;
@@ -34,18 +33,22 @@ public class SearchViewModel : INotifyPropertyChanged
     private readonly SearchDriver _searchDriver;
     private readonly SearchService.SearchService _searchService;
     private readonly Tekla.Structures.Drawing.UI.Events _uiEvents = new();
-    private ContentCollectingObserver _contentCollector;
-    private string _ghostSuggestion; // for autocomplete
+    private ContentCollectingObserver? _contentCollector;
+    private string _ghostSuggestion = ""; // for autocomplete
     private bool _isCaching;
     private bool _isCaseSensitive;
-    private bool _isSearching;
-    private string _searchTerm;
-    private SearchType _selectedSearchType;
-    private string _statusMessage;
-    private string _version;
-    private SearchSettings _settings;
 
-    public EventHandler<bool> QuitRequested;
+    private bool _isDarkMode;
+    private bool _isSearching;
+    private string _searchTerm = "";
+    private SearchType _selectedSearchType;
+    private SearchSettings? _settings;
+
+    private bool _showAllAssemblyParts;
+    private string _statusMessage = "";
+    private string _version = "";
+
+    public EventHandler<bool>? QuitRequested;
 
     public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver,
         ICacheService cacheService)
@@ -71,47 +74,6 @@ public class SearchViewModel : INotifyPropertyChanged
         {
             if (e.PropertyName == nameof(SearchTerm)) UpdateGhostSuggestion(SearchTerm);
         };
-    }
-
-    private void LoadSearchSettings()
-    {
-        _settings = SearchSettings.Load();
-        _showAllAssemblyParts = _settings.ShowAllAssemblyPositions;
-        _isDarkMode = _settings.IsDarkMode;
-
-        ApplyTheme(_isDarkMode);
-    }
-
-    private void ApplyTheme(bool isDark)
-    {
-        var theme = isDark ? "Dark" : "Light";
-        
-        // Find and remove only the theme dictionary
-        var themeDict = Application.Current.Resources.MergedDictionaries
-            .FirstOrDefault(d => d.Source?.ToString().Contains("/Themes/Dark.xaml") == true 
-                             || d.Source?.ToString().Contains("/Themes/Light.xaml") == true);
-        
-        if (themeDict != null)
-        {
-            Application.Current.Resources.MergedDictionaries.Remove(themeDict);
-        }
-
-        // Add the new theme dictionary
-        Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
-        {
-            Source = new Uri($"/Drawing.Search;component/Themes/{theme}.xaml", UriKind.Relative)
-        });
-    }
-
-    private void InitializeEvents()
-    {
-        _drawingEvents.DrawingChanged += OnDrawingModified;
-        _drawingEvents.DrawingUpdated += OnDrawingUpdated;
-        _uiEvents.DrawingLoaded += UiEventsOnDrawingLoaded;
-        _uiEvents.DrawingEditorClosed += () => { QuitRequested?.Invoke(this, false); };
-        _drawingEvents.Register();
-        _uiEvents.Register();
-        _cacheService.IsCachingChanged += (_, isCaching) => { IsCaching = isCaching; };
     }
 
     public string Version
@@ -197,8 +159,6 @@ public class SearchViewModel : INotifyPropertyChanged
         }
     }
 
-    private bool _isDarkMode;
-
     public bool IsDarkMode
     {
         get => _isDarkMode;
@@ -206,8 +166,12 @@ public class SearchViewModel : INotifyPropertyChanged
         {
             if (_isDarkMode == value) return;
             _isDarkMode = value;
-            _settings.IsDarkMode = value;
-            _settings.Save();
+            if (_settings != null)
+            {
+                _settings.IsDarkMode = value;
+                _settings.Save();
+            }
+
             ApplyTheme(value);
             OnPropertyChanged(nameof(IsDarkMode));
         }
@@ -215,17 +179,19 @@ public class SearchViewModel : INotifyPropertyChanged
 
     public bool UseRegexSearch
     {
-        get => !_settings.WildcardSearch;
+        get => _settings is { WildcardSearch: false };
         set
         {
-            if (_settings.WildcardSearch == !value) return;
-            _settings.WildcardSearch = !value;
-            _settings.Save();
+            if (_settings != null && _settings.WildcardSearch == !value) return;
+            if (_settings != null)
+            {
+                _settings.WildcardSearch = !value;
+                _settings.Save();
+            }
+
             OnPropertyChanged(nameof(UseRegexSearch));
         }
     }
-
-    private bool _showAllAssemblyParts;
 
     public bool ShowAllAssemblyParts
     {
@@ -234,13 +200,55 @@ public class SearchViewModel : INotifyPropertyChanged
         {
             if (_showAllAssemblyParts == value) return;
             _showAllAssemblyParts = value;
-            _settings.ShowAllAssemblyPositions = value;
-            _settings.Save();
+            if (_settings != null)
+            {
+                _settings.ShowAllAssemblyPositions = value;
+                _settings.Save();
+            }
+
             OnPropertyChanged(nameof(ShowAllAssemblyParts));
         }
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
+
+    private void LoadSearchSettings()
+    {
+        _settings = SearchSettings.Load();
+        _showAllAssemblyParts = _settings.ShowAllAssemblyPositions;
+        _isDarkMode = _settings.IsDarkMode;
+
+        ApplyTheme(_isDarkMode);
+    }
+
+    private static void ApplyTheme(bool isDark)
+    {
+        var theme = isDark ? "Dark" : "Light";
+
+        // Find and remove only the theme dictionary
+        var themeDict = Application.Current.Resources.MergedDictionaries
+            .FirstOrDefault(d => d.Source?.ToString().Contains("/Themes/Dark.xaml") == true
+                                 || d.Source?.ToString().Contains("/Themes/Light.xaml") == true);
+
+        if (themeDict != null) Application.Current.Resources.MergedDictionaries.Remove(themeDict);
+
+        // Add the new theme dictionary
+        Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri($"/Drawing.Search;component/Themes/{theme}.xaml", UriKind.Relative)
+        });
+    }
+
+    private void InitializeEvents()
+    {
+        _drawingEvents.DrawingChanged += OnDrawingModified;
+        _drawingEvents.DrawingUpdated += OnDrawingUpdated;
+        _uiEvents.DrawingLoaded += UiEventsOnDrawingLoaded;
+        _uiEvents.DrawingEditorClosed += () => { QuitRequested?.Invoke(this, false); };
+        _drawingEvents.Register();
+        _uiEvents.Register();
+        _cacheService.IsCachingChanged += (_, isCaching) => { IsCaching = isCaching; };
+    }
 
     private void UiEventsOnDrawingLoaded()
     {
@@ -269,7 +277,7 @@ public class SearchViewModel : INotifyPropertyChanged
         IsCaching = false;
     }
 
-    public event EventHandler SearchCompleted;
+    public event EventHandler? SearchCompleted;
 
     private void UpdateGhostSuggestion(string input)
     {
@@ -359,7 +367,7 @@ public class SearchViewModel : INotifyPropertyChanged
             SearchStrategies = GetSearchStrategies(),
             Observer = _contentCollector,
             ShowAllAssemblyParts = ShowAllAssemblyParts,
-            Wildcard = _settings.WildcardSearch
+            Wildcard = _settings is { WildcardSearch: true }
         };
         return config;
     }
@@ -381,19 +389,19 @@ public class SearchViewModel : INotifyPropertyChanged
         {
             SearchType.PartMark => new List<ISearchStrategy>
             {
-                _settings.WildcardSearch
-                ? new WildcardMatchStrategy<Mark>()
-                : new RegexMatchStrategy<Mark>()
+                _settings is { WildcardSearch: true }
+                    ? new WildcardMatchStrategy<Mark>()
+                    : new RegexMatchStrategy<Mark>()
             },
             SearchType.Text => new List<ISearchStrategy>
             {
-                _settings.WildcardSearch
+                _settings is { WildcardSearch: true }
                     ? new WildcardMatchStrategy<Text>()
                     : new RegexMatchStrategy<Text>()
             },
             SearchType.Assembly => new List<ISearchStrategy>
             {
-                _settings.WildcardSearch
+                _settings is { WildcardSearch: true }
                     ? new WildcardMatchStrategy<ModelObject>()
                     : new RegexMatchStrategy<ModelObject>()
             },
@@ -401,12 +409,12 @@ public class SearchViewModel : INotifyPropertyChanged
         };
     }
 
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;
         field = value;
@@ -417,11 +425,11 @@ public class SearchViewModel : INotifyPropertyChanged
 
 public class AsyncRelayCommand : ICommand
 {
-    private readonly Func<bool> _canExecute;
+    private readonly Func<bool>? _canExecute;
     private readonly Func<Task> _execute;
     private bool _isExecuting;
 
-    public AsyncRelayCommand(Func<Task> execute, Func<bool> canExecute = null)
+    public AsyncRelayCommand(Func<Task> execute, Func<bool>? canExecute = null)
     {
         _execute = execute ?? throw new ArgumentNullException(nameof(execute));
         _canExecute = canExecute;

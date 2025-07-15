@@ -22,21 +22,15 @@ namespace Drawing.Search
                 typeof(string),
                 typeof(GhostTextBox),
                 new PropertyMetadata(string.Empty, OnGhostTextChanged));
-        
+
         public static readonly DependencyProperty GhostTextColorProperty = DependencyProperty.Register(
             nameof(GhostTextColor),
             typeof(Brush),
             typeof(GhostTextBox),
             new FrameworkPropertyMetadata(
-                new SolidColorBrush(Color.FromRgb(153,153,153)), 
+                new SolidColorBrush(Color.FromRgb(153, 153, 153)),
                 FrameworkPropertyMetadataOptions.AffectsRender,
                 OnGhostTextColorChanged));
-
-        public Brush GhostTextColor
-        {
-            get { return (Brush)GetValue(GhostTextColorProperty); }
-            set { SetValue(GhostTextColorProperty, value); }
-        }
 
         private TextBlock _ghostTextBlock;
 
@@ -58,6 +52,12 @@ namespace Drawing.Search
             Loaded += OnLoaded;
         }
 
+        public Brush GhostTextColor
+        {
+            get => (Brush)GetValue(GhostTextColorProperty);
+            set => SetValue(GhostTextColorProperty, value);
+        }
+
         /// <summary>
         ///     Gets or sets the placeholder (ghost) text displayed in the text box when it is empty.
         /// </summary>
@@ -70,9 +70,7 @@ namespace Drawing.Search
         private static void OnGhostTextColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is GhostTextBox ghostTextBox && ghostTextBox._ghostTextBlock != null)
-            {
                 ghostTextBox._ghostTextBlock.Foreground = (Brush)e.NewValue;
-            }
         }
 
         private void UpdateGhostText()
