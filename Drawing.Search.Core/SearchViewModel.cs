@@ -17,7 +17,6 @@ using Drawing.Search.Common.Interfaces;
 using Drawing.Search.Common.Observers;
 using Drawing.Search.Common.SearchTypes;
 using Drawing.Search.Core.CacheService;
-using Drawing.Search.Core.SearchService;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
 using ModelObject = Tekla.Structures.Model.ModelObject;
@@ -38,12 +37,16 @@ public class SearchViewModel : INotifyPropertyChanged
     private string _ghostSuggestion = ""; // for autocomplete
     private bool _isCaching;
     private bool _isCaseSensitive;
+
+    private bool _isDarkMode;
     private bool _isSearching;
     private string _searchTerm = "";
     private SearchType _selectedSearchType;
+    private SearchSettings? _settings;
+
+    private bool _showAllAssemblyParts;
     private string _statusMessage = "";
     private string _version = "";
-    private SearchSettings? _settings;
 
     public EventHandler<bool>? QuitRequested;
 
@@ -71,47 +74,6 @@ public class SearchViewModel : INotifyPropertyChanged
         {
             if (e.PropertyName == nameof(SearchTerm)) UpdateGhostSuggestion(SearchTerm);
         };
-    }
-
-    private void LoadSearchSettings()
-    {
-        _settings = SearchSettings.Load();
-        _showAllAssemblyParts = _settings.ShowAllAssemblyPositions;
-        _isDarkMode = _settings.IsDarkMode;
-
-        ApplyTheme(_isDarkMode);
-    }
-
-    private void ApplyTheme(bool isDark)
-    {
-        var theme = isDark ? "Dark" : "Light";
-        
-        // Find and remove only the theme dictionary
-        var themeDict = Application.Current.Resources.MergedDictionaries
-            .FirstOrDefault(d => d.Source?.ToString().Contains("/Themes/Dark.xaml") == true 
-                             || d.Source?.ToString().Contains("/Themes/Light.xaml") == true);
-        
-        if (themeDict != null)
-        {
-            Application.Current.Resources.MergedDictionaries.Remove(themeDict);
-        }
-
-        // Add the new theme dictionary
-        Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
-        {
-            Source = new Uri($"/Drawing.Search;component/Themes/{theme}.xaml", UriKind.Relative)
-        });
-    }
-
-    private void InitializeEvents()
-    {
-        _drawingEvents.DrawingChanged += OnDrawingModified;
-        _drawingEvents.DrawingUpdated += OnDrawingUpdated;
-        _uiEvents.DrawingLoaded += UiEventsOnDrawingLoaded;
-        _uiEvents.DrawingEditorClosed += () => { QuitRequested?.Invoke(this, false); };
-        _drawingEvents.Register();
-        _uiEvents.Register();
-        _cacheService.IsCachingChanged += (_, isCaching) => { IsCaching = isCaching; };
     }
 
     public string Version
@@ -197,8 +159,6 @@ public class SearchViewModel : INotifyPropertyChanged
         }
     }
 
-    private bool _isDarkMode;
-
     public bool IsDarkMode
     {
         get => _isDarkMode;
@@ -233,8 +193,6 @@ public class SearchViewModel : INotifyPropertyChanged
         }
     }
 
-    private bool _showAllAssemblyParts;
-
     public bool ShowAllAssemblyParts
     {
         get => _showAllAssemblyParts;
@@ -253,6 +211,44 @@ public class SearchViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
+
+    private void LoadSearchSettings()
+    {
+        _settings = SearchSettings.Load();
+        _showAllAssemblyParts = _settings.ShowAllAssemblyPositions;
+        _isDarkMode = _settings.IsDarkMode;
+
+        ApplyTheme(_isDarkMode);
+    }
+
+    private static void ApplyTheme(bool isDark)
+    {
+        var theme = isDark ? "Dark" : "Light";
+
+        // Find and remove only the theme dictionary
+        var themeDict = Application.Current.Resources.MergedDictionaries
+            .FirstOrDefault(d => d.Source?.ToString().Contains("/Themes/Dark.xaml") == true
+                                 || d.Source?.ToString().Contains("/Themes/Light.xaml") == true);
+
+        if (themeDict != null) Application.Current.Resources.MergedDictionaries.Remove(themeDict);
+
+        // Add the new theme dictionary
+        Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri($"/Drawing.Search;component/Themes/{theme}.xaml", UriKind.Relative)
+        });
+    }
+
+    private void InitializeEvents()
+    {
+        _drawingEvents.DrawingChanged += OnDrawingModified;
+        _drawingEvents.DrawingUpdated += OnDrawingUpdated;
+        _uiEvents.DrawingLoaded += UiEventsOnDrawingLoaded;
+        _uiEvents.DrawingEditorClosed += () => { QuitRequested?.Invoke(this, false); };
+        _drawingEvents.Register();
+        _uiEvents.Register();
+        _cacheService.IsCachingChanged += (_, isCaching) => { IsCaching = isCaching; };
+    }
 
     private void UiEventsOnDrawingLoaded()
     {
@@ -394,8 +390,8 @@ public class SearchViewModel : INotifyPropertyChanged
             SearchType.PartMark => new List<ISearchStrategy>
             {
                 _settings is { WildcardSearch: true }
-                ? new WildcardMatchStrategy<Mark>()
-                : new RegexMatchStrategy<Mark>()
+                    ? new WildcardMatchStrategy<Mark>()
+                    : new RegexMatchStrategy<Mark>()
             },
             SearchType.Text => new List<ISearchStrategy>
             {

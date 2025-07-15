@@ -41,7 +41,8 @@ namespace Drawing.Search
             _mutex = new Mutex(true, appName, out var createdNew);
             if (!createdNew)
             {
-                MessageBox.Show("Application is already running.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Application is already running.", "Warning", MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
                 Current.Shutdown();
                 return;
             }

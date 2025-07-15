@@ -10,7 +10,8 @@ namespace Drawing.Search.Common.Observers;
 /// <remarks>
 ///     This class uses an <see cref="IDataExtractor" /> to extract searchable content from matched objects.
 ///     The collected content is stored in a case-insensitive <see cref="HashSet{T}" />.
-///     Note: This functionality is expected to be integrated into the <see>
+///     Note: This functionality is expected to be integrated into the
+///     <see>
 ///         <cref>SearchService</cref>
 ///     </see>
 ///     singleton

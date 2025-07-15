@@ -90,7 +90,8 @@ public class TeklaCacheService : ICacheService
 
     public void WriteAllObjectsInDrawingToCache(object drawing)
     {
-        if (drawing is not Tekla.Structures.Drawing.Drawing teklaDrawing) throw new ArgumentNullException(nameof(teklaDrawing));
+        if (drawing is not Tekla.Structures.Drawing.Drawing teklaDrawing)
+            throw new ArgumentNullException(nameof(teklaDrawing));
 
         lock (_cacheLock)
         {
@@ -122,13 +123,6 @@ public class TeklaCacheService : ICacheService
         if (teklaDrawing != null) WriteAllObjectsInDrawingToCache(teklaDrawing);
     }
 
-    public List<string> DumpIdentifiers()
-    {
-        var tCache = _searchCache as TeklaSearchCache;
-
-        return tCache?.DumpIdentifiers() ?? new List<string>();
-    }
-
     public void RefreshCache(object drawing)
     {
         lock (_cacheLock)
@@ -158,14 +152,19 @@ public class TeklaCacheService : ICacheService
     {
         if (_searchCache is TeklaSearchCache tCache) return tCache.DumpAssemblyPositions();
         else
-        {
             throw new ArgumentNullException(nameof(tCache), "Cache not initialized.");
-        }
     }
 
     public IEnumerable<object> FetchAssemblyPosition(string assemblyPos)
     {
         return _searchCache.FetchAssemblyPosition(assemblyPos);
+    }
+
+    public List<string> DumpIdentifiers()
+    {
+        var tCache = _searchCache as TeklaSearchCache;
+
+        return tCache?.DumpIdentifiers() ?? new List<string>();
     }
 
     public ArrayList GetSelectablePartsFromCache(string drawingKey, List<string> ids)

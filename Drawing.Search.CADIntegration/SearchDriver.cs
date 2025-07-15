@@ -171,7 +171,7 @@ public class SearchDriver : IDisposable
     }
 
     /// <summary>
-    /// Retrieves all objects from the specified drawing.
+    ///     Retrieves all objects from the specified drawing.
     /// </summary>
     /// <returns>A list of all <see cref="DrawingObject" /> objects in the drawing.</returns>
     private SearchResult NewExecuteAssemblySearch(SearchConfiguration config)
@@ -242,7 +242,8 @@ public class SearchDriver : IDisposable
         searcher.Subscribe(contentCollector);
 
         Debug.Assert(texts != null, nameof(texts) + " != null");
-        var results = searcher.Search(texts ?? throw new InvalidOperationException("No search term"), CreateSearchQuery(config));
+        var results = searcher.Search(texts ?? throw new InvalidOperationException("No search term"),
+            CreateSearchQuery(config));
 
         var enumerable = results.ToList();
         SelectResults(enumerable.Cast<DrawingObject>().ToList());
@@ -283,7 +284,6 @@ public class SearchDriver : IDisposable
             ElapsedMilliseconds = 0, // Set by caller
             SearchType = SearchType.PartMark
         };
-
     }
 
     private void SelectResults<T>(List<T> results) where T : class
@@ -293,13 +293,9 @@ public class SearchDriver : IDisposable
         selector.UnselectAllObjects();
 
         if (typeof(T) == typeof(ModelObject))
-        {
             TeklaWrapper.ModelObjectListToSelection(results.Cast<ModelObject>().ToList(), drawing);
-        }
         else
-        {
             TeklaWrapper.DrawingObjectListToSelection(results.Cast<DrawingObject>().ToList(), drawing);
-        }
     }
 
     private static ISearchQuery CreateSearchQuery(SearchConfiguration config)

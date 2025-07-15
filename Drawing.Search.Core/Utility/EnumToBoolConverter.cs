@@ -38,14 +38,12 @@ public class InverseBooleanConverter : IValueConverter
         throw new NotSupportedException();
     }
 }
+
 public class SearchTypeToAssemblyEnabledConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is SearchType searchType)
-        {
-            return searchType == SearchType.Assembly;
-        }
+        if (value is SearchType searchType) return searchType == SearchType.Assembly;
         return false;
     }
 

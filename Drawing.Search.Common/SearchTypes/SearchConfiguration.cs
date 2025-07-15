@@ -50,8 +50,9 @@ public class SearchConfiguration
     ///     Gets or sets a value indicating whether wildcards are enabled for the search term.
     /// </summary>
     public bool Wildcard { get; set; }
+
     /// <summary>
-    /// Gets or sets a value indicating whether to show all assembly parts.
+    ///     Gets or sets a value indicating whether to show all assembly parts.
     /// </summary>
     public bool ShowAllAssemblyParts { get; set; }
 
