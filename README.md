@@ -1,48 +1,26 @@
-# Drawing Peeker
+# Search in Drawing
 
-<!--<img src="https://ai.github.io/size-limit/logo.svg" align="right"-->
- <!--alt="Size Limit logo by Anton Lovchikov" width="120" height="178">-->
+Search in Drawing allows you to search for different types of objects in an active drawing in the TeklaStructures Drawing Editor.
 
-Drawing Peeker allows you to search for different types of objects in an active drawing in the TeklaStructures Drawing Editor.
+## Features
 
-* **Wildcard** and **Regular Expression (RegEx)** support.
-* Search for **Assemblies**, **Text objects** and **Part Marks**
-* Caches queries temporarily to provide quicker look-ups for duplicate searches.
+* **Multiple Search Types**:
+  * **Part Marks** - Search for associative notes and part marks
+  * **Text Objects** - Search through any text elements in the drawing
+  * **Assemblies** - Search for assembly representations with options to show all parts
+  
+* **Advanced Search Options**:
+  * **Regular Expression (RegEx)** support for complex search patterns
+  * **Wildcard** search mode for simpler queries
+  * **Dark/Light** theme support
 
-<!--<p align="center">-->
-  <!--<img src="./img/example.png" alt="Size Limit CLI" width="738">-->
-<!--</p>-->
-
-
-<!--## How It Works-->
-<!--1.-->
-
-## Installation
-
-<details><summary><b>Show instructions</b></summary>
-
-1. Go to the [ latest release ](https://github.com/eliza-oselskyi/Drawing.Search/releases/tag/v1.0.1) and download the `.zip` file.
-
-2. Extract the `.zip` file to any location on your computer.
-
-3. Run the `install_script` with powershell.
-
-    ```txt
-    Right Click on install script > Click "Run with Powershell"
-    ```
-4. In Tekla, go to Applications and Components and click on the "hamburger" menu.
-
-5. Under `Catalog Management`, click `Reload Catalog`.
-
-That should be it! It automatically installs everything where it needs to be.
-
-</details>
+* **Performance Features**:
+  * Parallel processing for faster searches
+  * Smart caching system for improved performance
+  * Real-time search status updates
+  * Previous search suggestions
 
 ## Usage
-
-Starting your first search is very trivial:
-
-<!--<details><summary><b>Show instructions</b></summary>-->
 
 1. Run the macro from Applications and Components:
 
@@ -50,48 +28,73 @@ Starting your first search is very trivial:
     Search_Drawings
     ```
 
----
+2. Choose your search type (Part Marks, Text, or Assembly)
 
-2. By default, **Part Marks** are selected. Type in a search query:
+3. Enter your search query:
 
-    For example:
+    For example with RegEx mode:
 
     ```regex
     80Z-[1-9]
     ```
 
-    This states to find any match that starts with `80Z-` and the following character can be a range between 1 through 9.
+    This finds any match that starts with `80Z-` followed by a single digit from 1 through 9.
 
-    Currently, the search query types are matched using regular expressions. Don't worry, it works very similarly to how the model view search box searches for things, but with much more flexibility in terms of composing search queries.*
-
-    There will be an option to turn on the same kind of searching style as the model view (called wildcards) in future versions.
+4. Use additional options as needed:
+   * Switch between RegEx and Wildcard search modes
+   * Enable "Show all assembly parts" for assembly searches
+   * Switch between dark/light themes
 
 <details>
     <summary>
-    <b>
-        <u>
-            Notes
-        </u>
-    </b>
+    <b>Search Tips</b>
     </summary>
 
-To learn more about more advanced search queries (regular expressions), see this [interactive guide](https://www.regexone.com/) and [this](https://github.com/ziishaned/learn-regex), or check out this [quick reference](https://gist.github.com/Vinoshan/8355823d4c09ec611569025f1d346e28) and [this one](https://github.com/dotnet/docs/blob/main/docs/standard/base-types/regular-expression-language-quick-reference.md) to get started quickly.
+### Regex Quickstart Guide
+
+Here are some common regex patterns to get you started:
+
+| Pattern | Description | Example | Matches |
+|---------|-------------|---------|---------|
+| `^` | Start of line | `^80` | "80Z-1", "80-A2" |
+| `$` | End of line | `1$` | "A-1", "80Z-1" |
+| `\d` | Any digit | `A\d` | "A1", "A5" |
+| `\d+` | One or more digits | `A\d+` | "A1", "A123" |
+| `[abc]` | Any character in brackets | `[ABC]1` | "A1", "B1", "C1" |
+| `[a-z]` | Any character in range | `[A-C]1` | "A1", "B1", "C1" |
+| `.` | Any single character | `A.1` | "AA1", "AB1" |
+| `*` | Zero or more of previous | `A\d*` | "A", "A1", "A123" |
+| `+` | One or more of previous | `A\d+` | "A1", "A123" |
+| `?` | Zero or one of previous | `A\d?` | "A", "A1" |
+
+#### Common Examples:
+
+1. Match any mark starting with 80Z:
+   ```regex
+   ^80Z
+   ```
+
+2. Match assembly numbers of an RCB assembly, 1–99:
+   ```regex
+   ^RCB-[1-9]\d?$
+   ```
+
+3. Match part marks with optional revision (A-Z):
+   ```regex
+   \d+[A-Z]?$
+   ```
+
+To learn more about regular expressions, check out these resources:
+- [Interactive RegEx Guide](https://www.regexone.com/)
+- [Learn RegEx](https://github.com/ziishaned/learn-regex)
+- [Quick Reference](https://gist.github.com/Vinoshan/8355823d4c09ec611569025f1d346e28)
+- [.NET RegEx Reference](https://github.com/dotnet/docs/blob/main/docs/standard/base-types/regular-expression-language-quick-reference.md)
 
 </details>
 
----
-
-3. The search function works the exact same way for different objects.
-Searching assemblies will select the main part of the actual assembly representation in the drawing, while part mark search will select the part mark (usually an associative note) of the related part. Searching text will search for any `Text` element in the drawing, including some CED bubbles. Please see [ this section ](#searching-for-ced-bubbles) for a list of current limitations.
-
-<!--</details>-->
-
-
 ## Limitations
 
-<!--<details><summary><b>Show</b></summary>-->
-
- <details><summary><b>Searching for CED bubbles</b></summary>
+<details><summary><b>Searching for CED bubbles</b></summary>
 
 #### Searching for CED bubbles
 ---
@@ -108,7 +111,6 @@ Searching assemblies will select the main part of the actual assembly representa
 
 </details>
 
-
 <details> <summary> <b> Searching in unexploded charts and notes and other NBG plugins: </b> </summary>
 
 #### Searching in unexploded charts and notes and other NBG plugins:
@@ -116,7 +118,7 @@ Searching assemblies will select the main part of the actual assembly representa
 
 As mentioned in the previous item, the NBG plugins do not give much, if any, information that is contained within them. This means that searching in any of these is impossible.
 
-The good news is, I have been communicating with NBGGS about this issue and they are willing to work with me to begin implementing this feature.
+The good news is, I have been communicating with NBGGS about this issue, and they are willing to work with me to begin implementing this feature.
 
 For now, unfortunately, you would have to explode the plugin first to be able to search for the text contained within it.
 
