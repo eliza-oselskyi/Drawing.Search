@@ -89,7 +89,7 @@ public class MarkExtractor : IDataExtractor
         if (obj is not Mark mark) return "";
         var stringBuilder = new StringBuilder();
         var enumerator = mark.Attributes.Content.GetEnumerator();
-        using var enumerator1 = enumerator as IDisposable;
+        using var disposable = enumerator as IDisposable;
         while (enumerator.MoveNext())
         {
             var curr = enumerator.Current;
