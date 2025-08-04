@@ -409,13 +409,13 @@ public class TeklaSearchCache : ISearchCache
                     AddRelationship(dwgKey, key, moKey);
 
                     var assemblyPostion = "";
+                    modelObject.GetReportProperty("ASSEMBLY_POS", ref assemblyPostion);
                     var assemblyPosKey = new CacheKeyBuilder(moKey)
                         .AppendObjectId();
                     
                     // Cache the assembly position
                     if (isMainPart)
                     {
-                        modelObject.GetReportProperty("ASSEMBLY_POS", ref assemblyPostion);
                         if (!string.IsNullOrEmpty(assemblyPostion))
                         {
                             assemblyPosKey = assemblyPosKey
@@ -424,7 +424,9 @@ public class TeklaSearchCache : ISearchCache
                     }
                     else
                     {
-                        modelObject.GetReportProperty("PART_POS", ref assemblyPostion);
+                        var partPosition = "";
+                        modelObject.GetReportProperty("PART_POS", ref partPosition);
+                        assemblyPostion = assemblyPostion + "_" + partPosition;
                         if (!string.IsNullOrEmpty(assemblyPostion))
                         {
                             assemblyPosKey = assemblyPosKey

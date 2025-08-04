@@ -12,6 +12,7 @@ using System.Windows.Input;
 using Drawing.Search.Caching;
 using Drawing.Search.Caching.Interfaces;
 using Drawing.Search.CADIntegration;
+using Drawing.Search.CADIntegration.History;
 using Drawing.Search.Common.Enums;
 using Drawing.Search.Common.Interfaces;
 using Drawing.Search.Common.Observers;
@@ -47,6 +48,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     private bool _showAllAssemblyParts;
     private string _statusMessage = "";
     private string _version = "";
+    private DrawingHistory _drawingHistory = new();
 
     public EventHandler<bool>? QuitRequested;
 
@@ -59,6 +61,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
         LoadSearchSettings();
         InitializeEvents();
+        UpdateDrawingState();
 
         var uiContext = SynchronizationContext.Current ??
                         throw new InvalidOperationException("SearchViewModel must be created on UI thread.");
@@ -74,6 +77,11 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         {
             if (e.PropertyName == nameof(SearchTerm)) UpdateGhostSuggestion(SearchTerm);
         };
+    }
+
+    private void UpdateDrawingState()
+    {
+        _drawingHistory.Save(new DrawingObjectsOriginator(DrawingHandler.Instance.GetActiveDrawing()).CreateDrawingState());
     }
 
     public string Version
@@ -258,6 +266,8 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     // TODO: Figure out why IsCaching binding not working for search button. Should be disabled when caching is active.
     private void OnDrawingUpdated(Tekla.Structures.Drawing.Drawing drawing, Events.DrawingUpdateTypeEnum type)
     {
+        UpdateDrawingState();
+        if (!_drawingHistory.HasDifference) return;
         IsCaching = true;
         StatusMessage = "Caching drawing objects...";
         var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).UseDrawingKey().AppendObjectId().Build();
@@ -268,6 +278,8 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
     private void OnDrawingModified()
     {
+        UpdateDrawingState();
+        if (!_drawingHistory.HasDifference) return;
         IsCaching = true;
         StatusMessage = "Caching drawing objects...";
         var dwgId = DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ToString();
