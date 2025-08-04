@@ -1,4 +1,6 @@
-﻿using Drawing.Search.Common.Interfaces;
+﻿using System;
+using System.Text;
+using Drawing.Search.Common.Interfaces;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.Model;
 using ModelObject = Tekla.Structures.Model.ModelObject;
@@ -84,8 +86,35 @@ public class MarkExtractor : IDataExtractor
     /// <returns>Searchable string.</returns>
     public string ExtractSearchableString(object obj)
     {
-        if (obj is Mark mark) return ParseUnformattedString(mark.Attributes.Content.GetUnformattedString());
-        return "";
+        if (obj is not Mark mark) return "";
+        var stringBuilder = new StringBuilder();
+        var enumerator = mark.Attributes.Content.GetEnumerator();
+        using var enumerator1 = enumerator as IDisposable;
+        while (enumerator.MoveNext())
+        {
+            var curr = enumerator.Current;
+            if (curr is ElementBase elm)
+            {
+                stringBuilder.AppendLine(GetElementValue(elm));
+            }
+        }
+        return stringBuilder.ToString();
+    }
+
+    /// <summary>
+    /// Gets the value of an element in a Mark.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <returns></returns>
+    private static string GetElementValue(ElementBase element)
+    {
+        return element switch
+        {
+            PropertyElement elm => elm.Value,
+            UserDefinedElement elm => elm.Value,
+            TextElement elm => elm.Value,
+            _ => ParseUnformattedString(element.GetUnformattedString())
+        };
     }
 
     /// <summary>
