@@ -4,6 +4,7 @@ using Drawing.Search.Common.Interfaces;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.Model;
 using ModelObject = Tekla.Structures.Model.ModelObject;
+using Part = Tekla.Structures.Model.Part;
 
 namespace Drawing.Search.CADIntegration;
 
@@ -22,12 +23,15 @@ public class ModelObjectExtractor : IDataExtractor
         var model = obj as ModelObject;
         var prop = string.Empty;
         if (model == null) return prop;
-        if (model is not Beam beam) return prop;
+        if (model is not Part part) return prop;
         model.GetReportProperty($"ASSEMBLY_POS", ref prop);
+        var temp = string.Empty;
+        model.GetReportProperty($"PART_POS", ref temp);
+        prop = prop + "\n" + temp;
 
-        if (prop == string.Empty) model.GetReportProperty($"PART_POS", ref prop);
+        //if (prop == string.Empty) model.GetReportProperty($"PART_POS", ref prop);
 
-        return beam.GetAssembly().GetMainObject().Equals(model) ? prop : string.Empty;
+        return part.GetAssembly().GetMainObject().Equals(model) ? prop : string.Empty;
     }
 }
 

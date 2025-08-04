@@ -408,20 +408,37 @@ public class TeklaSearchCache : ISearchCache
                     AddEntryByMainKey(dwgKey, moKey, modelObject);
                     AddRelationship(dwgKey, key, moKey);
 
-                    // Cache the assembly position
                     var assemblyPostion = "";
-                    modelObject.GetReportProperty("ASSEMBLY_POS", ref assemblyPostion);
-                    if (!string.IsNullOrEmpty(assemblyPostion))
+                    var assemblyPosKey = new CacheKeyBuilder(moKey)
+                        .AppendObjectId();
+                    
+                    // Cache the assembly position
+                    if (isMainPart)
                     {
-                        CacheAssemblyPosition(moKey, assemblyPostion);
-                        ;
-
-                        var assemblyPosKey = new CacheKeyBuilder(moKey)
-                            .Append($"ASSEMBLY_POS_{assemblyPostion}")
-                            .AppendObjectId()
-                            .Build();
-                        AddEntryByMainKey(dwgKey, assemblyPosKey, assemblyPostion);
+                        modelObject.GetReportProperty("ASSEMBLY_POS", ref assemblyPostion);
+                        if (!string.IsNullOrEmpty(assemblyPostion))
+                        {
+                            assemblyPosKey = assemblyPosKey
+                                .Append($"ASSEMBLY_POS_{assemblyPostion}");
+                        }
                     }
+                    else
+                    {
+                        modelObject.GetReportProperty("PART_POS", ref assemblyPostion);
+                        if (!string.IsNullOrEmpty(assemblyPostion))
+                        {
+                            assemblyPosKey = assemblyPosKey
+                                .Append($"PART_POS_{assemblyPostion}");
+                        }
+                    }
+
+                    // Finish building key
+                    var assemblyPosKeyString = assemblyPosKey
+                        .AppendObjectId()
+                        .Build();
+                    
+                    CacheAssemblyPosition(moKey, assemblyPostion);
+                    AddEntryByMainKey(dwgKey, assemblyPosKeyString, assemblyPostion);
                 }
             }
 
