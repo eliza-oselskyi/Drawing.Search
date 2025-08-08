@@ -78,6 +78,7 @@
                                 GhostText="{Binding GhostSuggestion, UpdateSourceTrigger=PropertyChanged}"
                                 VerticalContentAlignment="Center"
                                 Margin="0,0,0,5"
+                                local:TextBoxFocusBehavior.FocusCommand="{Binding FocusCommand}"
                                 IsEnabled="{Binding IsCaching, Converter={StaticResource InverseBooleanConverter}}">
                 <TextBox.InputBindings>
                     <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
