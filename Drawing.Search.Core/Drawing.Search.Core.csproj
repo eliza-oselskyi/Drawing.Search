@@ -43,6 +43,7 @@
             <HintPath>..\..\..\..\.nuget\packages\microsoft.extensions.caching.abstractions\6.0.0\lib\net461\Microsoft.Extensions.Caching.Abstractions.dll</HintPath>
         </Reference>
         <Reference Include="mscorlib"/>
+        <Reference Include="PresentationCore" />
         <Reference Include="PresentationFramework"/>
         <Reference Include="System"/>
         <Reference Include="System.Core"/>
@@ -66,7 +67,7 @@
         <Compile Include="SearchService\SearchService.cs"/>
         <Compile Include="SearchSettings.cs"/>
         <Compile Include="SearchViewModel.cs"/>
-        <Compile Include="Utility\EnumToBoolConverter.cs"/>
+        <Compile Include="Utility\Converters.cs" />
     </ItemGroup>
     <ItemGroup>
         <None Include="App.config"/>

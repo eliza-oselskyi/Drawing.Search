@@ -50,12 +50,21 @@ namespace Drawing.Search
         public GhostTextBox()
         {
             Loaded += OnLoaded;
+            DefaultStyleKey = typeof(GhostTextBox);
         }
 
         public Brush GhostTextColor
         {
             get => (Brush)GetValue(GhostTextColorProperty);
             set => SetValue(GhostTextColorProperty, value);
+        }
+
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+            
+            Padding = new Thickness(0, 0, 5, 0);
+            BorderThickness = new Thickness(1);
         }
 
         /// <summary>
@@ -106,7 +115,7 @@ namespace Drawing.Search
                     Foreground = GhostTextColor,
                     Opacity = 0.5,
                     IsHitTestVisible = false,
-                    Margin = new Thickness(4, 0, 4, 0),
+                    Margin = Padding,
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Left,
                     Visibility = string.IsNullOrEmpty(Text) ? Visibility.Visible : Visibility.Collapsed
