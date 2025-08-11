@@ -63,7 +63,7 @@ namespace Drawing.Search
         {
             base.OnApplyTemplate();
             
-            Padding = new Thickness(0, 0, 5, 0);
+            Padding = new Thickness(5, 0, 5, 0);
             BorderThickness = new Thickness(1);
         }
 
@@ -115,9 +115,10 @@ namespace Drawing.Search
                     Foreground = GhostTextColor,
                     Opacity = 0.5,
                     IsHitTestVisible = false,
-                    Margin = Padding,
+                    // Margin should be the same as the padding of the text box, but we need to add the width of the caret
+                    Margin = new Thickness(6,0,6,0),
                     VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Left,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
                     Visibility = string.IsNullOrEmpty(Text) ? Visibility.Visible : Visibility.Collapsed
                 };
 

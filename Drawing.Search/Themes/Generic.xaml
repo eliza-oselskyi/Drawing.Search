@@ -28,7 +28,6 @@
                             <TextBlock x:Name="PART_GhostText"
                                      Text="{TemplateBinding GhostText}"
                                      Foreground="{TemplateBinding GhostTextColor}"
-                                     Margin="{TemplateBinding Padding}"
                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                                 <TextBlock.Visibility>
                                     <MultiBinding Converter="{StaticResource EmptyTextToVisibilityConverter}">
@@ -38,7 +37,6 @@
                                 </TextBlock.Visibility>
                             </TextBlock>
                             <ScrollViewer x:Name="PART_ContentHost"
-                                        Margin="{TemplateBinding Padding}"
                                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                         HorizontalAlignment="Stretch" 
                                         VerticalScrollBarVisibility="Hidden"
