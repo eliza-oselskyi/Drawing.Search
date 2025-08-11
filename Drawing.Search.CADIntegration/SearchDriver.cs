@@ -116,9 +116,9 @@ public class SearchDriver : IDisposable
         {
             var result = config.Type switch
             {
-                SearchType.PartMark => NewExecutePartMarkSearch(config, drawing),
-                SearchType.Text => NewExecuteTextSearch(config, drawing),
-                SearchType.Assembly => NewExecuteAssemblySearch(config),
+                SearchType.PartMark => ExecutePartMarkSearch(config, drawing),
+                SearchType.Text => ExecuteTextSearch(config, drawing),
+                SearchType.Assembly => ExecuteAssemblySearch(config),
                 _ => throw new ArgumentException($"Unsupported search type: {config.Type}")
             };
 
@@ -174,7 +174,7 @@ public class SearchDriver : IDisposable
     ///     Retrieves all objects from the specified drawing.
     /// </summary>
     /// <returns>A list of all <see cref="DrawingObject" /> objects in the drawing.</returns>
-    private SearchResult NewExecuteAssemblySearch(SearchConfiguration config)
+    private SearchResult ExecuteAssemblySearch(SearchConfiguration config)
     {
         var activeDrawing = _drawingHandler.GetActiveDrawing();
         if (activeDrawing == null)
@@ -225,7 +225,7 @@ public class SearchDriver : IDisposable
         };
     }
 
-    private SearchResult NewExecuteTextSearch(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
+    private SearchResult ExecuteTextSearch(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
     {
         var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString())
             .UseDrawingKey()
@@ -255,7 +255,7 @@ public class SearchDriver : IDisposable
         };
     }
 
-    private SearchResult NewExecutePartMarkSearch(SearchConfiguration config,
+    private SearchResult ExecutePartMarkSearch(SearchConfiguration config,
         Tekla.Structures.Drawing.Drawing drawing)
     {
         var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString())

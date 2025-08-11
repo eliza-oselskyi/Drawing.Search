@@ -338,6 +338,7 @@ public class TeklaSearchCache : ISearchCache
     /// </summary>
     /// <param name="keys">A list of keys representing cache entries to refresh.</param>
     public void RefreshCache(List<string> keys)
+    // TODO: Implement this method.
     {
         foreach (var key in keys)
             if (_dirtyDrawingsCache.ContainsKey(key))
