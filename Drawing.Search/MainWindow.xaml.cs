@@ -18,7 +18,11 @@ namespace Drawing.Search
             {
                 Dispatcher.Invoke(() => Application.Current.Shutdown());
             };
-            if (DataContext is SearchViewModel vm) vm.SearchCompleted += (s, e) => SearchTextBox.Focus();
+            if (DataContext is SearchViewModel vm)
+            {
+                vm.SearchCompleted += (s, e) => SearchTextBox.Focus();
+                vm.FocusRequested += (s, e) => SearchTextBox.Focus();
+            }
         }
 
         private void RadioButton_Click(object sender, RoutedEventArgs e)

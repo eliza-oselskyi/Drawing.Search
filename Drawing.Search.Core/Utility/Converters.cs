@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 using Drawing.Search.Common.Enums;
 
@@ -48,6 +49,22 @@ public class SearchTypeToAssemblyEnabledConverter : IValueConverter
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class EmptyTextToVisibilityConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (values.Length < 2 || values[0] == null || values[1] == null) return Visibility.Collapsed;
+        string text = values[0].ToString();
+        bool isFocused = (bool)values[1];
+        return string.IsNullOrEmpty(text) && isFocused ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
     }

@@ -51,6 +51,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     private DrawingHistory _drawingHistory = new();
 
     public EventHandler<bool>? QuitRequested;
+    private AsyncRelayCommand _focusCommand;
 
     public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver,
         ICacheService cacheService)
@@ -70,6 +71,11 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             ExecuteSearchAsync,
             CanExecuteSearch
         );
+        _focusCommand = new AsyncRelayCommand(() =>
+        {
+            FocusRequested?.Invoke(this, EventArgs.Empty);
+            return Task.CompletedTask;
+        });
         Version = $"v{Assembly.GetExecutingAssembly().GetName().Version}";
 
 
@@ -93,6 +99,8 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
+    public AsyncRelayCommand FocusCommand => _focusCommand;
 
     public AsyncRelayCommand SearchCommand { get; }
 
@@ -290,6 +298,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     }
 
     public event EventHandler? SearchCompleted;
+    public event EventHandler? FocusRequested;
 
     private void UpdateGhostSuggestion(string input)
     {
