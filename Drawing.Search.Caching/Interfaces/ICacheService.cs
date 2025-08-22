@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Drawing.Search.Caching.Interfaces;
 
@@ -15,9 +16,9 @@ public interface ICacheService
     List<string> DumpIdentifiers(string drawingKey);
     public event EventHandler<bool>? IsCachingChanged;
     void WriteAllObjectsInDrawingToCache(object activeDrawing);
-    void RefreshCache(string drawingKey, object activeDrawing);
+    void RefreshCache(string drawingKey, object activeDrawing, CancellationToken cancellationToken);
     IEnumerable<object> GetRelatedObjects(string drawingId, string objectId);
-    void RefreshCache(object getActiveDrawing);
+    void RefreshCache(object getActiveDrawing, CancellationToken cancellationToken);
     IEnumerable<string> FindByAssemblyPosition(string drawingId, string assemblyPos);
     IEnumerable<string> DumpAssemblyPositions();
     IEnumerable<object> FetchAssemblyPosition(string assemblyPosition);

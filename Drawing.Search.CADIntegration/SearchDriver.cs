@@ -138,7 +138,8 @@ public class SearchDriver : IDisposable
     {
         var dwgKey = new CacheKeyBuilder(DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ToString())
             .UseDrawingKey().AppendObjectId().Build();
-        _cacheService.RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
+        // TODO: uncomment this line when testing is done
+       // _cacheService.RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
     }
 
     /// <summary>

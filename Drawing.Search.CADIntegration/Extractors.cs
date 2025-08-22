@@ -20,18 +20,18 @@ public class ModelObjectExtractor : IDataExtractor
     /// <returns>Searchable string.</returns>
     public string ExtractSearchableString(object obj)
     {
-        var model = obj as ModelObject;
+        var modelObject = obj as ModelObject;
         var prop = string.Empty;
-        if (model == null) return prop;
-        if (model is not Part part) return prop;
-        model.GetReportProperty($"ASSEMBLY_POS", ref prop);
+        if (modelObject == null) return prop;
+        if (modelObject is not Part part) return prop;
+        modelObject.GetReportProperty($"ASSEMBLY_POS", ref prop);
         var temp = string.Empty;
-        model.GetReportProperty($"PART_POS", ref temp);
+        modelObject.GetReportProperty($"PART_POS", ref temp);
         prop = prop + "\n" + temp;
 
         //if (prop == string.Empty) model.GetReportProperty($"PART_POS", ref prop);
 
-        return part.GetAssembly().GetMainObject().Equals(model) ? prop : string.Empty;
+        return part.GetAssembly().GetMainObject().Equals(modelObject) ? prop : string.Empty;
     }
 }
 

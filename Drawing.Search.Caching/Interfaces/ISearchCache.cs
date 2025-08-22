@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Drawing.Search.Caching.Interfaces;
 
@@ -7,7 +8,7 @@ public interface ISearchCache
 {
     void CacheAssemblyPosition(string identifier, string assemblyPosition);
     IEnumerable<string> FindByAssemblyPosition(string drawingId, string assemblyPosition);
-    void RefreshCache();
+    void RefreshCache(CancellationToken cancellationToken);
     void ClearCache();
     void AddMainKeyToCache(string mainKey);
     void AddEntryByMainKey(string mainKey, string entryKey, object entryValue);

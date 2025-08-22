@@ -268,7 +268,27 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
     private void UiEventsOnDrawingLoaded()
     {
-        _cacheService.RefreshCache(DrawingHandler.Instance.GetActiveDrawing());
+        var cancellationTokenSource = new CancellationTokenSource(2000);
+        var cancellationToken = cancellationTokenSource.Token;
+        IsCaching = ((TeklaCacheService)_cacheService).IsCaching;
+        if (IsCaching)
+        {
+            cancellationTokenSource.Cancel();
+            IsCaching = false;
+            var dwgKey = new CacheKeyBuilder(DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ToString())
+                .UseDrawingKey().AppendObjectId().Build();
+            _cacheService.InvalidateCacheByKey(dwgKey);
+        }
+
+        try
+        {
+            _cacheService.RefreshCache(DrawingHandler.Instance.GetActiveDrawing(), cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine($"Caching Cancelled. Retrying...");
+            UiEventsOnDrawingLoaded();
+        }
     }
 
     // TODO: Figure out why IsCaching binding not working for search button. Should be disabled when caching is active.
@@ -279,7 +299,8 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         IsCaching = true;
         StatusMessage = "Caching drawing objects...";
         var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).UseDrawingKey().AppendObjectId().Build();
-        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, drawing);
+        _cacheService.InvalidateCacheByKey(dwgKey);
+        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, drawing, CancellationToken.None);
         StatusMessage = "Ready";
         IsCaching = false;
     }
@@ -288,11 +309,14 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     {
         UpdateDrawingState();
         if (!_drawingHistory.HasDifference) return;
+
+
         IsCaching = true;
-        StatusMessage = "Caching drawing objects...";
         var dwgId = DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ToString();
         var dwgKey = new CacheKeyBuilder(dwgId).UseDrawingKey().AppendObjectId().Build();
-        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
+        StatusMessage = "Caching drawing objects...";
+        _cacheService.InvalidateCacheByKey(dwgKey);
+        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing(), CancellationToken.None);
         StatusMessage = "Ready";
         IsCaching = false;
     }

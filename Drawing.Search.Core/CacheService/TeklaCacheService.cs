@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using Drawing.Search.Caching;
 using Drawing.Search.Caching.Interfaces;
 using Drawing.Search.CADIntegration;
@@ -114,17 +115,23 @@ public class TeklaCacheService : ICacheService
         throw new NotImplementedException();
     }
 
-    public void RefreshCache(string drawingKey, object drawing)
+    public void RefreshCache(string drawingKey, object drawing, CancellationToken cancellationToken)
     {
         var teklaDrawing = drawing as Tekla.Structures.Drawing.Drawing;
         SearchService.SearchService.GetLoggerInstance().LogInformation("Refreshing cache");
-        _searchCache.RefreshCache();
+        _searchCache.RefreshCache(cancellationToken);
         //_searchCache.RemoveMainKeyFromCache(drawingKey);
         if (teklaDrawing != null) WriteAllObjectsInDrawingToCache(teklaDrawing);
     }
 
-    public void RefreshCache(object drawing)
+    public void RefreshCache(object drawing, CancellationToken cancellationToken)
     {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            Console.WriteLine($"Cancellation Requested from refresh.");
+            IsCaching = false;
+            cancellationToken.ThrowIfCancellationRequested();
+        }
         lock (_cacheLock)
         {
             try

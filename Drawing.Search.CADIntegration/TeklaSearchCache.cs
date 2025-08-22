@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Drawing.Search.Caching;
 using Drawing.Search.Caching.Interfaces;
 using Drawing.Search.Common.Interfaces;
@@ -93,11 +94,16 @@ public class TeklaSearchCache : ISearchCache
     /// <summary>
     ///     Fully clears and resets all cached data if the cache has been flagged as "dirty."
     /// </summary>
-    public void RefreshCache()
+    public void RefreshCache(CancellationToken cancellationToken)
     {
-        _isDirty = true;
         if (_isDirty)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                Console.WriteLine($"Cancellation Requested in {nameof(RefreshCache)}");
+                SetIsCaching(false);
+                cancellationToken.ThrowIfCancellationRequested();
+            }
             SetIsCaching(true);
             lock (_lockObject)
             {
@@ -338,7 +344,7 @@ public class TeklaSearchCache : ISearchCache
     /// </summary>
     /// <param name="keys">A list of keys representing cache entries to refresh.</param>
     public void RefreshCache(List<string> keys)
-    // TODO: Implement this method.
+        // TODO: Implement this method.
     {
         foreach (var key in keys)
             if (_dirtyDrawingsCache.ContainsKey(key))
