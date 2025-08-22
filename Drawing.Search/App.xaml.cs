@@ -72,6 +72,10 @@ namespace Drawing.Search
         /// <param name="services">The service collection to configure.</param>
         private void ConfigureServices(IServiceCollection services)
         {
+
+            // Registers the main application window
+            services.AddSingleton<MainWindow>();
+            
             // Registers the Drawing Handler for CAD integration
             services.AddSingleton<IDrawingHandler, TeklaDrawingHandler>();
 
@@ -91,9 +95,6 @@ namespace Drawing.Search
 
             // Registers the search view model
             services.AddSingleton<SearchViewModel>();
-
-            // Registers the main application window
-            services.AddSingleton<MainWindow>();
         }
 
         protected override void OnExit(ExitEventArgs e)

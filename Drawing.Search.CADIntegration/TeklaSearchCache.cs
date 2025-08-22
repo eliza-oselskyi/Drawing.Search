@@ -61,6 +61,12 @@ public class TeklaSearchCache : ISearchCache
     private bool _isDirty;
     private bool _isInitialCachingDone;
 
+    public bool IsInitialCachingDone
+    {
+        get => _isInitialCachingDone;
+        internal set => _isInitialCachingDone = value;
+    }
+
     public TeklaSearchCache(ISearchLogger logger)
     {
         _logger = logger;

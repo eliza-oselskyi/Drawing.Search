@@ -35,6 +35,13 @@ public class TeklaCacheService : ICacheService
         }
     }
 
+    public bool HasCachedBefore(string drawingId)
+    {
+        var dwgKey = GenerateDrawingCacheKey(drawingId);
+        var keys = _searchCache.DumpIdentifiers();
+        return keys.Contains(dwgKey);
+    }
+
     public event EventHandler<bool>? IsCachingChanged;
 
 

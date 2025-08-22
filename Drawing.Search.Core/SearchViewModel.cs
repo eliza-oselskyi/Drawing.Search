@@ -62,6 +62,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
         LoadSearchSettings();
         InitializeEvents();
+        Task.Run(UiEventsOnDrawingLoaded); // Initial caching
         UpdateDrawingState();
 
         var uiContext = SynchronizationContext.Current ??
@@ -282,11 +283,22 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
         try
         {
+            if (!((TeklaCacheService)_cacheService).HasCachedBefore(DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ID.ToString()))
+            {
+                StatusMessage = $"Caching new drawing...";
+            }
+            else
+            {
+                StatusMessage = $"Refreshing drawing objects...";
+            }
             _cacheService.RefreshCache(DrawingHandler.Instance.GetActiveDrawing(), cancellationToken);
+            StatusMessage = "Ready";
         }
         catch (OperationCanceledException)
         {
-            Console.WriteLine($"Caching Cancelled. Retrying...");
+            var message = $"Caching Cancelled. Retrying...";
+            Console.WriteLine(message);
+            StatusMessage = message;
             UiEventsOnDrawingLoaded();
         }
     }

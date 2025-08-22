@@ -75,7 +75,7 @@ public class SearchDriver : IDisposable
         if (!model.GetConnectionStatus())
             throw new ApplicationException("Tekla connection not established.");
 
-        _cacheService.WriteAllObjectsInDrawingToCache(_drawingHandler.GetActiveDrawing());
+        //_cacheService.WriteAllObjectsInDrawingToCache(_drawingHandler.GetActiveDrawing());
 
         InitializeEvents();
     }
