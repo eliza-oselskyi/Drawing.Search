@@ -77,7 +77,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             FocusRequested?.Invoke(this, EventArgs.Empty);
             return Task.CompletedTask;
         });
-        Version = $"v{Assembly.GetExecutingAssembly().GetName().Version}";
+        Version = $"v{Assembly.GetExecutingAssembly().GetName().Version}" + "_TESTING";
 
 
         PropertyChanged += (_, e) =>
