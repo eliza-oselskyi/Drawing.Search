@@ -36,7 +36,18 @@ public class DrawingHistory
         var currViews = drawingState.Views;
         var prevViews = _drawingStates.Peek().Views;
         
+        if (currViews.Count == 0) return false;
         if (currViews.Count != prevViews.Count) return true;
+        if (currViews.Count == 1)
+        {
+            var currDimensions = currViews.First().GetDimensions();
+            var prevDimensions = prevViews.First().GetDimensions();
+            ViewHasDifference =  Math.Abs(currDimensions.Item1 - prevDimensions.Item1) > 0.0001 ||
+                   Math.Abs(currDimensions.Item2 - prevDimensions.Item2) > 0.0001;
+
+            return ViewHasDifference;
+        }
+        
         ViewHasDifference = currViews.FindAll((v) =>
         {
             var p = prevViews.First(p => p.View.GetIdentifier().GUID == v.View.GetIdentifier().GUID);
