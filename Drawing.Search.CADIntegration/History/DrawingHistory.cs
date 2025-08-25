@@ -36,9 +36,9 @@ public class DrawingHistory
         var currViews = drawingState.Views;
         var prevViews = _drawingStates.Peek().Views;
         
-        if (currViews.Count == 0) return false;
+        if ((currViews.Count == 0) && (prevViews.Count == 0)) return false;
         if (currViews.Count != prevViews.Count) return true;
-        if (currViews.Count == 1)
+        if ((currViews.Count == 1) && (prevViews.Count == 1))
         {
             var currDimensions = currViews.First().GetDimensions();
             var prevDimensions = prevViews.First().GetDimensions();
