@@ -285,18 +285,18 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         {
             if (!((TeklaCacheService)_cacheService).HasCachedBefore(DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ID.ToString()))
             {
-                StatusMessage = $"Caching new drawing...";
+                StatusMessage = StatusMessages.CACHE_NewDrawing;
             }
             else
             {
-                StatusMessage = $"Refreshing drawing objects...";
+                StatusMessage = StatusMessages.CACHE_RefreshObjects;
             }
             _cacheService.RefreshCache(DrawingHandler.Instance.GetActiveDrawing(), cancellationToken);
-            StatusMessage = "Ready";
+            StatusMessage = StatusMessages.READY;
         }
         catch (OperationCanceledException)
         {
-            var message = $"Caching Cancelled. Retrying...";
+            var message = StatusMessages.CACHE_Cancelled;
             Console.WriteLine(message);
             StatusMessage = message;
             UiEventsOnDrawingLoaded();
@@ -309,11 +309,11 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         UpdateDrawingState();
         if (!_drawingHistory.HasDifference) return;
         IsCaching = true;
-        StatusMessage = "Caching drawing objects...";
+        StatusMessage = StatusMessages.CACHE_RecacheOnModify;
         var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).UseDrawingKey().AppendObjectId().Build();
         _cacheService.InvalidateCacheByKey(dwgKey);
         ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, drawing, CancellationToken.None);
-        StatusMessage = "Ready";
+        StatusMessage = StatusMessages.READY;
         IsCaching = false;
     }
 
@@ -326,10 +326,10 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         IsCaching = true;
         var dwgId = DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ToString();
         var dwgKey = new CacheKeyBuilder(dwgId).UseDrawingKey().AppendObjectId().Build();
-        StatusMessage = "Caching drawing objects...";
+        StatusMessage = StatusMessages.CACHE_RecacheOnModify;
         _cacheService.InvalidateCacheByKey(dwgKey);
         ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing(), CancellationToken.None);
-        StatusMessage = "Ready";
+        StatusMessage = StatusMessages.READY;
         IsCaching = false;
     }
 
@@ -372,14 +372,14 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     {
         if (IsCaching)
         {
-            StatusMessage = "Cannot search while caching is active.";
+            StatusMessage = StatusMessages.SEARCH_ERR_CannotSearchWhileCaching;
             return;
         }
 
         try
         {
             IsSearching = true;
-            StatusMessage = "Searching...";
+            StatusMessage = StatusMessages.SEARCH_Searching;
 
             var stopwatch = Stopwatch.StartNew();
 
