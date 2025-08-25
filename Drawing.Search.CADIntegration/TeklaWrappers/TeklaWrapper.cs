@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Tekla.Structures;
 using Tekla.Structures.Drawing;
+using Tekla.Structures.DrawingInternal;
 using ModelObject = Tekla.Structures.Model.ModelObject;
 
 namespace Drawing.Search.CADIntegration.TeklaWrappers;
@@ -56,5 +58,10 @@ public class TeklaWrapper
         }
 
         selector.SelectObjects(doArrayList, false);
+    }
+
+    public static Identifier GetActiveDrawingId()
+    {
+        return DrawingHandler.Instance.GetActiveDrawing().GetIdentifier();
     }
 }

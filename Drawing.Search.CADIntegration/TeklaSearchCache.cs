@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Drawing.Search.Caching;
 using Drawing.Search.Caching.Interfaces;
 using Drawing.Search.Common.Interfaces;
@@ -60,6 +61,12 @@ public class TeklaSearchCache : ISearchCache
     private bool _isDirty;
     private bool _isInitialCachingDone;
 
+    public bool IsInitialCachingDone
+    {
+        get => _isInitialCachingDone;
+        internal set => _isInitialCachingDone = value;
+    }
+
     public TeklaSearchCache(ISearchLogger logger)
     {
         _logger = logger;
@@ -81,7 +88,7 @@ public class TeklaSearchCache : ISearchCache
 
     public IEnumerable<string> FindByAssemblyPosition(string drawingId, string assemblyPosition)
     {
-        var dwgKey = new CacheKeyBuilder(drawingId).UseDrawingKey().AppendObjectId().Build();
+        var dwgKey = new CacheKeyBuilder(drawingId).CreateDrawingCacheKey();
         var allIds = DumpIdentifiers(dwgKey);
         var allAssmeblyIds = DumpAssemblyPositions();
         var match = allIds.Find(m => m.Contains(assemblyPosition));
@@ -93,11 +100,16 @@ public class TeklaSearchCache : ISearchCache
     /// <summary>
     ///     Fully clears and resets all cached data if the cache has been flagged as "dirty."
     /// </summary>
-    public void RefreshCache()
+    public void RefreshCache(CancellationToken cancellationToken)
     {
-        _isDirty = true;
         if (_isDirty)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                Console.WriteLine($"Cancellation Requested in {nameof(RefreshCache)}");
+                SetIsCaching(false);
+                cancellationToken.ThrowIfCancellationRequested();
+            }
             SetIsCaching(true);
             lock (_lockObject)
             {
@@ -338,7 +350,7 @@ public class TeklaSearchCache : ISearchCache
     /// </summary>
     /// <param name="keys">A list of keys representing cache entries to refresh.</param>
     public void RefreshCache(List<string> keys)
-    // TODO: Implement this method.
+        // TODO: Implement this method.
     {
         foreach (var key in keys)
             if (_dirtyDrawingsCache.ContainsKey(key))
@@ -374,11 +386,11 @@ public class TeklaSearchCache : ISearchCache
     ///     to Tekla model objects and storing their relationships.
     /// </summary>
     /// <param name="drawing">The Tekla drawing whose objects will be written to the cache.</param>
-    public void WriteAllObjectsInDrawingToCache(Tekla.Structures.Drawing.Drawing drawing)
+    public void WriteAllObjectsInDrawingToCache(Tekla.Structures.Drawing.Drawing drawing, bool viewUpdated = false)
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
-        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).UseDrawingKey().AppendObjectId().Build();
+        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).CreateDrawingCacheKey();
         var objects = drawing.GetSheet().GetAllObjects();
         _isInitialCachingDone = _cache.ContainsKey(dwgKey);
         SetIsCaching(true);
@@ -395,8 +407,9 @@ public class TeklaSearchCache : ISearchCache
                     .Build();
 
                 if (o != null) AddEntryByMainKey(dwgKey, key, o);
-                if (o is Part p && !_isInitialCachingDone)
+                if ((o is Part && !_isInitialCachingDone) || (o is Part && viewUpdated))
                 {
+                    if (o is not Part p) continue;
                     var modelObject = GetRelatedModelObjectFromPart(p, out var isMainPart);
                     var moKeyRaw = new CacheKeyBuilder(modelObject.Identifier.ToString())
                         .Append(dwgKey)
