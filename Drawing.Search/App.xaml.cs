@@ -78,8 +78,8 @@ namespace Drawing.Search
             // Registers the Drawing Handler for CAD integration
             services.AddSingleton<IDrawingHandler, TeklaDrawingHandler>();
 
-            // Registers the search service
-            services.AddSingleton<SearchService>();
+            services.AddSingleton<IDrawingProvider, TeklaDrawingProvider>();
+            services.AddSingleton<ISearchService, DrawingSearchService>();
 
             // Registers the search cache service
             services.AddSingleton<ICacheService, TeklaCacheService>();
@@ -89,7 +89,6 @@ namespace Drawing.Search
             services.AddSingleton<ISearchLogger, SearchLogger>();
 
             // Registers the search driver
-            services.AddSingleton<SearchDriver>();
             services.AddSingleton<SynchronizationContext>();
 
             // Registers the search view model

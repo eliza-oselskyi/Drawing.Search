@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Drawing.Search.CADIntegration.Interfaces;
 using Drawing.Search.CADIntegration.TeklaWrappers;
 using Tekla.Structures.Drawing;
 
@@ -8,12 +9,17 @@ namespace Drawing.Search.CADIntegration;
 public class DrawingResultSelector
 {
     
-    private readonly DrawingHandler _drawingHandler = DrawingHandler.Instance;
+    private readonly IDrawingProvider _drawingProvider;
+
+    public DrawingResultSelector(IDrawingProvider drawingProvider)
+    {
+        _drawingProvider = drawingProvider;
+    }
 
     public void SelectResults<T>(List<T> results) where T : class
     {
-        var drawing = _drawingHandler.GetActiveDrawing();
-        var selector = _drawingHandler.GetDrawingObjectSelector();
+        var drawing = _drawingProvider.GetActiveDrawing();
+        var selector = _drawingProvider.GetSelector();
         selector.UnselectAllObjects();
 
         if (typeof(T) == typeof(ModelObject))

@@ -13,6 +13,7 @@ using Drawing.Search.Caching;
 using Drawing.Search.Caching.Interfaces;
 using Drawing.Search.CADIntegration;
 using Drawing.Search.CADIntegration.History;
+using Drawing.Search.CADIntegration.Interfaces;
 using Drawing.Search.Common.Enums;
 using Drawing.Search.Common.Interfaces;
 using Drawing.Search.Common.Observers;
@@ -27,11 +28,11 @@ namespace Drawing.Search.Core;
 public sealed class SearchViewModel : INotifyPropertyChanged
 {
     private readonly ICacheService _cacheService;
+    private readonly ISearchService _searchService;
     private readonly Events _drawingEvents = new();
     private readonly DrawingHistory _drawingHistory = new();
 
     private readonly HashSet<string> _previousSearches = new(StringComparer.OrdinalIgnoreCase);
-    private readonly SearchDriver _searchDriver;
     private readonly Tekla.Structures.Drawing.UI.Events _uiEvents = new();
     private ContentCollectingObserver? _contentCollector;
     private string _ghostSuggestion = ""; // for autocomplete
@@ -50,10 +51,9 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
     public EventHandler<bool>? QuitRequested;
 
-    public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver,
-        ICacheService cacheService)
+    public SearchViewModel(ISearchService searchService, ICacheService cacheService)
     {
-        _searchDriver = searchDriver ?? throw new ArgumentNullException(nameof(searchDriver));
+        _searchService = searchService ?? throw new ArgumentNullException(nameof(searchService));
         _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
 
         LoadSearchSettings();
@@ -371,13 +371,9 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
             _contentCollector = new ContentCollectingObserver(GetExtractor(SelectedSearchType));
 
+            var config = CreateSearchConfiguration();
+            var result = await _searchService.ExecuteSearchAsync(config);
 
-            var result = await Task.Run(() =>
-            {
-                var config = CreateSearchConfiguration();
-
-                return _searchDriver.ExecuteSearch(config);
-            });
             stopwatch.Stop();
             result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
             StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedMilliseconds} ms.";

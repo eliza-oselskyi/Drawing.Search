@@ -5,6 +5,7 @@ using System.Threading;
 using Drawing.Search.Caching;
 using Drawing.Search.Caching.Interfaces;
 using Drawing.Search.CADIntegration;
+using Drawing.Search.Common.Interfaces;
 using Tekla.Structures.DrawingInternal;
 
 namespace Drawing.Search.Core.CacheService;
@@ -13,11 +14,13 @@ public class TeklaCacheService : ICacheService
 {
     private readonly object _cacheLock = new();
     private readonly ISearchCache _searchCache;
+    private readonly ISearchLogger _logger;
     private bool _isCaching;
 
-    public TeklaCacheService(ISearchCache searchCache)
+    public TeklaCacheService(ISearchCache searchCache, ISearchLogger logger)
     {
         _searchCache = searchCache ?? throw new ArgumentNullException(nameof(searchCache));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _searchCache.IsCachingChanged += (_, isCaching) => { OnCachingStateChanged(isCaching); };
     }
@@ -118,7 +121,7 @@ public class TeklaCacheService : ICacheService
     public void RefreshCache(string drawingKey, object drawing, bool viewUpdated, CancellationToken cancellationToken)
     {
         var teklaDrawing = drawing as Tekla.Structures.Drawing.Drawing;
-        SearchService.SearchService.GetLoggerInstance().LogInformation("Refreshing cache");
+        _logger.LogInformation("Refreshing cache");
         _searchCache.RefreshCache(cancellationToken);
         //_searchCache.RemoveMainKeyFromCache(drawingKey);
         if (teklaDrawing != null) WriteAllObjectsInDrawingToCache(teklaDrawing, viewUpdated);
@@ -212,9 +215,9 @@ public class TeklaCacheService : ICacheService
         IsCachingChanged?.Invoke(this, isCaching);
     }
 
-    private static void LogCacheAction(string action, string key)
+    private void LogCacheAction(string action, string key)
     {
-        var logger = SearchService.SearchService.GetLoggerInstance();
-        logger.LogInformation($"Cache action: {action} with key {key}");
+        
+        _logger.LogInformation($"Cache action: {action} with key {key}");
     }
 }
