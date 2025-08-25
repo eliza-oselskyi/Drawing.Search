@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Drawing.Search.Caching;
 using Drawing.Search.Caching.Interfaces;
+using Drawing.Search.Caching.Keys;
 using Drawing.Search.CADIntegration.TeklaWrappers;
 using Drawing.Search.Common.Enums;
 using Drawing.Search.Common.Observers;
@@ -16,22 +17,31 @@ namespace Drawing.Search.CADIntegration.Strategies;
 public class PartMarkSearchExecutor : Interfaces.ISearchExecutor
 {
 
-    private readonly ICacheService _cacheService;
+    private readonly IDrawingCache _drawingCache;
     private readonly DrawingResultSelector _resultSelector;
+    private readonly ICacheKeyGenerator _cacheKeyGenerator;
 
-    public PartMarkSearchExecutor(ICacheService cacheService, DrawingResultSelector resultSelector)
+    public PartMarkSearchExecutor(
+        DrawingResultSelector resultSelector,
+        IDrawingCache drawingCache,
+        ICacheKeyGenerator cacheKeyGenerator)
     {
-        _cacheService = cacheService;
+        //_cacheService = cacheService;
+
+        _drawingCache = drawingCache;
+        _cacheKeyGenerator = cacheKeyGenerator;
+        
         _resultSelector = resultSelector;
     }
     
     public SearchResult Execute(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
     {
-        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).CreateDrawingCacheKey();
+        var dwgKey = _cacheKeyGenerator.GenerateDrawingKey(drawing.GetIdentifier().ToString());
 
-        var ids = _cacheService.DumpIdentifiers(drawing.GetIdentifier().ToString());
-        var marks = ids.Where(t => _cacheService.GetFromCache(dwgKey, t) is Mark)
-            .Select(t => _cacheService.GetFromCache(dwgKey, t) as Mark).ToList();
+        var ids = _drawingCache.GetDrawingIdentifiers(drawing.GetIdentifier().ToString());
+        //var ids = _cacheService.DumpIdentifiers(drawing.GetIdentifier().ToString());
+        var marks = ids.Where(t => _drawingCache.GetDrawingObject(dwgKey, t) is Mark)
+            .Select(t => _drawingCache.GetDrawingObject(dwgKey, t) as Mark).ToList();
         var searcher = SearchStrategyFactory.CreateSearcher<Mark>(config);
         var contentCollector = new ContentCollectingObserver(new MarkExtractor());
         searcher.Subscribe(contentCollector);
@@ -54,12 +64,12 @@ public class PartMarkSearchExecutor : Interfaces.ISearchExecutor
 
 public class TextSearchExecutor : Interfaces.ISearchExecutor
 {
-    private readonly ICacheService _cacheService;
     private readonly DrawingResultSelector _resultSelector;
+    private readonly IDrawingCache _drawingCache;
 
-    public TextSearchExecutor(ICacheService cacheService, DrawingResultSelector resultSelector)
+    public TextSearchExecutor( DrawingResultSelector resultSelector, IDrawingCache drawingCache )
     {
-        _cacheService = cacheService;
+        _drawingCache = drawingCache;
         _resultSelector = resultSelector;
     }
     
@@ -68,10 +78,10 @@ public class TextSearchExecutor : Interfaces.ISearchExecutor
     {
         var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).CreateDrawingCacheKey();
 
-        var ids = _cacheService.DumpIdentifiers(drawing.GetIdentifier().ToString());
+        var ids = _drawingCache.GetDrawingIdentifiers(drawing.GetIdentifier().ToString());
 
-        var texts = ids.Where(t => _cacheService.GetFromCache(dwgKey, t) is Text)
-            .Select(t => _cacheService.GetFromCache(dwgKey, t) as Text).ToList();
+        var texts = ids.Where(t => _drawingCache.GetDrawingObject(dwgKey, t) is Text)
+            .Select(t => _drawingCache.GetDrawingObject(dwgKey, t) as Text).ToList();
         var searcher = SearchStrategyFactory.CreateSearcher<Text>(config);
         var contentCollector = new ContentCollectingObserver(new TextExtractor());
         searcher.Subscribe(contentCollector);
@@ -94,12 +104,14 @@ public class TextSearchExecutor : Interfaces.ISearchExecutor
 
 public class AssemblySearchExecutor : Interfaces.ISearchExecutor
 {
-    private readonly ICacheService _cacheService;
     private readonly DrawingResultSelector _resultSelector;
+    private readonly IDrawingCache _drawingCache;
+    private readonly IAssemblyCache _assemblyCache;
 
-    public AssemblySearchExecutor(ICacheService cacheService, DrawingResultSelector resultSelector)
+    public AssemblySearchExecutor(DrawingResultSelector resultSelector, IAssemblyCache assemblyCache, IDrawingCache drawingCache)
     {
-        _cacheService = cacheService;
+        _drawingCache = drawingCache;
+        _assemblyCache = assemblyCache;
         _resultSelector = resultSelector;
     }
     
@@ -112,7 +124,7 @@ public class AssemblySearchExecutor : Interfaces.ISearchExecutor
         var drawingKey = new CacheKeyBuilder(activeDrawing.GetIdentifier().ToString()).CreateDrawingCacheKey();
 
         // Instead of searching ModelObjects directly, search the cached assembly positions
-        var assemblyPositions = _cacheService.DumpAssemblyPositions();
+        var assemblyPositions = _assemblyCache.GetAllAssemblyPositions();
         var searcher = SearchStrategyFactory.CreateSearcher<string>(config);
         var contentCollector = new ContentCollectingObserver(new StringExtractor());
         searcher.Subscribe(contentCollector);
@@ -125,7 +137,7 @@ public class AssemblySearchExecutor : Interfaces.ISearchExecutor
         foreach (var assemblyPos in matchedAssemblyPositions)
         {
             if (assemblyPos == null) continue;
-            var relatedIdentifiers = _cacheService.FetchAssemblyPosition(assemblyPos) as HashSet<string>;
+            var relatedIdentifiers = _assemblyCache.GetAssemblyObjects(assemblyPos) as HashSet<string>;
 
 
             if (relatedIdentifiers == null) continue;
@@ -134,7 +146,7 @@ public class AssemblySearchExecutor : Interfaces.ISearchExecutor
                 : relatedIdentifiers.Where(r => r.Contains("main"));
             foreach (var identifier in identifiersToProcess)
             {
-                var relatedObjects = _cacheService.GetRelatedObjects(
+                var relatedObjects = _drawingCache.GetRelatedObjects(
                     activeDrawing.GetIdentifier().ToString(),
                     identifier);
                 selectableParts.AddRange(relatedObjects.OfType<Part>());

@@ -64,8 +64,6 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         _assemblyCache = assemblyCache ?? throw new ArgumentNullException(nameof(assemblyCache));
         _cacheStateManager = cacheStateManager ?? throw new ArgumentNullException(nameof(cacheStateManager));
         _searchService = searchService ?? throw new ArgumentNullException(nameof(searchService));
-        //_cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
-        
         _cacheStateManager.IsCachingChanged += (_, isCaching) => { IsCaching = isCaching; };
 
         LoadSearchSettings();
@@ -73,7 +71,6 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         Task.Run(UiEventsOnDrawingLoaded); // Initial caching
         UpdateDrawingState();
 
-        //_searchDriver.CacheObserver.StatusMessageChanged += (_, message) => { StatusMessage = message; };
         SearchCommand = new AsyncRelayCommand(
             ExecuteSearchAsync,
             CanExecuteSearch

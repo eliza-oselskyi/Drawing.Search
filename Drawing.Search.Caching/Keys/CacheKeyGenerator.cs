@@ -6,7 +6,9 @@ public class CacheKeyGenerator : ICacheKeyGenerator
 {
     public string GenerateDrawingKey(string drawingId)
     {
-        return new CacheKeyBuilder(drawingId).CreateDrawingCacheKey();
+        return new CacheKeyBuilder(drawingId)
+            .UseDrawingKey().AppendObjectId().Build();
+        //return new CacheKeyBuilder(drawingId).CreateDrawingCacheKey();
     }
 
     public string GenerateDrawingObjectKey(string drawingId, string objectId)

@@ -13,22 +13,29 @@ namespace Drawing.Search.CADIntegration;
 public class DrawingSearchService : ISearchService, IDisposable
 {
     
-    private readonly ICacheService _cacheService;
     private readonly IDrawingProvider _drawingProvider;
     private readonly ISearchLogger _logger;
     private readonly Dictionary<SearchType, ISearchExecutor> _searchExecutors;
+    private readonly IDrawingCache _drawingCache;
+    private readonly IAssemblyCache _assemblyCache;
+    private readonly ICacheKeyGenerator _cacheKeyGenerator;
 
     public DrawingSearchService(
-        ICacheService cacheService,
         IDrawingProvider drawingProvider,
-        ISearchLogger logger)
+        ISearchLogger logger,
+        IAssemblyCache assemblyCache,
+        IDrawingCache drawingCache,
+        ICacheKeyGenerator cacheKeyGenerator)
     {
-        _cacheService = cacheService;
+        _drawingCache = drawingCache;
+        _assemblyCache = assemblyCache;
+        _cacheKeyGenerator = cacheKeyGenerator;
+        
         _drawingProvider = drawingProvider;
         _logger = logger;
         
         var resultSelector = new DrawingResultSelector(drawingProvider);
-        _searchExecutors = InitializeSearchExecutors(_cacheService, resultSelector);
+        _searchExecutors = InitializeSearchExecutors(assemblyCache, drawingCache, resultSelector, cacheKeyGenerator);
     }
     
     public Task<SearchResult> ExecuteSearchAsync(SearchConfiguration config)
@@ -55,13 +62,15 @@ public class DrawingSearchService : ISearchService, IDisposable
         }
     }
 
-    private static Dictionary<SearchType, ISearchExecutor> InitializeSearchExecutors(ICacheService cacheService, DrawingResultSelector resultSelector)
+    private static Dictionary<SearchType, ISearchExecutor> InitializeSearchExecutors(IAssemblyCache assemblyCache,
+        IDrawingCache drawingCache,
+        DrawingResultSelector resultSelector, ICacheKeyGenerator cacheKeyGenerator)
     {
         return new Dictionary<SearchType, ISearchExecutor>
         {
-            { SearchType.PartMark, new PartMarkSearchExecutor(cacheService, resultSelector) },
-            { SearchType.Text, new TextSearchExecutor(cacheService, resultSelector) },
-            { SearchType.Assembly, new AssemblySearchExecutor(cacheService, resultSelector) }
+            { SearchType.PartMark, new PartMarkSearchExecutor(resultSelector, drawingCache, cacheKeyGenerator) },
+            { SearchType.Text, new TextSearchExecutor(resultSelector, drawingCache) },
+            { SearchType.Assembly, new AssemblySearchExecutor(resultSelector, assemblyCache, drawingCache) }
         };
     }
 
