@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Drawing.Search.Caching;
 using Drawing.Search.Caching.Interfaces;
 using Drawing.Search.Common.Interfaces;
 using Tekla.Structures.Drawing;
@@ -14,7 +13,7 @@ using Tekla.Structures.Model;
 using ModelObject = Tekla.Structures.Model.ModelObject;
 using Part = Tekla.Structures.Drawing.Part;
 
-namespace Drawing.Search.CADIntegration;
+namespace Drawing.Search.Caching;
 
 /// <summary>
 ///     Provides in-memory caching for Tekla Structures drawing and model objects, aimed at optimizing
