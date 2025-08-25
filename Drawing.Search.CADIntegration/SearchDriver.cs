@@ -47,11 +47,9 @@ namespace Drawing.Search.CADIntegration;
 /// </example>
 public class SearchDriver : IDisposable
 {
-    private readonly IObserver _cacheObserver;
     private readonly ICacheService _cacheService;
     private readonly DrawingHandler _drawingHandler;
     private readonly Events _events;
-    private readonly object _lockObject = new();
     private readonly ISearchLogger _logger;
 
     /// <summary>
@@ -71,10 +69,6 @@ public class SearchDriver : IDisposable
 
         if (!model.GetConnectionStatus())
             throw new ApplicationException("Tekla connection not established.");
-
-        //_cacheService.WriteAllObjectsInDrawingToCache(_drawingHandler.GetActiveDrawing());
-
-        InitializeEvents();
     }
 
     /// <summary>
@@ -82,8 +76,6 @@ public class SearchDriver : IDisposable
     /// </summary>
     public void Dispose()
     {
-        _events.DrawingChanged -= OnDrawingModified;
-        _events.DrawingUpdated -= OnDrawingUpdated;
         _events.UnRegister();
         GC.SuppressFinalize(this);
     }
@@ -122,47 +114,7 @@ public class SearchDriver : IDisposable
             throw;
         }
     }
-
-    /// <summary>
-    ///     Invalidates the cached drawing objects and sets the cache state to require a refresh.
-    /// </summary>
-    private void InvalidateCache()
-    {
-        var dwgKey = new CacheKeyBuilder(TeklaWrapper.GetActiveDrawingId().ToString())
-            .CreateDrawingCacheKey();
-        // TODO: uncomment this line when testing is done
-        // _cacheService.RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
-    }
-
-    /// <summary>
-    ///     Initializes event subscriptions required to handle changes in drawings.
-    /// </summary>
-    private void InitializeEvents()
-    {
-        // TODO: Refresh cache only when deletion happens in the active drawing. Currently any modification refreshes cache
-        //_events.DrawingChanged += OnDrawingModified;
-        //_events.DrawingUpdated += OnDrawingUpdated;
-        _events.Register();
-    }
-
-    /// <summary>
-    ///     Handles the event when a drawing is updated in Tekla.
-    /// </summary>
-    /// <param name="drawing">The updated Tekla drawing.</param>
-    /// <param name="type">The type of update performed on the drawing.</param>
-    private void OnDrawingUpdated(Tekla.Structures.Drawing.Drawing drawing, Events.DrawingUpdateTypeEnum type)
-    {
-        InvalidateCache();
-    }
-
-    /// <summary>
-    ///     Handles the event when a drawing is modified in Tekla.
-    /// </summary>
-    private void OnDrawingModified()
-    {
-        InvalidateCache();
-    }
-
+    
     /// <summary>
     ///     Retrieves all objects from the specified drawing.
     /// </summary>
@@ -248,10 +200,7 @@ public class SearchDriver : IDisposable
     private SearchResult ExecutePartMarkSearch(SearchConfiguration config,
         Tekla.Structures.Drawing.Drawing drawing)
     {
-        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString())
-            .UseDrawingKey()
-            .AppendObjectId()
-            .Build();
+        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).CreateDrawingCacheKey();
 
         var ids = _cacheService.DumpIdentifiers(drawing.GetIdentifier().ToString());
         var marks = ids.Where(t => _cacheService.GetFromCache(dwgKey, t) is Mark)
