@@ -130,7 +130,7 @@ public class CacheKeyBuilder
 
     public string CreateDrawingCacheKey()
     {
-      return UseDrawingKey().AppendObjectId().Build(); 
+        return UseDrawingKey().AppendObjectId().Build();
     }
 
     /// <summary>

@@ -9,10 +9,7 @@ namespace Drawing.Search.CADIntegration.History;
 public class DrawingObjectsOriginator
 {
     private DrawingObjectEnumerator _objects;
-    private List<TeklaWrappers.TeklaView>? _views;
-    public DrawingObjectEnumerator Objects { get; set; }
-    public List<TeklaWrappers.TeklaView>? Views { get; set; }
-    public Tekla.Structures.Drawing.Drawing Drawing { get; set; }
+    private List<TeklaView>? _views;
 
     public DrawingObjectsOriginator(Tekla.Structures.Drawing.Drawing drawing)
     {
@@ -21,6 +18,10 @@ public class DrawingObjectsOriginator
         Drawing = drawing;
         PopulateViews();
     }
+
+    public DrawingObjectEnumerator Objects { get; set; }
+    public List<TeklaView>? Views { get; set; }
+    public Tekla.Structures.Drawing.Drawing Drawing { get; set; }
 
     public void Save()
     {
@@ -36,15 +37,15 @@ public class DrawingObjectsOriginator
     private void PopulateViews()
     {
         var viewEnumerator = Drawing.GetSheet().GetAllViews();
-        var views = new List<TeklaWrappers.TeklaView>();
+        var views = new List<TeklaView>();
         if (views == null) throw new ArgumentNullException(nameof(views));
 
         foreach (View view in viewEnumerator)
         {
-            var v = new TeklaWrappers.TeklaView(view);
+            var v = new TeklaView(view);
             views.Add(v);
         }
-        
+
         _views = views;
         Views = _views;
     }

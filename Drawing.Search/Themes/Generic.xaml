@@ -3,7 +3,7 @@
                     xmlns:local="clr-namespace:Drawing.Search"
                     xmlns:utility="clr-namespace:Drawing.Search.Core.Utility;assembly=Drawing.Search.Core">
 
-    <utility:EmptyTextToVisibilityConverter x:Key="EmptyTextToVisibilityConverter"></utility:EmptyTextToVisibilityConverter>
+    <utility:EmptyTextToVisibilityConverter x:Key="EmptyTextToVisibilityConverter" />
     <Style x:Key="BaseTextBoxStyle" TargetType="TextBox">
         <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -26,22 +26,22 @@
                             SnapsToDevicePixels="True">
                         <Grid>
                             <TextBlock x:Name="PART_GhostText"
-                                     Text="{TemplateBinding GhostText}"
-                                     Foreground="{TemplateBinding GhostTextColor}"
-                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                                       Text="{TemplateBinding GhostText}"
+                                       Foreground="{TemplateBinding GhostTextColor}"
+                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                                 <TextBlock.Visibility>
                                     <MultiBinding Converter="{StaticResource EmptyTextToVisibilityConverter}">
-                                        <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Text"/>
-                                        <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsFocused"/>
+                                        <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Text" />
+                                        <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsFocused" />
                                     </MultiBinding>
                                 </TextBlock.Visibility>
                             </TextBlock>
                             <ScrollViewer x:Name="PART_ContentHost"
-                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                        HorizontalAlignment="Stretch" 
-                                        VerticalScrollBarVisibility="Hidden"
-                                        HorizontalScrollBarVisibility="Hidden"
-                                        Background="Transparent"/>
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalScrollBarVisibility="Hidden"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          Background="Transparent" />
                         </Grid>
                     </Border>
                 </ControlTemplate>

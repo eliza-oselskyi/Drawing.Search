@@ -43,7 +43,7 @@
             <HintPath>..\..\..\..\.nuget\packages\microsoft.extensions.caching.abstractions\6.0.0\lib\net461\Microsoft.Extensions.Caching.Abstractions.dll</HintPath>
         </Reference>
         <Reference Include="mscorlib"/>
-        <Reference Include="PresentationCore" />
+        <Reference Include="PresentationCore"/>
         <Reference Include="PresentationFramework"/>
         <Reference Include="System"/>
         <Reference Include="System.Core"/>
@@ -68,11 +68,11 @@
         <Compile Include="SearchSettings.cs"/>
         <Compile Include="SearchViewModel.cs"/>
         <Compile Include="StatusMessages.Designer.cs">
-          <DesignTime>True</DesignTime>
-          <AutoGen>True</AutoGen>
-          <DependentUpon>StatusMessages.resx</DependentUpon>
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>StatusMessages.resx</DependentUpon>
         </Compile>
-        <Compile Include="Utility\Converters.cs" />
+        <Compile Include="Utility\Converters.cs"/>
     </ItemGroup>
     <ItemGroup>
         <None Include="App.config"/>
@@ -118,10 +118,10 @@
         </ProjectReference>
     </ItemGroup>
     <ItemGroup>
-      <EmbeddedResource Include="StatusMessages.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>StatusMessages.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
+        <EmbeddedResource Include="StatusMessages.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>StatusMessages.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

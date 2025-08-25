@@ -59,14 +59,6 @@ namespace Drawing.Search
             set => SetValue(GhostTextColorProperty, value);
         }
 
-        public override void OnApplyTemplate()
-        {
-            base.OnApplyTemplate();
-            
-            Padding = new Thickness(5, 0, 5, 0);
-            BorderThickness = new Thickness(1);
-        }
-
         /// <summary>
         ///     Gets or sets the placeholder (ghost) text displayed in the text box when it is empty.
         /// </summary>
@@ -74,6 +66,14 @@ namespace Drawing.Search
         {
             get => (string)GetValue(GhostTextProperty);
             set => SetValue(GhostTextProperty, value);
+        }
+
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+
+            Padding = new Thickness(5, 0, 5, 0);
+            BorderThickness = new Thickness(1);
         }
 
         private static void OnGhostTextColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -116,7 +116,7 @@ namespace Drawing.Search
                     Opacity = 0.5,
                     IsHitTestVisible = false,
                     // Margin should be the same as the padding of the text box, but we need to add the width of the caret
-                    Margin = new Thickness(6,0,6,0),
+                    Margin = new Thickness(6, 0, 6, 0),
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     Visibility = string.IsNullOrEmpty(Text) ? Visibility.Visible : Visibility.Collapsed

@@ -29,6 +29,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
     private readonly ICacheService _cacheService;
     private readonly Events _drawingEvents = new();
+    private readonly DrawingHistory _drawingHistory = new();
 
     private readonly HashSet<string> _previousSearches = new(StringComparer.OrdinalIgnoreCase);
     private readonly SearchDriver _searchDriver;
@@ -48,10 +49,8 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     private bool _showAllAssemblyParts;
     private string _statusMessage = "";
     private string _version = "";
-    private DrawingHistory _drawingHistory = new();
 
     public EventHandler<bool>? QuitRequested;
-    private AsyncRelayCommand _focusCommand;
 
     public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver,
         ICacheService cacheService)
@@ -72,7 +71,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             ExecuteSearchAsync,
             CanExecuteSearch
         );
-        _focusCommand = new AsyncRelayCommand(() =>
+        FocusCommand = new AsyncRelayCommand(() =>
         {
             FocusRequested?.Invoke(this, EventArgs.Empty);
             return Task.CompletedTask;
@@ -86,11 +85,6 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         };
     }
 
-    private void UpdateDrawingState()
-    {
-        _drawingHistory.Save(new DrawingObjectsOriginator(DrawingHandler.Instance.GetActiveDrawing()).CreateDrawingState());
-    }
-
     public string Version
     {
         get => _version;
@@ -101,7 +95,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         }
     }
 
-    public AsyncRelayCommand FocusCommand => _focusCommand;
+    public AsyncRelayCommand FocusCommand { get; }
 
     public AsyncRelayCommand SearchCommand { get; }
 
@@ -229,6 +223,12 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler PropertyChanged;
 
+    private void UpdateDrawingState()
+    {
+        _drawingHistory.Save(
+            new DrawingObjectsOriginator(DrawingHandler.Instance.GetActiveDrawing()).CreateDrawingState());
+    }
+
     private void LoadSearchSettings()
     {
         _settings = SearchSettings.Load();
@@ -283,15 +283,13 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
         try
         {
-            if (!((TeklaCacheService)_cacheService).HasCachedBefore(DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ID.ToString()))
-            {
+            if (!((TeklaCacheService)_cacheService).HasCachedBefore(DrawingHandler.Instance.GetActiveDrawing()
+                    .GetIdentifier().ID.ToString()))
                 StatusMessage = StatusMessages.CACHE_NewDrawing;
-            }
             else
-            {
                 StatusMessage = StatusMessages.CACHE_RefreshObjects;
-            }
-            _cacheService.RefreshCache(DrawingHandler.Instance.GetActiveDrawing(), _drawingHistory.ViewHasDifference, cancellationToken);
+            _cacheService.RefreshCache(DrawingHandler.Instance.GetActiveDrawing(), _drawingHistory.ViewHasDifference,
+                cancellationToken);
             StatusMessage = StatusMessages.READY;
         }
         catch (OperationCanceledException)
@@ -312,7 +310,8 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         StatusMessage = StatusMessages.CACHE_RecacheOnModify;
         var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).CreateDrawingCacheKey();
         _cacheService.InvalidateCacheByKey(dwgKey);
-        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, drawing, _drawingHistory.ViewHasDifference, CancellationToken.None);
+        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, drawing, _drawingHistory.ViewHasDifference,
+            CancellationToken.None);
         StatusMessage = StatusMessages.READY;
         IsCaching = false;
     }
@@ -328,7 +327,8 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         var dwgKey = new CacheKeyBuilder(dwgId).UseDrawingKey().AppendObjectId().Build();
         StatusMessage = StatusMessages.CACHE_RecacheOnModify;
         _cacheService.InvalidateCacheByKey(dwgKey);
-        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing(), _drawingHistory.ViewHasDifference, CancellationToken.None);
+        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing(),
+            _drawingHistory.ViewHasDifference, CancellationToken.None);
         StatusMessage = StatusMessages.READY;
         IsCaching = false;
     }

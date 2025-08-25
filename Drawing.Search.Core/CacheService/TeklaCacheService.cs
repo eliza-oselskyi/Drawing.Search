@@ -35,13 +35,6 @@ public class TeklaCacheService : ICacheService
         }
     }
 
-    public bool HasCachedBefore(string drawingId)
-    {
-        var dwgKey = GenerateDrawingCacheKey(drawingId);
-        var keys = _searchCache.DumpIdentifiers();
-        return keys.Contains(dwgKey);
-    }
-
     public event EventHandler<bool>? IsCachingChanged;
 
 
@@ -139,6 +132,7 @@ public class TeklaCacheService : ICacheService
             IsCaching = false;
             cancellationToken.ThrowIfCancellationRequested();
         }
+
         lock (_cacheLock)
         {
             try
@@ -172,6 +166,13 @@ public class TeklaCacheService : ICacheService
     public IEnumerable<object> FetchAssemblyPosition(string assemblyPos)
     {
         return _searchCache.FetchAssemblyPosition(assemblyPos);
+    }
+
+    public bool HasCachedBefore(string drawingId)
+    {
+        var dwgKey = GenerateDrawingCacheKey(drawingId);
+        var keys = _searchCache.DumpIdentifiers();
+        return keys.Contains(dwgKey);
     }
 
     public List<string> DumpIdentifiers()

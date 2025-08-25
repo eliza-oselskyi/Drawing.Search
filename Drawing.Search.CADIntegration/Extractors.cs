@@ -2,7 +2,6 @@
 using System.Text;
 using Drawing.Search.Common.Interfaces;
 using Tekla.Structures.Drawing;
-using Tekla.Structures.Model;
 using ModelObject = Tekla.Structures.Model.ModelObject;
 using Part = Tekla.Structures.Model.Part;
 
@@ -97,16 +96,14 @@ public class MarkExtractor : IDataExtractor
         while (enumerator.MoveNext())
         {
             var curr = enumerator.Current;
-            if (curr is ElementBase elm)
-            {
-                stringBuilder.AppendLine(GetElementValue(elm));
-            }
+            if (curr is ElementBase elm) stringBuilder.AppendLine(GetElementValue(elm));
         }
+
         return stringBuilder.ToString();
     }
 
     /// <summary>
-    /// Gets the value of an element in a Mark.
+    ///     Gets the value of an element in a Mark.
     /// </summary>
     /// <param name="element"></param>
     /// <returns></returns>

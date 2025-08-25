@@ -59,8 +59,8 @@ public class EmptyTextToVisibilityConverter : IMultiValueConverter
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
         if (values.Length < 2 || values[0] == null || values[1] == null) return Visibility.Collapsed;
-        string text = values[0].ToString();
-        bool isFocused = (bool)values[1];
+        var text = values[0].ToString();
+        var isFocused = (bool)values[1];
         return string.IsNullOrEmpty(text) && isFocused ? Visibility.Visible : Visibility.Collapsed;
     }
 

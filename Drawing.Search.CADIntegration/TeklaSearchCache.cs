@@ -59,19 +59,14 @@ public class TeklaSearchCache : ISearchCache
 
     private bool _isCaching;
     private bool _isDirty;
-    private bool _isInitialCachingDone;
-
-    public bool IsInitialCachingDone
-    {
-        get => _isInitialCachingDone;
-        internal set => _isInitialCachingDone = value;
-    }
 
     public TeklaSearchCache(ISearchLogger logger)
     {
         _logger = logger;
-        _isInitialCachingDone = false;
+        IsInitialCachingDone = false;
     }
+
+    public bool IsInitialCachingDone { get; internal set; }
 
     public void CacheAssemblyPosition(string identifier, string assemblyPosition)
     {
@@ -110,10 +105,11 @@ public class TeklaSearchCache : ISearchCache
                 SetIsCaching(false);
                 cancellationToken.ThrowIfCancellationRequested();
             }
+
             SetIsCaching(true);
             lock (_lockObject)
             {
-                if (_isInitialCachingDone)
+                if (IsInitialCachingDone)
                 {
                     ClearDrawingObjectsOnly();
                 }
@@ -392,7 +388,7 @@ public class TeklaSearchCache : ISearchCache
         stopwatch.Start();
         var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).CreateDrawingCacheKey();
         var objects = drawing.GetSheet().GetAllObjects();
-        _isInitialCachingDone = _cache.ContainsKey(dwgKey);
+        IsInitialCachingDone = _cache.ContainsKey(dwgKey);
         SetIsCaching(true);
         AddMainKeyToCache(dwgKey);
 
@@ -407,7 +403,7 @@ public class TeklaSearchCache : ISearchCache
                     .Build();
 
                 if (o != null) AddEntryByMainKey(dwgKey, key, o);
-                if ((o is Part && !_isInitialCachingDone) || (o is Part && viewUpdated))
+                if ((o is Part && !IsInitialCachingDone) || (o is Part && viewUpdated))
                 {
                     if (o is not Part p) continue;
                     var modelObject = GetRelatedModelObjectFromPart(p, out var isMainPart);
@@ -426,15 +422,13 @@ public class TeklaSearchCache : ISearchCache
                     modelObject.GetReportProperty("ASSEMBLY_POS", ref assemblyPostion);
                     var assemblyPosKey = new CacheKeyBuilder(moKey)
                         .AppendObjectId();
-                    
+
                     // Cache the assembly position
                     if (isMainPart)
                     {
                         if (!string.IsNullOrEmpty(assemblyPostion))
-                        {
                             assemblyPosKey = assemblyPosKey
                                 .Append($"ASSEMBLY_POS_{assemblyPostion}");
-                        }
                     }
                     else
                     {
@@ -442,23 +436,21 @@ public class TeklaSearchCache : ISearchCache
                         modelObject.GetReportProperty("PART_POS", ref partPosition);
                         assemblyPostion = assemblyPostion + "_" + partPosition;
                         if (!string.IsNullOrEmpty(assemblyPostion))
-                        {
                             assemblyPosKey = assemblyPosKey
                                 .Append($"PART_POS_{assemblyPostion}");
-                        }
                     }
 
                     // Finish building key
                     var assemblyPosKeyString = assemblyPosKey
                         .AppendObjectId()
                         .Build();
-                    
+
                     CacheAssemblyPosition(moKey, assemblyPostion);
                     AddEntryByMainKey(dwgKey, assemblyPosKeyString, assemblyPostion);
                 }
             }
 
-            _isInitialCachingDone = true;
+            IsInitialCachingDone = true;
         }
 
         SetIsCaching(false);
