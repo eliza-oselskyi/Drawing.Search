@@ -191,7 +191,7 @@ public class TeklaCacheService : ICacheService
 
     private static string GenerateDrawingCacheKey(string drawingId)
     {
-        return new CacheKeyBuilder(drawingId).UseDrawingKey().AppendObjectId().Build();
+        return new CacheKeyBuilder(drawingId).CreateDrawingCacheKey();
     }
 
     private string GenerateDrawingObjectCacheKey(string drawingId, string objectId)

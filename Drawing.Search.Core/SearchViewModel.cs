@@ -310,7 +310,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         if (!_drawingHistory.HasDifference && !_drawingHistory.ViewHasDifference) return;
         IsCaching = true;
         StatusMessage = StatusMessages.CACHE_RecacheOnModify;
-        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).UseDrawingKey().AppendObjectId().Build();
+        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).CreateDrawingCacheKey();
         _cacheService.InvalidateCacheByKey(dwgKey);
         ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, drawing, _drawingHistory.ViewHasDifference, CancellationToken.None);
         StatusMessage = StatusMessages.READY;

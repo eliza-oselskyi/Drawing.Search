@@ -88,7 +88,7 @@ public class TeklaSearchCache : ISearchCache
 
     public IEnumerable<string> FindByAssemblyPosition(string drawingId, string assemblyPosition)
     {
-        var dwgKey = new CacheKeyBuilder(drawingId).UseDrawingKey().AppendObjectId().Build();
+        var dwgKey = new CacheKeyBuilder(drawingId).CreateDrawingCacheKey();
         var allIds = DumpIdentifiers(dwgKey);
         var allAssmeblyIds = DumpAssemblyPositions();
         var match = allIds.Find(m => m.Contains(assemblyPosition));
@@ -390,7 +390,7 @@ public class TeklaSearchCache : ISearchCache
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
-        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).UseDrawingKey().AppendObjectId().Build();
+        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).CreateDrawingCacheKey();
         var objects = drawing.GetSheet().GetAllObjects();
         _isInitialCachingDone = _cache.ContainsKey(dwgKey);
         SetIsCaching(true);

@@ -128,6 +128,11 @@ public class CacheKeyBuilder
         return this;
     }
 
+    public string CreateDrawingCacheKey()
+    {
+      return UseDrawingKey().AppendObjectId().Build(); 
+    }
+
     /// <summary>
     ///     Combines all the key components into a single cache key string and returns it.
     /// </summary>

@@ -136,10 +136,10 @@ public class SearchDriver : IDisposable
     /// </summary>
     private void InvalidateCache()
     {
-        var dwgKey = new CacheKeyBuilder(DrawingHandler.Instance.GetActiveDrawing().GetIdentifier().ToString())
-            .UseDrawingKey().AppendObjectId().Build();
+        var dwgKey = new CacheKeyBuilder(TeklaWrapper.GetActiveDrawingId().ToString())
+            .CreateDrawingCacheKey();
         // TODO: uncomment this line when testing is done
-       // _cacheService.RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
+        // _cacheService.RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing());
     }
 
     /// <summary>
@@ -228,10 +228,7 @@ public class SearchDriver : IDisposable
 
     private SearchResult ExecuteTextSearch(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
     {
-        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString())
-            .UseDrawingKey()
-            .AppendObjectId()
-            .Build();
+        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).CreateDrawingCacheKey();
 
         var ids = _cacheService.DumpIdentifiers(drawing.GetIdentifier().ToString());
 
