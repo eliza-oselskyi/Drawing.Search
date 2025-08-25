@@ -386,7 +386,7 @@ public class TeklaSearchCache : ISearchCache
     ///     to Tekla model objects and storing their relationships.
     /// </summary>
     /// <param name="drawing">The Tekla drawing whose objects will be written to the cache.</param>
-    public void WriteAllObjectsInDrawingToCache(Tekla.Structures.Drawing.Drawing drawing)
+    public void WriteAllObjectsInDrawingToCache(Tekla.Structures.Drawing.Drawing drawing, bool viewUpdated = false)
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
@@ -407,8 +407,9 @@ public class TeklaSearchCache : ISearchCache
                     .Build();
 
                 if (o != null) AddEntryByMainKey(dwgKey, key, o);
-                if (o is Part p && !_isInitialCachingDone)
+                if ((o is Part && !_isInitialCachingDone) || (o is Part && viewUpdated))
                 {
+                    if (o is not Part p) continue;
                     var modelObject = GetRelatedModelObjectFromPart(p, out var isMainPart);
                     var moKeyRaw = new CacheKeyBuilder(modelObject.Identifier.ToString())
                         .Append(dwgKey)

@@ -96,7 +96,7 @@ public class TeklaCacheService : ICacheService
         return tCache?.GetRelatedObjects(dwgKey, objectId) ?? Array.Empty<object>();
     }
 
-    public void WriteAllObjectsInDrawingToCache(object drawing)
+    public void WriteAllObjectsInDrawingToCache(object drawing, bool viewUpdated)
     {
         if (drawing is not Tekla.Structures.Drawing.Drawing teklaDrawing)
             throw new ArgumentNullException(nameof(teklaDrawing));
@@ -108,7 +108,7 @@ public class TeklaCacheService : ICacheService
                 IsCaching = true;
                 LogCacheAction("Start write cache", $"Drawing ID: {teklaDrawing.GetIdentifier().ToString()}");
 
-                ((TeklaSearchCache)_searchCache).WriteAllObjectsInDrawingToCache(teklaDrawing);
+                ((TeklaSearchCache)_searchCache).WriteAllObjectsInDrawingToCache(teklaDrawing, viewUpdated);
             }
             finally
             {
@@ -122,16 +122,16 @@ public class TeklaCacheService : ICacheService
         throw new NotImplementedException();
     }
 
-    public void RefreshCache(string drawingKey, object drawing, CancellationToken cancellationToken)
+    public void RefreshCache(string drawingKey, object drawing, bool viewUpdated, CancellationToken cancellationToken)
     {
         var teklaDrawing = drawing as Tekla.Structures.Drawing.Drawing;
         SearchService.SearchService.GetLoggerInstance().LogInformation("Refreshing cache");
         _searchCache.RefreshCache(cancellationToken);
         //_searchCache.RemoveMainKeyFromCache(drawingKey);
-        if (teklaDrawing != null) WriteAllObjectsInDrawingToCache(teklaDrawing);
+        if (teklaDrawing != null) WriteAllObjectsInDrawingToCache(teklaDrawing, viewUpdated);
     }
 
-    public void RefreshCache(object drawing, CancellationToken cancellationToken)
+    public void RefreshCache(object drawing, bool viewUpdated, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested)
         {
@@ -148,7 +148,7 @@ public class TeklaCacheService : ICacheService
                 var drawingKey = GenerateDrawingCacheKey(teklaDrawing.GetIdentifier().ToString());
                 LogCacheAction("Start refresh cache", $"Drawing ID: {drawingKey}");
                 //_searchCache.RemoveMainKeyFromCache(drawingKey);
-                if (teklaDrawing != null) WriteAllObjectsInDrawingToCache(teklaDrawing);
+                if (teklaDrawing != null) WriteAllObjectsInDrawingToCache(teklaDrawing, viewUpdated);
             }
             finally
             {

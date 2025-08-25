@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using Tekla.Structures.DrawingInternal;
 
 namespace Drawing.Search.CADIntegration.History;
 
@@ -7,7 +10,8 @@ public class DrawingHistory
 {
     private readonly Stack<DrawingState> _drawingStates = new();
     public DrawingState? Current => _drawingStates.Count > 0 ? _drawingStates.Peek() : null;
-    public bool HasDifference = false;
+    public bool HasDifference;
+    public bool ViewHasDifference;
 
     public void Save(DrawingState drawingState)
     {
@@ -15,17 +19,36 @@ public class DrawingHistory
         {
             _drawingStates.Push(drawingState);
         }
-        else if (CountDifferent(drawingState))
+        else if (ViewSizesDifferent(drawingState) || CountDifferent(drawingState))
         {
             _drawingStates.Push(drawingState);
             Console.WriteLine($"Drawing object state saved. Count: {_drawingStates.Count}");
             Console.WriteLine($"Amount of objects: {drawingState.DrawingObjects.GetSize()}");
-            
         }
         else
         {
             Console.WriteLine($"No drawing count changes found.");
         }
+    }
+
+    private bool ViewSizesDifferent(DrawingState drawingState)
+    {
+        var currViews = drawingState.Views;
+        var prevViews = _drawingStates.Peek().Views;
+        
+        if (currViews.Count != prevViews.Count) return true;
+        ViewHasDifference = currViews.FindAll((v) =>
+        {
+            var p = prevViews.First(p => p.View.GetIdentifier().GUID == v.View.GetIdentifier().GUID);
+
+            var currDimensions = v.GetDimensions();
+            var prevDimensions = p.GetDimensions();
+
+            return Math.Abs(currDimensions.Item1 - prevDimensions.Item1) > 0.0001 ||
+                   Math.Abs(currDimensions.Item2 - prevDimensions.Item2) > 0.0001;
+        }).Count > 0;
+        
+        return ViewHasDifference;
     }
 
     private bool CountDifferent(DrawingState drawingState)

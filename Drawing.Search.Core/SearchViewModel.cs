@@ -291,7 +291,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             {
                 StatusMessage = StatusMessages.CACHE_RefreshObjects;
             }
-            _cacheService.RefreshCache(DrawingHandler.Instance.GetActiveDrawing(), cancellationToken);
+            _cacheService.RefreshCache(DrawingHandler.Instance.GetActiveDrawing(), _drawingHistory.ViewHasDifference, cancellationToken);
             StatusMessage = StatusMessages.READY;
         }
         catch (OperationCanceledException)
@@ -307,12 +307,12 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     private void OnDrawingUpdated(Tekla.Structures.Drawing.Drawing drawing, Events.DrawingUpdateTypeEnum type)
     {
         UpdateDrawingState();
-        if (!_drawingHistory.HasDifference) return;
+        if (!_drawingHistory.HasDifference && !_drawingHistory.ViewHasDifference) return;
         IsCaching = true;
         StatusMessage = StatusMessages.CACHE_RecacheOnModify;
         var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).UseDrawingKey().AppendObjectId().Build();
         _cacheService.InvalidateCacheByKey(dwgKey);
-        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, drawing, CancellationToken.None);
+        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, drawing, _drawingHistory.ViewHasDifference, CancellationToken.None);
         StatusMessage = StatusMessages.READY;
         IsCaching = false;
     }
@@ -320,7 +320,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     private void OnDrawingModified()
     {
         UpdateDrawingState();
-        if (!_drawingHistory.HasDifference) return;
+        if (!_drawingHistory.HasDifference && !_drawingHistory.ViewHasDifference) return;
 
 
         IsCaching = true;
@@ -328,7 +328,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         var dwgKey = new CacheKeyBuilder(dwgId).UseDrawingKey().AppendObjectId().Build();
         StatusMessage = StatusMessages.CACHE_RecacheOnModify;
         _cacheService.InvalidateCacheByKey(dwgKey);
-        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing(), CancellationToken.None);
+        ((TeklaCacheService)_cacheService).RefreshCache(dwgKey, DrawingHandler.Instance.GetActiveDrawing(), _drawingHistory.ViewHasDifference, CancellationToken.None);
         StatusMessage = StatusMessages.READY;
         IsCaching = false;
     }

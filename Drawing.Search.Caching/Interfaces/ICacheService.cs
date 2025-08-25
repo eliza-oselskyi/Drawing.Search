@@ -15,10 +15,10 @@ public interface ICacheService
     object GetFromCache(string mainKey, string key);
     List<string> DumpIdentifiers(string drawingKey);
     public event EventHandler<bool>? IsCachingChanged;
-    void WriteAllObjectsInDrawingToCache(object activeDrawing);
-    void RefreshCache(string drawingKey, object activeDrawing, CancellationToken cancellationToken);
+    void WriteAllObjectsInDrawingToCache(object activeDrawing, bool viewUpdated);
+    void RefreshCache(string drawingKey, object activeDrawing, bool viewUpdated, CancellationToken cancellationToken);
     IEnumerable<object> GetRelatedObjects(string drawingId, string objectId);
-    void RefreshCache(object getActiveDrawing, CancellationToken cancellationToken);
+    void RefreshCache(object getActiveDrawing, bool viewUpdated, CancellationToken cancellationToken);
     IEnumerable<string> FindByAssemblyPosition(string drawingId, string assemblyPos);
     IEnumerable<string> DumpAssemblyPositions();
     IEnumerable<object> FetchAssemblyPosition(string assemblyPosition);
