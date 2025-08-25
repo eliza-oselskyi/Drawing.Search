@@ -8,7 +8,7 @@ using Tekla.Structures.Drawing;
 
 namespace Drawing.Search.CADIntegration;
 
-public class SearchStrategyFactory
+public abstract class SearchStrategyFactory
 {
     
     private static IDataExtractor GetExtractor<T>()
