@@ -26,14 +26,12 @@ namespace Drawing.Search.Core;
 
 public sealed class SearchViewModel : INotifyPropertyChanged
 {
-    private const string MATCHED_CONTENT_CACHE_KEY = "matched_content";
     private readonly ICacheService _cacheService;
     private readonly Events _drawingEvents = new();
     private readonly DrawingHistory _drawingHistory = new();
 
     private readonly HashSet<string> _previousSearches = new(StringComparer.OrdinalIgnoreCase);
     private readonly SearchDriver _searchDriver;
-    private readonly SearchService.SearchService _searchService;
     private readonly Tekla.Structures.Drawing.UI.Events _uiEvents = new();
     private ContentCollectingObserver? _contentCollector;
     private string _ghostSuggestion = ""; // for autocomplete
@@ -55,7 +53,6 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     public SearchViewModel(SearchService.SearchService searchService, SearchDriver searchDriver,
         ICacheService cacheService)
     {
-        _searchService = searchService ?? throw new ArgumentNullException(nameof(searchService));
         _searchDriver = searchDriver ?? throw new ArgumentNullException(nameof(searchDriver));
         _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
 
@@ -64,9 +61,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         Task.Run(UiEventsOnDrawingLoaded); // Initial caching
         UpdateDrawingState();
 
-        var uiContext = SynchronizationContext.Current ??
-                        throw new InvalidOperationException("SearchViewModel must be created on UI thread.");
-        _searchDriver.CacheObserver.StatusMessageChanged += (_, message) => { StatusMessage = message; };
+        //_searchDriver.CacheObserver.StatusMessageChanged += (_, message) => { StatusMessage = message; };
         SearchCommand = new AsyncRelayCommand(
             ExecuteSearchAsync,
             CanExecuteSearch
@@ -344,18 +339,9 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        // TODO: Implement matched_content caching to work with new cache system
-        // Debug.Assert(_cache != null, nameof(_cache) + " != null");
-        //      _cache.TryGetValue(MATCHED_CONTENT_CACHE_KEY, out HashSet<string> cachedContent);
-        var cachedContent = new HashSet<string>();
-        cachedContent.Add("NOT IMPLEMENTED");
-
-        var allSuggestions = _previousSearches.Union(cachedContent);
-
-        var suggestion = allSuggestions
+        var suggestion = _previousSearches
             .Where(s => s.StartsWith(input, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(s => _previousSearches.Contains(s)) // Prioritize previous searches
-            .ThenByDescending(s => cachedContent.Contains(s)) // then cached content
             .ThenBy(s => s.Length) // Prefer shorter matches
             .FirstOrDefault();
 
@@ -429,7 +415,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         return config;
     }
 
-    private IDataExtractor GetExtractor(SearchType type)
+    private static IDataExtractor GetExtractor(SearchType type)
     {
         return type switch
         {

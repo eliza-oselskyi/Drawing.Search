@@ -19,10 +19,4 @@ public class SearchService
     {
         return _loggerInstance.Value;
     }
-
-    public void PerformSearch()
-    {
-        //var drawing = _drawingHandler.GetDrawing();
-        Console.WriteLine("We're working");
-    }
 }

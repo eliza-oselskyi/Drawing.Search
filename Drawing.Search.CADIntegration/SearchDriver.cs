@@ -53,7 +53,6 @@ public class SearchDriver : IDisposable
     private readonly Events _events;
     private readonly object _lockObject = new();
     private readonly ISearchLogger _logger;
-    private bool _cacheInvalidated = true;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="SearchDriver" /> class.
@@ -69,8 +68,6 @@ public class SearchDriver : IDisposable
         _events = new Events();
         _cacheService = cacheService;
         _logger = logger;
-        CacheObserver = new CachingObserver(SynchronizationContext.Current);
-        _cacheObserver = CacheObserver;
 
         if (!model.GetConnectionStatus())
             throw new ApplicationException("Tekla connection not established.");
@@ -79,11 +76,6 @@ public class SearchDriver : IDisposable
 
         InitializeEvents();
     }
-
-    /// <summary>
-    ///     Gets the caching observer that tracks the caching process and updates its status as needed.
-    /// </summary>
-    public CachingObserver CacheObserver { get; }
 
     /// <summary>
     ///     Releases resources used by <see cref="SearchDriver" /> and unregisters event handlers.
