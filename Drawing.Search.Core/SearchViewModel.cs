@@ -18,7 +18,6 @@ using Drawing.Search.Common.Enums;
 using Drawing.Search.Common.Interfaces;
 using Drawing.Search.Common.Observers;
 using Drawing.Search.Common.SearchTypes;
-using Drawing.Search.Core.CacheService;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
 using ModelObject = Tekla.Structures.Model.ModelObject;
@@ -54,7 +53,6 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     public EventHandler<bool>? QuitRequested;
 
     public SearchViewModel(ISearchService searchService,
-        ICacheService cacheService,
         IDrawingCache drawingCache,
         IAssemblyCache assemblyCache,
         ICacheStateManager cacheStateManager)
