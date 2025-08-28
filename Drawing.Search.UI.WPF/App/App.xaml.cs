@@ -4,7 +4,9 @@ using System.Windows;
 using Drawing.Search.Application.Features.Search;
 using Drawing.Search.Application.Services.Implementations;
 using Drawing.Search.Application.Services.Interfaces;
+using Drawing.Search.Domain;
 using Drawing.Search.Domain.Interfaces;
+using Drawing.Search.Infrastructure;
 using Drawing.Search.Infrastructure.Caching.Keys;
 using Drawing.Search.Infrastructure.Caching.Models;
 using Drawing.Search.Infrastructure.Caching.Services;
@@ -53,6 +55,9 @@ namespace Drawing.Search.App
                 var serviceCollection = new ServiceCollection();
                 ConfigureServices(serviceCollection);
                 ServiceProvider = serviceCollection.BuildServiceProvider();
+                
+                TestModeServiceLocator.Initialize(ServiceProvider.GetRequiredService<ITestModeService>());
+                SearchLoggerServiceLocator.Initialize(ServiceProvider.GetRequiredService<ISearchLogger>());
 
                 var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
                 mainWindow.Show();
@@ -96,6 +101,8 @@ namespace Drawing.Search.App
             // Registers the search driver
             services.AddSingleton<SynchronizationContext>();
 
+            // Registers the test mode service
+            services.AddSingleton<ITestModeService, TestModeService>();
             // Registers the search view model
             services.AddSingleton<SearchViewModel>();
         }

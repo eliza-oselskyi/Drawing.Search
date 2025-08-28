@@ -15,11 +15,11 @@ using Drawing.Search.Application.Features.Search;
 using Drawing.Search.Application.Services.Interfaces;
 using Drawing.Search.Domain.Enums;
 using Drawing.Search.Domain.Interfaces;
-using Drawing.Search.Domain.Models;
 using Drawing.Search.Domain.Observers;
 using Drawing.Search.Infrastructure;
 using Drawing.Search.Infrastructure.Caching.Models;
 using Drawing.Search.Infrastructure.CAD.Extractors;
+using Drawing.Search.Infrastructure.CAD.Models;
 using Drawing.Search.Infrastructure.CAD.Strategies;
 using Drawing.Search.UI.WPF;
 using Tekla.Structures.Drawing;
@@ -46,7 +46,6 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
     private bool _isDarkMode;
     private bool _isSearching;
-    private bool _isTestMode;
     private string _searchTerm = "";
     private SearchType _selectedSearchType;
     private SearchSettings? _settings;
@@ -56,11 +55,13 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     private string _version = "";
 
     public EventHandler<bool>? QuitRequested;
+    private readonly ITestModeService _testModeService;
 
     public SearchViewModel(ISearchService searchService,
         IDrawingCache drawingCache,
         IAssemblyCache assemblyCache,
-        ICacheStateManager cacheStateManager)
+        ICacheStateManager cacheStateManager,
+        ITestModeService testModeService)
     {
         
         _drawingCache = drawingCache ?? throw new ArgumentNullException(nameof(drawingCache));
@@ -68,6 +69,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         _cacheStateManager = cacheStateManager ?? throw new ArgumentNullException(nameof(cacheStateManager));
         _searchService = searchService ?? throw new ArgumentNullException(nameof(searchService));
         _cacheStateManager.IsCachingChanged += (_, isCaching) => { IsCaching = isCaching; };
+        _testModeService = testModeService ?? throw new ArgumentNullException(nameof(testModeService));
 
         LoadSearchSettings();
         InitializeEvents();
@@ -110,17 +112,11 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
     public bool IsTestMode
     {
-        get => _isTestMode;
+        get => _testModeService.IsTestMode;
         set
         {
-            if (_isTestMode == value) return;
-            _isTestMode = value;
-            if (_settings != null)
-            {
-                _settings.IsTestMode = value;
-                _settings.Save();
-            }
-
+            if (_testModeService.IsTestMode == value) return;
+            _testModeService.SetTestMode(value);
             SetVersionString();
             OnPropertyChanged(nameof(IsTestMode));
         }
@@ -299,12 +295,18 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
     private void InitializeEvents()
     {
+        _testModeService.IsTestModeChanged += OnTestModeChanged;
         _drawingEvents.DrawingChanged += OnDrawingModified;
         _drawingEvents.DrawingUpdated += OnDrawingUpdated;
         _uiEvents.DrawingLoaded += UiEventsOnDrawingLoaded;
         _uiEvents.DrawingEditorClosed += () => { QuitRequested?.Invoke(this, false); };
         _drawingEvents.Register();
         _uiEvents.Register();
+    }
+
+    private void OnTestModeChanged(object sender, bool isTestMode)
+    {
+        IsTestMode = isTestMode;
     }
 
     private void UiEventsOnDrawingLoaded()
@@ -332,10 +334,11 @@ public sealed class SearchViewModel : INotifyPropertyChanged
                 cancellationToken);
             StatusMessage = StatusMessages.READY;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException e)
         {
             var message = StatusMessages.CACHE_Cancelled;
-            Console.WriteLine((string)message);
+            SearchLoggerServiceLocator.Current.LogInformation($"Caching cancelled.");
+            if (_testModeService.IsTestMode) SearchLoggerServiceLocator.Current.LogError(e, (string)message);
             StatusMessage = message;
             UiEventsOnDrawingLoaded();
         }
@@ -434,6 +437,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         catch (Exception e)
         {
             StatusMessage = $"Error: {e.Message}";
+            SearchLoggerServiceLocator.Current.LogError(e, StatusMessage);
         }
         finally
         {

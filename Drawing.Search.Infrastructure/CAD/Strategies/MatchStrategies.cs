@@ -57,7 +57,10 @@ public class RegexMatchStrategy<T> : ISearchStrategy
         }
         catch (ArgumentException e)
         {
-            Console.WriteLine(e);
+            if (TestModeServiceLocator.Current.IsTestMode)
+            {
+                SearchLoggerServiceLocator.Current.LogError(e,"Invalid regex");
+            }
             return false;
         }
     }

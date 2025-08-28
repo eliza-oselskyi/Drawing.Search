@@ -50,8 +50,5 @@ public class ContentCollectingObserver : IObserver
         var content = _extractor.ExtractSearchableString(obj);
         if (!string.IsNullOrWhiteSpace(content))
             MatchedContent.Add(content);
-
-        // Uncomment the following line for debugging purposes
-        // Console.WriteLine($"Observer Match Found: {obj}");
     }
 }

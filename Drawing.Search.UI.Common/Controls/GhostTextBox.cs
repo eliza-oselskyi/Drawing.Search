@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Drawing.Search.Infrastructure;
 
 namespace Drawing.Search.UI.Common.Controls
 {
@@ -195,6 +196,8 @@ namespace Drawing.Search.UI.Common.Controls
             }
             catch
             {
+                SearchLoggerServiceLocator.Current.LogError(new InvalidOperationException(),
+                    $"Failed to get parent of element: {element.DependencyObjectType.Name}");
                 return null;
             }
         }

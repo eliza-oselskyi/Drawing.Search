@@ -4,19 +4,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Drawing.Search.Domain.Interfaces;
+using Drawing.Search.Infrastructure;
 
 namespace Drawing.Search.Application.Features.Search;
 
 /// <summary>
 ///     Generic search class that can be observed using IObserver objects.
 /// </summary>
-/// <param name="searchStrategies">Array of search strategies to use.</param>
-/// <param name="dataExtractor">Data extractor to use.</param>
 /// <typeparam name="T">Type of object to search on.</typeparam>
-public class ObservableSearch<T>(List<ISearchStrategy> searchStrategies, IDataExtractor dataExtractor)
-    : IObserverableSearch
+public class ObservableSearch<T> : IObserverableSearch
 {
     private readonly List<IObserver> _observers = [];
+    private readonly List<ISearchStrategy> _searchStrategies;
+    private readonly IDataExtractor _dataExtractor;
+    private readonly ITestModeService _testModeService;
+    private readonly ISearchLogger _logger;
+
+    /// <summary>
+    ///     Generic search class that can be observed using IObserver objects.
+    /// </summary>
+    /// <param name="searchStrategies">Array of search strategies to use.</param>
+    /// <param name="dataExtractor">Data extractor to use.</param>
+    /// <typeparam name="T">Type of object to search on.</typeparam>
+    public ObservableSearch(List<ISearchStrategy> searchStrategies, IDataExtractor dataExtractor)
+    {
+        _searchStrategies = searchStrategies;
+        _dataExtractor = dataExtractor;
+        _testModeService = TestModeServiceLocator.Current;
+        _logger = SearchLoggerServiceLocator.Current;
+    }
 
     /// <summary>
     ///     Subscribes an observer to the instance.
@@ -57,7 +73,7 @@ public class ObservableSearch<T>(List<ISearchStrategy> searchStrategies, IDataEx
     /// <returns><c>IEnumerable</c> list of matches of the type <c>T</c> provided.</returns>
     public IEnumerable<T?> Search(IEnumerable<T?> items, ISearchQuery query)
     {
-        var compiledStrategies = searchStrategies.ToList();
+        var compiledStrategies = _searchStrategies.ToList();
         var matches = new ConcurrentBag<T>();
         var parallelOptions = new ParallelOptions
         {
@@ -74,17 +90,19 @@ public class ObservableSearch<T>(List<ISearchStrategy> searchStrategies, IDataEx
                 foreach (var item in chunk)
                 {
                     if (item == null) continue;
-                    var data = dataExtractor.ExtractSearchableString(item);
-                    Console.WriteLine($"Searching item: {item}, extracted: {data}");
+                    var data = _dataExtractor.ExtractSearchableString(item);
+                    if (_testModeService.IsTestMode) _logger.LogInformation($"Searching item: {item}, extracted: {data}".Trim());
                     if (!compiledStrategies.Any(strategy => strategy.Match(data, query))) continue;
-                    Console.WriteLine($"Matched item: {item}, to : {data}");
+                    if (_testModeService.IsTestMode) _logger.LogInformation($"Matched item: {item}, to : {data}".Trim());
                     matches.Add(item);
                     NotifyObservers(item);
+                    IsMatchFound?.Invoke(item, true);
                 }
             });
 
         return matches.ToList();
     }
+    public event EventHandler<bool>? IsMatchFound;
 
     private static IEnumerable<List<T?>> Partition(List<T?> list, int chunkSize)
     {

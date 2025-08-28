@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace Drawing.Search.Domain.Models;
+namespace Drawing.Search.Infrastructure;
 
 public class SearchSettings
 {
@@ -19,7 +19,7 @@ public class SearchSettings
     public bool IsDarkMode { get; set; } = true;
 
     public bool WildcardSearch { get; set; } = false;
-    public bool IsTestMode { get; set; } = false;
+    public bool IsTestMode { get; set; } = true;
 
 
     public static SearchSettings Load()
@@ -33,6 +33,7 @@ public class SearchSettings
         }
         catch
         {
+            SearchLoggerServiceLocator.Current.LogError(new InvalidOperationException(), "Failed to load settings... using defaults.");
             return new SearchSettings();
         }
     }
@@ -46,7 +47,7 @@ public class SearchSettings
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            SearchLoggerServiceLocator.Current.LogError(e, "Failed to save settings.");
             throw;
         }
     }

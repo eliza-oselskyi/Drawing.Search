@@ -54,6 +54,10 @@
         <Project>{6202d4e1-9d38-4691-a987-3e9ca304007e}</Project>
         <Name>Drawing.Search.Domain</Name>
       </ProjectReference>
+      <ProjectReference Include="..\Drawing.Search.Infrastructure\Drawing.Search.Infrastructure.csproj">
+        <Project>{36c42f0d-c873-4f69-a862-3f1f56e57b8c}</Project>
+        <Name>Drawing.Search.Infrastructure</Name>
+      </ProjectReference>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
