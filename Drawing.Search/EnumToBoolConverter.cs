@@ -1,1 +1,0 @@
-﻿namespace Drawing.Search.Core;

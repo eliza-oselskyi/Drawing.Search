@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
+            Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProjectGuid>{6202D4E1-9D38-4691-A987-3E9CA304007E}</ProjectGuid>
+        <OutputType>Library</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <RootNamespace>Drawing.Search.Domain</RootNamespace>
+        <AssemblyName>Drawing.Search.Domain</AssemblyName>
+        <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+        <FileAlignment>512</FileAlignment>
+        <LangVersion>12</LangVersion>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Debug\</OutputPath>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+        <DefineConstants>TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+          <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+        </Reference>
+        <Reference Include="System"/>
+        <Reference Include="System.Core"/>
+        <Reference Include="System.Data"/>
+        <Reference Include="System.Runtime.Remoting" />
+        <Reference Include="System.Xml"/>
+        <Reference Include="Tekla.Structures, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
+          <HintPath>..\packages\Tekla.Structures.2023.0.1\lib\net40\Tekla.Structures.dll</HintPath>
+        </Reference>
+        <Reference Include="Tekla.Structures.Catalogs, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
+          <HintPath>..\packages\Tekla.Structures.Catalogs.2023.0.1\lib\net40\Tekla.Structures.Catalogs.dll</HintPath>
+        </Reference>
+        <Reference Include="Tekla.Structures.Datatype, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
+          <HintPath>..\packages\Tekla.Structures.Datatype.2023.0.1\lib\net40\Tekla.Structures.Datatype.dll</HintPath>
+        </Reference>
+        <Reference Include="Tekla.Structures.Dialog, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
+          <HintPath>..\packages\Tekla.Structures.Dialog.2023.0.1\lib\net40\Tekla.Structures.Dialog.dll</HintPath>
+        </Reference>
+        <Reference Include="Tekla.Structures.Drawing, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
+          <HintPath>..\packages\Tekla.Structures.Drawing.2023.0.1\lib\net40\Tekla.Structures.Drawing.dll</HintPath>
+        </Reference>
+        <Reference Include="Tekla.Structures.Model, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
+          <HintPath>..\packages\Tekla.Structures.Model.2023.0.1\lib\net40\Tekla.Structures.Model.dll</HintPath>
+        </Reference>
+        <Reference Include="Tekla.Structures.Plugins, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
+          <HintPath>..\packages\Tekla.Structures.Plugins.2023.0.1\lib\net40\Tekla.Structures.Plugins.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="Enums\SearchType.cs" />
+        <Compile Include="Interfaces\IAssemblyCache.cs" />
+        <Compile Include="Interfaces\ICacheKeyGenerator.cs" />
+        <Compile Include="Interfaces\ICacheStateManager.cs" />
+        <Compile Include="Interfaces\IDataExtractor.cs" />
+        <Compile Include="Interfaces\IDrawing.cs" />
+        <Compile Include="Interfaces\IDrawingCache.cs" />
+        <Compile Include="Interfaces\IDrawingHandler.cs" />
+        <Compile Include="Interfaces\IDrawingProvider.cs" />
+        <Compile Include="Interfaces\IObserver.cs" />
+        <Compile Include="Interfaces\IObserverableSearch.cs" />
+        <Compile Include="Interfaces\ISearchCache.cs" />
+        <Compile Include="Interfaces\ISearchLogger.cs" />
+        <Compile Include="Interfaces\ISearchQuery.cs" />
+        <Compile Include="Interfaces\ISearchStrategy.cs" />
+        <Compile Include="Models\SearchSettings.cs" />
+        <Compile Include="Observers\ContentCollectingObserver.cs" />
+        <Compile Include="Properties\AssemblyInfo.cs"/>
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Events\" />
+      <Folder Include="Exceptions\" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="packages.config" />
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="Resources\element_catalog_cross_section.bmp" />
+      <Content Include="Resources\element_catalog_cross_section_sketch.bmp" />
+      <Content Include="Resources\element_catalog_cross_section_user.bmp" />
+      <Content Include="Resources\prtyp_tree_1.bmp" />
+      <Content Include="Resources\prtyp_tree_10.bmp" />
+      <Content Include="Resources\prtyp_tree_11.bmp" />
+      <Content Include="Resources\prtyp_tree_13.bmp" />
+      <Content Include="Resources\prtyp_tree_15.bmp" />
+      <Content Include="Resources\prtyp_tree_2.bmp" />
+      <Content Include="Resources\prtyp_tree_3.bmp" />
+      <Content Include="Resources\prtyp_tree_4.bmp" />
+      <Content Include="Resources\prtyp_tree_5.bmp" />
+      <Content Include="Resources\prtyp_tree_6.bmp" />
+      <Content Include="Resources\prtyp_tree_7.bmp" />
+      <Content Include="Resources\prtyp_tree_8.bmp" />
+      <Content Include="Resources\prtyp_tree_9.bmp" />
+    </ItemGroup>
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+    <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+         Other similar extension points exist, see Microsoft.Common.targets.
+    <Target Name="BeforeBuild">
+    </Target>
+    <Target Name="AfterBuild">
+    </Target>
+    -->
+
+</Project>
