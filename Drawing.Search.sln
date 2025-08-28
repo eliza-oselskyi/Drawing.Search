@@ -13,10 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing.Search.CADIntegrati
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing.Search.Common", "Drawing.Search.Common\Drawing.Search.Common.csproj", "{7CECBCAE-4636-41C1-9080-C59A93A34068}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing.Search.Searching", "Drawing.Search.Searching\Drawing.Search.Searching.csproj", "{3CA8FA64-249A-4BD8-8CF3-A15B47890046}"
-	ProjectSection(ProjectDependencies) = postProject
-		{022A9742-6CB0-4639-9875-532C530FDC6B} = {022A9742-6CB0-4639-9875-532C530FDC6B}
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing.Search.Features", "Drawing.Search.Features\Drawing.Search.Features.csproj", "{FB557455-B28C-4996-AEFF-53397875E434}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,9 +41,9 @@ Global
 		{7CECBCAE-4636-41C1-9080-C59A93A34068}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CECBCAE-4636-41C1-9080-C59A93A34068}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CECBCAE-4636-41C1-9080-C59A93A34068}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3CA8FA64-249A-4BD8-8CF3-A15B47890046}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3CA8FA64-249A-4BD8-8CF3-A15B47890046}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3CA8FA64-249A-4BD8-8CF3-A15B47890046}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3CA8FA64-249A-4BD8-8CF3-A15B47890046}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB557455-B28C-4996-AEFF-53397875E434}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB557455-B28C-4996-AEFF-53397875E434}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB557455-B28C-4996-AEFF-53397875E434}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB557455-B28C-4996-AEFF-53397875E434}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

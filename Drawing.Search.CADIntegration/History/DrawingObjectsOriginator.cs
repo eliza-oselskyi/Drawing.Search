@@ -54,6 +54,6 @@ public class DrawingObjectsOriginator
     {
         UpdateObjects();
         PopulateViews();
-        return new DrawingState(Objects, Views);
+        return new DrawingState(Objects, Views ?? throw new InvalidOperationException());
     }
 }

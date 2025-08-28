@@ -2,7 +2,7 @@
 using Drawing.Search.Common.Interfaces;
 using Drawing.Search.Common.SearchTypes;
 
-namespace Drawing.Search.Searching.SearchElements;
+namespace Drawing.Search.Features.SearchElements;
 
 /// <summary>
 ///     A builder class for creating and configuring instances of <see cref="SearchConfiguration" />.

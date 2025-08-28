@@ -114,10 +114,6 @@
             <Project>{042c7355-f82d-4035-acb3-70e72f5a019d}</Project>
             <Name>Drawing.Search.Core</Name>
         </ProjectReference>
-        <ProjectReference Include="..\Drawing.Search.Searching\Drawing.Search.Searching.csproj">
-            <Project>{3ca8fa64-249a-4bd8-8cf3-a15b47890046}</Project>
-            <Name>Drawing.Search.Searching</Name>
-        </ProjectReference>
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.0"/>
