@@ -1,0 +1,208 @@
+﻿<Window x:Class="Drawing.Search.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Drawing.Search.UI.Common;assembly=Drawing.Search.UI.Common"
+        xmlns:converters="clr-namespace:Drawing.Search.UI.Common.Converters;assembly=Drawing.Search.UI.Common"
+        xmlns:enums="clr-namespace:Drawing.Search.Domain.Enums;assembly=Drawing.Search.Domain"
+        xmlns:controls="clr-namespace:Drawing.Search.UI.Common.Controls;assembly=Drawing.Search.UI.Common"
+        xmlns:behaviors="clr-namespace:Drawing.Search.UI.Common.Behaviors;assembly=Drawing.Search.UI.Common"
+        Background="{DynamicResource BackgroundBrush}"
+        mc:Ignorable="d"
+        Title="Search In Drawing"
+        Topmost="True"
+        Width="500"
+        MinWidth="500"
+        MaxWidth="500"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        FocusManager.FocusedElement="{Binding ElementName=SearchTextBox}">
+
+    <Window.Resources>
+        <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <converters:SearchTypeToAssemblyEnabledConverter x:Key="SearchTypeToAssemblyEnabledConverter" />
+    </Window.Resources>
+    
+    <Grid Background="{DynamicResource BackgroundBrush}"
+          Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /> <!-- Radio buttons -->
+            <RowDefinition Height="Auto" /> <!-- Search box and button -->
+            <RowDefinition Height="Auto" /> <!-- Check boxes and Advanced Settings -->
+            <RowDefinition Height="Auto" /> <!-- Status message -->
+            <RowDefinition Height="Auto" /> <!-- Version and Theme toggle -->
+        </Grid.RowDefinitions>
+
+        <!-- Radio Buttons Stack -->
+        <StackPanel Grid.Row="0"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,5">
+            <RadioButton GroupName="SearchType"
+                         Content="Assembly"
+                         Margin="0,0,10,0"
+                         IsChecked="{Binding SelectedSearchType, 
+                            Converter={StaticResource EnumToBoolConverter}, 
+                            ConverterParameter={x:Static enums:SearchType.Assembly}}"
+                         ToolTip="Selects the main part of an assembly in the drawing"
+                         Click="RadioButton_Click" />
+            <RadioButton GroupName="SearchType"
+                         Content="Text"
+                         Margin="0,0,10,0"
+                         IsChecked="{Binding SelectedSearchType, 
+                            Converter={StaticResource EnumToBoolConverter}, 
+                            ConverterParameter={x:Static enums:SearchType.Text}}"
+                         ToolTip="Includes any text object, including manually added CED bubbles"
+                         Click="RadioButton_Click" />
+            <RadioButton GroupName="SearchType"
+                         Content="Part Marks"
+                         IsChecked="{Binding SelectedSearchType, 
+                            Converter={StaticResource EnumToBoolConverter}, 
+                            ConverterParameter={x:Static enums:SearchType.PartMark}}"
+                         ToolTip="Includes any mark object"
+                         Click="RadioButton_Click" />
+        </StackPanel>
+
+        <!-- Search Box and Button Grid -->
+        <Grid Grid.Row="1" Margin="0,0,0,5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Search Box -->
+            <controls:GhostTextBox x:Name="SearchTextBox"
+                                Grid.Row="0"
+                                Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                                Height="30"
+                                GhostText="{Binding GhostSuggestion, UpdateSourceTrigger=PropertyChanged}"
+                                VerticalContentAlignment="Center"
+                                behaviors:TextBoxFocusBehavior.FocusCommand="{Binding FocusCommand}"
+                                IsEnabled="{Binding IsCaching, Converter={StaticResource InverseBooleanConverter}}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
+                </TextBox.InputBindings>
+            </controls:GhostTextBox>
+
+            <!-- Search Button with Progress Bar -->
+            <Button Grid.Row="1"
+                    Command="{Binding SearchCommand}"
+                    Height="30"
+                    Name="SearchButton"
+                    HorizontalContentAlignment="Stretch"
+                    IsEnabled="{Binding IsCaching, Converter={StaticResource InverseBooleanConverter}}">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <!--
+                    <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"></Setter>
+                    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                    <Setter Property="BorderBrush" Value="{DynamicResource ForegroundBrush}"></Setter>
+                    -->
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCaching}" Value="True">
+                                <Setter Property="Tag" Value="Caching..." />
+                                <Setter Property="IsEnabled" Value="False" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                                <Setter Property="Tag" Value="Searching..." />
+                                <Setter Property="IsEnabled" Value="False" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsSearching}" Value="False">
+                                <Setter Property="Tag" Value="Search" />
+                                <Setter Property="IsEnabled" Value="True" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+
+                <Grid HorizontalAlignment="Stretch">
+                    <TextBlock Text="{Binding Tag, ElementName=SearchButton}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                    <ProgressBar Height="4"
+                                 VerticalAlignment="Center"
+                                 HorizontalAlignment="Stretch"
+                                 Margin="10,0"
+                                 IsIndeterminate="True">
+                        <ProgressBar.Style>
+                            <Style TargetType="ProgressBar">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCaching}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsSearching}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ProgressBar.Style>
+                    </ProgressBar>
+                </Grid>
+            </Button>
+        </Grid>
+
+        <!-- Checkboxes and Advanced Settings -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,5">
+            <DockPanel>
+                <CheckBox DockPanel.Dock="Left"
+                          Content="Select all parts in assembly"
+                          IsChecked="{Binding ShowAllAssemblyParts}"
+                          IsEnabled="{Binding SelectedSearchType, Converter={StaticResource SearchTypeToAssemblyEnabledConverter}}"
+                          ToolTip="When checked, selects all parts in the assembly. When unchecked, selects only main parts"
+                          Margin="0,0,10,0" />
+
+                <Expander DockPanel.Dock="Right"
+                          Header="Advanced Settings"
+                          Margin="0,0,0,0"
+                          HorizontalAlignment="Left">
+                    <StackPanel Margin="10,5,5,5">
+                        <CheckBox Content="Use Regex Search"
+                                  IsChecked="{Binding UseRegexSearch}"
+                                  ToolTip="Enable regex pattern matching instead of wildcard search" />
+                        <CheckBox Content="Debug"
+                                  IsChecked="{Binding IsTestMode}"
+                                  ToolTip="Toggles debug mode (FOR DEVELOPMENT ONLY)" />
+                    </StackPanel>
+                </Expander>
+            </DockPanel>
+        </StackPanel>
+
+        <!-- Status Message -->
+        <TextBlock Grid.Row="3"
+                   Name="StatusBlock"
+                   Text="{Binding StatusMessage}"
+                   TextWrapping="Wrap"
+                   VerticalAlignment="Top"
+                   Margin="0,0,0,2"
+                   Foreground="{DynamicResource ForegroundBrush}" />
+
+        <!-- Version and Theme Toggle Row -->
+        <Grid Grid.Row="4" Margin="0,5,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Version -->
+            <TextBlock Grid.Column="0"
+                       Text="{Binding Version}"
+                       FontSize="11"
+                       Foreground="Gray"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Center"
+                       ToolTip="Created by Eliza Oselskyi" />
+
+            <!-- Theme Toggle -->
+            <CheckBox Grid.Column="1"
+                      Content="Dark Mode"
+                      x:Name="ThemeToggle"
+                      IsChecked="{Binding IsDarkMode}"
+                      VerticalAlignment="Center" />
+        </Grid>
+    </Grid>
+</Window>

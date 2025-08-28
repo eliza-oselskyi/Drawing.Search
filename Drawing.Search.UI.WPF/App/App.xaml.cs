@@ -1,0 +1,117 @@
+﻿using System;
+using System.Threading;
+using System.Windows;
+using Drawing.Search.Application.Features.Search;
+using Drawing.Search.Application.Services.Implementations;
+using Drawing.Search.Application.Services.Interfaces;
+using Drawing.Search.Domain;
+using Drawing.Search.Domain.Interfaces;
+using Drawing.Search.Infrastructure;
+using Drawing.Search.Infrastructure.Caching.Keys;
+using Drawing.Search.Infrastructure.Caching.Models;
+using Drawing.Search.Infrastructure.Caching.Services;
+using Drawing.Search.Infrastructure.CAD.Tekla;
+using Drawing.Search.ViewModels;
+using Drawing.Search.Views;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Drawing.Search.App
+{
+    /// <summary>
+    ///     The main application class for the Drawing Search tool.
+    ///     Handles application startup and dependency injection configuration.
+    /// </summary>
+    public partial class App
+    {
+        private Mutex? _mutex;
+
+        /// <summary>
+        ///     Gets the global service provider for the application.
+        ///     Allows resolving services and handling dependency injection.
+        /// </summary>
+        private static IServiceProvider? ServiceProvider { get; set; }
+
+        /// <summary>
+        ///     Handles application startup events. Configures services, builds the service provider,
+        ///     and initializes the main window.
+        /// </summary>
+        /// <param name="e">Event arguments for the application startup event.</param>
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+
+            const string appName = "Drawing.Search.UI.WPF";
+            _mutex = new Mutex(true, appName, out var createdNew);
+            if (!createdNew)
+            {
+                MessageBox.Show("Application is already running.", "Warning", MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                Current.Shutdown();
+                return;
+            }
+
+            try
+            {
+                var serviceCollection = new ServiceCollection();
+                ConfigureServices(serviceCollection);
+                ServiceProvider = serviceCollection.BuildServiceProvider();
+                
+                TestModeServiceLocator.Initialize(ServiceProvider.GetRequiredService<ITestModeService>());
+                SearchLoggerServiceLocator.Initialize(ServiceProvider.GetRequiredService<ISearchLogger>());
+
+                var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+                mainWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to start application: {ex.Message}", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                Current.Shutdown();
+                return;
+            }
+        }
+
+        /// <summary>
+        ///     Configures dependency injection services for the application.
+        ///     Registers services, view models, and other components in the DI container.
+        /// </summary>
+        /// <param name="services">The service collection to configure.</param>
+        private void ConfigureServices(IServiceCollection services)
+        {
+            // Registers the main application window
+            services.AddSingleton<MainWindow>();
+
+            // Registers the Drawing Handler for CAD integration
+            services.AddSingleton<IDrawingHandler, TeklaDrawingHandler>();
+
+            services.AddSingleton<IDrawingProvider, TeklaDrawingProvider>();
+            services.AddSingleton<ISearchService, DrawingSearchService>();
+            services.AddSingleton<ICacheKeyGenerator, CacheKeyGenerator>();
+            
+            // Registers the search cache service
+            services.AddSingleton<DrawingCacheService>();
+            services.AddSingleton<IDrawingCache>(sp => sp.GetRequiredService<DrawingCacheService>());
+            services.AddSingleton<IAssemblyCache>(sp => sp.GetRequiredService<DrawingCacheService>());
+            services.AddSingleton<ICacheStateManager>(sp => sp.GetRequiredService<DrawingCacheService>());
+            services.AddSingleton<ISearchCache, TeklaSearchCache>();
+
+            // Registers the logger
+            services.AddSingleton<ISearchLogger, SearchLogger>();
+
+            // Registers the search driver
+            services.AddSingleton<SynchronizationContext>();
+
+            // Registers the test mode service
+            services.AddSingleton<ITestModeService, TestModeService>();
+            // Registers the search view model
+            services.AddSingleton<SearchViewModel>();
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            base.OnExit(e);
+            _mutex?.ReleaseMutex();
+            _mutex?.Dispose();
+        }
+    }
+}
