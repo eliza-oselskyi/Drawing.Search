@@ -63,15 +63,6 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="SearchService\SearchService.cs" />
-        <Compile Include="SearchSettings.cs" />
-        <Compile Include="SearchViewModel.cs" />
-        <Compile Include="StatusMessages.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>StatusMessages.resx</DependentUpon>
-        </Compile>
-        <Compile Include="Utility\Converters.cs" />
     </ItemGroup>
     <ItemGroup>
         <None Include="App.config" />
@@ -115,12 +106,6 @@
             <Project>{7cecbcae-4636-41c1-9080-c59a93a34068}</Project>
             <Name>Drawing.Search.Common</Name>
         </ProjectReference>
-    </ItemGroup>
-    <ItemGroup>
-        <EmbeddedResource Include="StatusMessages.resx">
-            <Generator>ResXFileCodeGenerator</Generator>
-            <LastGenOutput>StatusMessages.Designer.cs</LastGenOutput>
-        </EmbeddedResource>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -5,11 +5,11 @@
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-        <ProjectGuid>{022A9742-6CB0-4639-9875-532C530FDC6B}</ProjectGuid>
+        <ProjectGuid>{36C42F0D-C873-4F69-A862-3F1F56E57B8C}</ProjectGuid>
         <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
-        <RootNamespace>Drawing.Search.Caching</RootNamespace>
-        <AssemblyName>Drawing.Search.Caching</AssemblyName>
+        <RootNamespace>Drawing.Search.Infrastructure</RootNamespace>
+        <AssemblyName>Drawing.Search.Infrastructure</AssemblyName>
         <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>12</LangVersion>
@@ -35,73 +35,65 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="Akit5, Version=5.8.0.0, Culture=neutral, PublicKeyToken=a70cba4ef557ee03, processorArchitecture=MSIL">
-          <HintPath>..\packages\Tekla.Technology.Akit5.5.8.17235.1\lib\net\Akit5.dll</HintPath>
-        </Reference>
-        <Reference Include="DotNetZip, Version=1.13.7.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
-          <HintPath>..\packages\DotNetZip.1.13.7\lib\net40\DotNetZip.dll</HintPath>
-        </Reference>
-        <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-          <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.dll</HintPath>
-        </Reference>
-        <Reference Include="Mono.Cecil.Mdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-          <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
-        </Reference>
-        <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-          <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
-        </Reference>
-        <Reference Include="Mono.Cecil.Rocks, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-          <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
-        </Reference>
-        <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-          <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-        </Reference>
         <Reference Include="System"/>
         <Reference Include="System.Core"/>
         <Reference Include="System.Data"/>
         <Reference Include="System.Runtime.Remoting" />
         <Reference Include="System.Xml"/>
         <Reference Include="Tekla.Structures, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
-          <HintPath>..\packages\Tekla.Structures.2023.0.0\lib\net40\Tekla.Structures.dll</HintPath>
+          <HintPath>..\packages\Tekla.Structures.2023.0.1\lib\net40\Tekla.Structures.dll</HintPath>
         </Reference>
         <Reference Include="Tekla.Structures.Catalogs, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
-          <HintPath>..\packages\Tekla.Structures.Catalogs.2023.0.0\lib\net40\Tekla.Structures.Catalogs.dll</HintPath>
+          <HintPath>..\packages\Tekla.Structures.Catalogs.2023.0.1\lib\net40\Tekla.Structures.Catalogs.dll</HintPath>
         </Reference>
         <Reference Include="Tekla.Structures.Datatype, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
-          <HintPath>..\packages\Tekla.Structures.Datatype.2023.0.0\lib\net40\Tekla.Structures.Datatype.dll</HintPath>
+          <HintPath>..\packages\Tekla.Structures.Datatype.2023.0.1\lib\net40\Tekla.Structures.Datatype.dll</HintPath>
         </Reference>
         <Reference Include="Tekla.Structures.Dialog, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
-          <HintPath>..\packages\Tekla.Structures.Dialog.2023.0.0\lib\net40\Tekla.Structures.Dialog.dll</HintPath>
+          <HintPath>..\packages\Tekla.Structures.Dialog.2023.0.1\lib\net40\Tekla.Structures.Dialog.dll</HintPath>
         </Reference>
         <Reference Include="Tekla.Structures.Drawing, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
-          <HintPath>..\packages\Tekla.Structures.Drawing.2023.0.0\lib\net40\Tekla.Structures.Drawing.dll</HintPath>
+          <HintPath>..\packages\Tekla.Structures.Drawing.2023.0.1\lib\net40\Tekla.Structures.Drawing.dll</HintPath>
         </Reference>
         <Reference Include="Tekla.Structures.Model, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
-          <HintPath>..\packages\Tekla.Structures.Model.2023.0.0\lib\net40\Tekla.Structures.Model.dll</HintPath>
+          <HintPath>..\packages\Tekla.Structures.Model.2023.0.1\lib\net40\Tekla.Structures.Model.dll</HintPath>
         </Reference>
         <Reference Include="Tekla.Structures.Plugins, Version=2023.0.0.0, Culture=neutral, PublicKeyToken=2f04dbe497b71114, processorArchitecture=MSIL">
-          <HintPath>..\packages\Tekla.Structures.Plugins.2023.0.0\lib\net40\Tekla.Structures.Plugins.dll</HintPath>
-        </Reference>
-        <Reference Include="Tekla.Technology.Scripting, Version=5.0.0.0, Culture=neutral, PublicKeyToken=a70cba4ef557ee03, processorArchitecture=MSIL">
-          <HintPath>..\packages\Tekla.Technology.Scripting.5.0.20041\lib\net\Tekla.Technology.Scripting.dll</HintPath>
-        </Reference>
-        <Reference Include="Tekla.Technology.Scripting.Plugins, Version=5.3.0.0, Culture=neutral, PublicKeyToken=a70cba4ef557ee03, processorArchitecture=MSIL">
-          <HintPath>..\packages\Tekla.Technology.Scripting.Plugins.5.3.17206.0\lib\net40-Client\Tekla.Technology.Scripting.Plugins.dll</HintPath>
+          <HintPath>..\packages\Tekla.Structures.Plugins.2023.0.1\lib\net40\Tekla.Structures.Plugins.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Properties\AssemblyInfo.cs"/>
+        <Compile Include="Caching\Keys\CacheKeyGenerator.cs" />
+        <Compile Include="Caching\Models\CacheKeyBuilder.cs" />
+        <Compile Include="Caching\Models\TeklaSearchCache.cs" />
+        <Compile Include="Caching\Services\DrawingCacheService.cs" />
+        <Compile Include="CAD\Extractors\Extractors.cs" />
+        <Compile Include="CAD\Models\DrawingResultSelector.cs" />
+        <Compile Include="CAD\Strategies\MatchStrategies.cs" />
+        <Compile Include="CAD\Tekla\TeklaDrawingHandler.cs" />
+        <Compile Include="CAD\Tekla\TeklaDrawingProvider.cs" />
+        <Compile Include="CAD\Tekla\TeklaDrawingWrapper.cs" />
+        <Compile Include="CAD\Tekla\TeklaView.cs" />
+        <Compile Include="CAD\Tekla\TeklaWrapper.cs" />
+        <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Drawing.Search.Common\Drawing.Search.Common.csproj">
-        <Project>{7cecbcae-4636-41c1-9080-c59a93a34068}</Project>
-        <Name>Drawing.Search.Common</Name>
-      </ProjectReference>
-    </ItemGroup>
-    <ItemGroup>
-      <None Include="packages.config" />
-    </ItemGroup>
-    <ItemGroup>
+      <Content Include="CAD\Resources\element_catalog_cross_section.bmp" />
+      <Content Include="CAD\Resources\element_catalog_cross_section_sketch.bmp" />
+      <Content Include="CAD\Resources\element_catalog_cross_section_user.bmp" />
+      <Content Include="CAD\Resources\prtyp_tree_1.bmp" />
+      <Content Include="CAD\Resources\prtyp_tree_10.bmp" />
+      <Content Include="CAD\Resources\prtyp_tree_11.bmp" />
+      <Content Include="CAD\Resources\prtyp_tree_13.bmp" />
+      <Content Include="CAD\Resources\prtyp_tree_15.bmp" />
+      <Content Include="CAD\Resources\prtyp_tree_2.bmp" />
+      <Content Include="CAD\Resources\prtyp_tree_3.bmp" />
+      <Content Include="CAD\Resources\prtyp_tree_4.bmp" />
+      <Content Include="CAD\Resources\prtyp_tree_5.bmp" />
+      <Content Include="CAD\Resources\prtyp_tree_6.bmp" />
+      <Content Include="CAD\Resources\prtyp_tree_7.bmp" />
+      <Content Include="CAD\Resources\prtyp_tree_8.bmp" />
+      <Content Include="CAD\Resources\prtyp_tree_9.bmp" />
       <Content Include="Resources\element_catalog_cross_section.bmp" />
       <Content Include="Resources\element_catalog_cross_section_sketch.bmp" />
       <Content Include="Resources\element_catalog_cross_section_user.bmp" />
@@ -118,6 +110,15 @@
       <Content Include="Resources\prtyp_tree_7.bmp" />
       <Content Include="Resources\prtyp_tree_8.bmp" />
       <Content Include="Resources\prtyp_tree_9.bmp" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Drawing.Search.Domain\Drawing.Search.Domain.csproj">
+        <Project>{6202d4e1-9d38-4691-a987-3e9ca304007e}</Project>
+        <Name>Drawing.Search.Domain</Name>
+      </ProjectReference>
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="packages.config" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

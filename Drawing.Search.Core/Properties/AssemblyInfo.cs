@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Drawing.Search.Core")]
+[assembly: AssemblyTitle("Drawing.Search.UI.WPF.Core")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Drawing.Search.Core")]
+[assembly: AssemblyProduct("Drawing.Search.UI.WPF.Core")]
 [assembly: AssemblyCopyright("Copyright © Eliza Oselskyi 2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
