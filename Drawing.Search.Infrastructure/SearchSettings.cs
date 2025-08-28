@@ -11,14 +11,14 @@ public class SearchSettings
         Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty,
             "config");
 
-    private static readonly string ConfigFileName = "config.json";
+    private const string ConfigFileName = "config.json";
 
     private static readonly string ConfigFilePath = Path.Combine(ConfigFolderPath, ConfigFileName);
 
-    public bool ShowAllAssemblyPositions { get; set; } = false;
+    public bool ShowAllAssemblyPositions { get; set; }
     public bool IsDarkMode { get; set; } = true;
 
-    public bool WildcardSearch { get; set; } = false;
+    public bool WildcardSearch { get; set; }
     public bool IsTestMode { get; set; } = true;
 
 
