@@ -32,7 +32,7 @@ namespace Drawing.Search.UI.Common.Controls
                 FrameworkPropertyMetadataOptions.AffectsRender,
                 OnGhostTextColorChanged));
 
-        private TextBlock _ghostTextBlock;
+        private TextBlock? _ghostTextBlock;
 
         /// <summary>
         ///     Static constructor that sets the default style key for the <see cref="GhostTextBox" /> class.
@@ -187,7 +187,7 @@ namespace Drawing.Search.UI.Common.Controls
         /// </summary>
         /// <param name="element">The element whose parent is to be retrieved.</param>
         /// <returns>The parent <see cref="DependencyObject" />, or <c>null</c> if none exists.</returns>
-        public static DependencyObject GetParent(this DependencyObject element)
+        public static DependencyObject? GetParent(this DependencyObject element)
         {
             try
             {

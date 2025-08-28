@@ -21,13 +21,13 @@ namespace Drawing.Search.App
     /// </summary>
     public partial class App
     {
-        private Mutex _mutex;
+        private Mutex? _mutex;
 
         /// <summary>
         ///     Gets the global service provider for the application.
         ///     Allows resolving services and handling dependency injection.
         /// </summary>
-        private static IServiceProvider ServiceProvider { get; set; }
+        private static IServiceProvider? ServiceProvider { get; set; }
 
         /// <summary>
         ///     Handles application startup events. Configures services, builds the service provider,
@@ -103,8 +103,8 @@ namespace Drawing.Search.App
         protected override void OnExit(ExitEventArgs e)
         {
             base.OnExit(e);
-            _mutex.ReleaseMutex();
-            _mutex.Dispose();
+            _mutex?.ReleaseMutex();
+            _mutex?.Dispose();
         }
     }
 }
