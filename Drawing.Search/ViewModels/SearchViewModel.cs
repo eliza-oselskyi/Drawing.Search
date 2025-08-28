@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,9 +18,7 @@ using Drawing.Search.Domain.Observers;
 using Drawing.Search.Infrastructure;
 using Drawing.Search.Infrastructure.Caching.Models;
 using Drawing.Search.Infrastructure.CAD.Extractors;
-using Drawing.Search.Infrastructure.CAD.Models;
 using Drawing.Search.Infrastructure.CAD.Strategies;
-using Drawing.Search.UI.WPF;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
 using ModelObject = Tekla.Structures.Model.ModelObject;
@@ -289,7 +286,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         // Add the new theme dictionary
         System.Windows.Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
         {
-            Source = new Uri($"/Drawing.Search.UI.WPF;component/Themes/{theme}.xaml", UriKind.Relative)
+            Source = new Uri($"/Drawing.Search;component/Themes/{theme}.xaml", UriKind.Relative)
         });
     }
 

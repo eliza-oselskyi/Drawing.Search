@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing.Search.UI.WPF", "Drawing.Search.UI.WPF\Drawing.Search.UI.WPF.csproj", "{B5B0D886-D70A-4897-B4BB-49BF04CC7667}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing.Search", "Drawing.Search\Drawing.Search.csproj", "{B5B0D886-D70A-4897-B4BB-49BF04CC7667}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing.Search.Domain", "Drawing.Search.Domain\Drawing.Search.Domain.csproj", "{6202D4E1-9D38-4691-A987-3E9CA304007E}"
 EndProject

@@ -4,7 +4,6 @@ using System.Windows;
 using Drawing.Search.Application.Features.Search;
 using Drawing.Search.Application.Services.Implementations;
 using Drawing.Search.Application.Services.Interfaces;
-using Drawing.Search.Domain;
 using Drawing.Search.Domain.Interfaces;
 using Drawing.Search.Infrastructure;
 using Drawing.Search.Infrastructure.Caching.Keys;
@@ -40,7 +39,7 @@ namespace Drawing.Search.App
         {
             base.OnStartup(e);
 
-            const string appName = "Drawing.Search.UI.WPF";
+            const string appName = "Drawing.Search";
             _mutex = new Mutex(true, appName, out var createdNew);
             if (!createdNew)
             {

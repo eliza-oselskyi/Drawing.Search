@@ -1,7 +1,5 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:Drawing.Search"
-                    xmlns:system="clr-namespace:System;assembly=mscorlib"
                     xmlns:converters="clr-namespace:Drawing.Search.UI.Common.Converters;assembly=Drawing.Search.UI.Common"
                     xmlns:controls="clr-namespace:Drawing.Search.UI.Common.Controls;assembly=Drawing.Search.UI.Common">
 

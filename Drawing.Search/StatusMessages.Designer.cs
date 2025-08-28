@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Drawing.Search.UI.WPF {
+namespace Drawing.Search {
     using System;
     
     

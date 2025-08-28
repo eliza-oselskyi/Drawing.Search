@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:Drawing.Search.UI.WPF">
+                    xmlns:local="clr-namespace:Drawing.Search">
 
     <!-- Colors -->
     <Color x:Key="BackgroundColor">#1E1E1E</Color>
