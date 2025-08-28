@@ -13,7 +13,7 @@ using Drawing.Search.ViewModels;
 using Drawing.Search.Views;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Drawing.Search
+namespace Drawing.Search.App
 {
     /// <summary>
     ///     The main application class for the Drawing Search tool.
@@ -103,11 +103,8 @@ namespace Drawing.Search
         protected override void OnExit(ExitEventArgs e)
         {
             base.OnExit(e);
-            if (_mutex != null)
-            {
-                _mutex.ReleaseMutex();
-                _mutex.Dispose();
-            }
+            _mutex.ReleaseMutex();
+            _mutex.Dispose();
         }
     }
 }
