@@ -17,6 +17,7 @@ using Drawing.Search.Domain.Enums;
 using Drawing.Search.Domain.Interfaces;
 using Drawing.Search.Domain.Models;
 using Drawing.Search.Domain.Observers;
+using Drawing.Search.Infrastructure;
 using Drawing.Search.Infrastructure.Caching.Models;
 using Drawing.Search.Infrastructure.CAD.Extractors;
 using Drawing.Search.Infrastructure.CAD.Strategies;
@@ -45,6 +46,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
     private bool _isDarkMode;
     private bool _isSearching;
+    private bool _isTestMode;
     private string _searchTerm = "";
     private SearchType _selectedSearchType;
     private SearchSettings? _settings;
@@ -81,13 +83,47 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             FocusRequested?.Invoke(this, EventArgs.Empty);
             return Task.CompletedTask;
         });
-        Version = $"v{Assembly.GetExecutingAssembly().GetName().Version}" + "_TESTING";
+        SetVersionString();
 
 
         PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(SearchTerm)) UpdateGhostSuggestion(SearchTerm);
         };
+    }
+
+    private string SetVersionString()
+    {
+        string version;
+        if (IsTestMode)
+        {
+            
+            version = $"v{Assembly.GetExecutingAssembly().GetName().Version}" + "_TESTING";
+        }
+        else
+        {
+            version = $"v{Assembly.GetExecutingAssembly().GetName().Version}";
+        }
+        Version = version;
+        return version;
+    }
+
+    public bool IsTestMode
+    {
+        get => _isTestMode;
+        set
+        {
+            if (_isTestMode == value) return;
+            _isTestMode = value;
+            if (_settings != null)
+            {
+                _settings.IsTestMode = value;
+                _settings.Save();
+            }
+
+            SetVersionString();
+            OnPropertyChanged(nameof(IsTestMode));
+        }
     }
 
     public string Version

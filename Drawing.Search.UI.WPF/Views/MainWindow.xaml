@@ -25,7 +25,7 @@
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <converters:SearchTypeToAssemblyEnabledConverter x:Key="SearchTypeToAssemblyEnabledConverter" />
     </Window.Resources>
-
+    
     <Grid Background="{DynamicResource BackgroundBrush}"
           Margin="10">
         <Grid.RowDefinitions>
@@ -164,6 +164,9 @@
                         <CheckBox Content="Use Regex Search"
                                   IsChecked="{Binding UseRegexSearch}"
                                   ToolTip="Enable regex pattern matching instead of wildcard search" />
+                        <CheckBox Content="Debug"
+                                  IsChecked="{Binding IsTestMode}"
+                                  ToolTip="Toggles debug mode (FOR DEVELOPMENT ONLY)" />
                     </StackPanel>
                 </Expander>
             </DockPanel>

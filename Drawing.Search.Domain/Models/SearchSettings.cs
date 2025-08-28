@@ -19,6 +19,7 @@ public class SearchSettings
     public bool IsDarkMode { get; set; } = true;
 
     public bool WildcardSearch { get; set; } = false;
+    public bool IsTestMode { get; set; } = false;
 
 
     public static SearchSettings Load()
