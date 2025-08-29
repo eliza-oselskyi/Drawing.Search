@@ -13,6 +13,7 @@ public class DrawingObjectsOriginator
 
     public DrawingObjectsOriginator(Tekla.Structures.Drawing.Drawing drawing)
     {
+        if (drawing == null) throw new ArgumentNullException(nameof(drawing), "Drawing cannot be null. Do you have a drawing open?");
         _objects = drawing.GetSheet().GetAllObjects();
         Objects = _objects;
         Drawing = drawing;
