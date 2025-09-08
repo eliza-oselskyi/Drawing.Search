@@ -542,7 +542,7 @@ public class TeklaSearchCache : ISearchCache
             _relationshipsCache.TryGetValue(mainKey, out var relSet);
             if (relSet != null)
                 foreach (var rel in relSet)
-                    if (rel.Key.Contains(objectKey))
+                    if (rel.Value.Contains(objectKey))
                         foreach (var relatedKey in rel.Value)
                         {
                             var relatedObject = GetFromCache(mainKey, relatedKey);

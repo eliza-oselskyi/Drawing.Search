@@ -46,14 +46,14 @@ public class RegexMatchStrategy<T> : ISearchStrategy
     public bool Match(string obj, ISearchQuery query)
     {
         var s = obj.ToString();
-
         try
         {
-            return Regex.IsMatch(s,
-                query.Term,
-                query.CaseSensitive == StringComparison.OrdinalIgnoreCase
-                    ? RegexOptions.IgnoreCase
-                    : RegexOptions.None);
+            return query.CompiledRegex.IsMatch(s);
+            //return Regex.IsMatch(s,
+            //    query.Term,
+            //    query.CaseSensitive == StringComparison.OrdinalIgnoreCase
+            //        ? RegexOptions.IgnoreCase
+            //        : RegexOptions.None);
         }
         catch (ArgumentException e)
         {
