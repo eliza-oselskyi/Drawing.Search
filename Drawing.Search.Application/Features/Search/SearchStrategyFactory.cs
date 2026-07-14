@@ -26,12 +26,9 @@ public abstract class SearchStrategyFactory
         return new ObservableSearch<T>(config.SearchStrategies, extractor);
     }
 
-    public static ISearchQuery CreateSearchQuery(SearchConfiguration config)
-    {
-        if (config.SearchTerm == null) return new SearchQuery("");
-        return new SearchQuery(config.SearchTerm)
-        {
-            CaseSensitive = config.StringComparison
-        };
-    }
+    /// <summary>
+    /// Creates a search query from the configuration.
+    /// </summary>
+    public static ISearchQuery CreateSearchQuery(SearchConfiguration config) => 
+        new SearchQuery(config.SearchTerm ?? string.Empty, config.CaseSensitive, config.Wildcard);
 }
