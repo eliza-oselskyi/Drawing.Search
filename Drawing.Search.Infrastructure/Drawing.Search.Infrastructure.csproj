@@ -88,10 +88,8 @@
         <Compile Include="Caching\Models\CacheKeyBuilder.cs" />
         <Compile Include="Caching\Models\TeklaSearchCache.cs" />
         <Compile Include="Caching\Services\DrawingCacheService.cs" />
-        <Compile Include="CAD\Extractors\Extractors.cs" />
+        <Compile Include="CAD\Extractors\MarkSearchText.cs" />
         <Compile Include="CAD\Models\DrawingResultSelector.cs" />
-        <Compile Include="CAD\Strategies\MatchStrategies.cs" />
-        <Compile Include="CAD\Strategies\SearchPredicates.cs" />
         <Compile Include="CAD\Tekla\TeklaDrawingHandler.cs" />
         <Compile Include="CAD\Tekla\TeklaDrawingProvider.cs" />
         <Compile Include="CAD\Tekla\TeklaDrawingWrapper.cs" />

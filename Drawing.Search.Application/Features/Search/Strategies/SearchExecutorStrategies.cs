@@ -7,12 +7,10 @@ using Drawing.Search.Domain.Drawings;
 using Drawing.Search.Domain.Effects;
 using Drawing.Search.Domain.Enums;
 using Drawing.Search.Domain.Interfaces;
-using Drawing.Search.Domain.Observers;
 using Drawing.Search.Domain.Search;
 using Drawing.Search.Infrastructure.Caching.Models;
 using Drawing.Search.Infrastructure.CAD.Extractors;
 using Drawing.Search.Infrastructure.CAD.Models;
-using Drawing.Search.Infrastructure.CAD.Strategies;
 using Drawing.Search.Infrastructure.CAD.Tekla;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
@@ -22,11 +20,11 @@ namespace Drawing.Search.Application.Features.Search.Strategies;
 public class PartMarkSearchExecutor(
     DrawingResultSelector resultSelector,
     IDrawingCache drawingCache,
-    ICacheKeyGenerator cacheKeyGenerator)
+    ICacheKeyGenerator cacheKeyGenerator,
+    IAssemblyCache assemblyCache)
     : ISearchExecutor
 {
-    private readonly MarkExtractor _markExtractor = new();
-    private readonly DrawingSearchEffectInterpreter _effectInterpreter = new(drawingCache, resultSelector);
+    private readonly DrawingSearchEffectInterpreter _effectInterpreter = new(drawingCache, assemblyCache, resultSelector);
 
     public SearchResult Execute(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
     {
@@ -51,7 +49,7 @@ public class PartMarkSearchExecutor(
                 var mark = (Mark)entry.Object;
 
                 return new SearchableDrawingObject.PartMarkObject(entry.Id, domainDrawingId,
-                    _markExtractor.ExtractSearchableString(mark));
+                    MarkSearchText.Extract(mark));
             })
             .ToList();
         
@@ -64,7 +62,7 @@ public class PartMarkSearchExecutor(
         
         var plan = planResult.Value;
         
-        _effectInterpreter.Interpret(plan, dwgKey);
+        _effectInterpreter.Interpret(plan, dwgKey, drawing);
 
         return SearchResult.Empty with
         {
@@ -76,11 +74,11 @@ public class PartMarkSearchExecutor(
     }
 }
 
-public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCache drawingCache)
+public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCache drawingCache, IAssemblyCache assemblyCache)
     : Interfaces.ISearchExecutor
 {
     private readonly DrawingResultSelector _resultSelector = resultSelector;
-    private readonly DrawingSearchEffectInterpreter _effectInterpreter = new(drawingCache, resultSelector);
+    private readonly DrawingSearchEffectInterpreter _effectInterpreter = new(drawingCache, assemblyCache, resultSelector);
 
     public SearchResult Execute(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
     {
@@ -118,7 +116,7 @@ public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCa
         
         var plan = planResult.Value;
 
-        _effectInterpreter.Interpret(plan, dwgKey);
+        _effectInterpreter.Interpret(plan, dwgKey, drawing);
 
         return SearchResult.Empty with
         {
@@ -130,64 +128,55 @@ public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCa
     }
 }
 
-public class AssemblySearchExecutor : Interfaces.ISearchExecutor
+public class AssemblySearchExecutor(
+    DrawingResultSelector resultSelector,
+    IAssemblyCache assemblyCache,
+    IDrawingCache drawingCache)
+    : Interfaces.ISearchExecutor
 {
-    private readonly DrawingResultSelector _resultSelector;
-    private readonly IDrawingCache _drawingCache;
-    private readonly IAssemblyCache _assemblyCache;
-
-    public AssemblySearchExecutor(DrawingResultSelector resultSelector, IAssemblyCache assemblyCache, IDrawingCache drawingCache)
-    {
-        _drawingCache = drawingCache;
-        _assemblyCache = assemblyCache;
-        _resultSelector = resultSelector;
-    }
     
+    private readonly DrawingSearchEffectInterpreter _effectInterpreter = new(drawingCache, assemblyCache, resultSelector);
+
     public SearchResult Execute(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
     {
-        var activeDrawing = DrawingHandler.Instance.GetActiveDrawing();
-        if (activeDrawing == null)
-            throw new InvalidOperationException("No active drawing found.");
+        if (config is null) throw new ArgumentNullException(nameof(config));
+        if (drawing is null) throw new ArgumentNullException(nameof(drawing));
+        
+        var drawingId = drawing.GetIdentifier().ToString();
+        var domainDrawingId = new DrawingId(drawingId);
+        var dwgKey = new CacheKeyBuilder(drawingId).CreateDrawingCacheKey();
 
-        var drawingKey = new CacheKeyBuilder(activeDrawing.GetIdentifier().ToString()).CreateDrawingCacheKey();
+        var searchableAssemblies = assemblyCache.GetAllAssemblyPositions()
+            .Where(position => !string.IsNullOrWhiteSpace(position))
+            .Select(position => new SearchableDrawingObject.AssemblyObject(
+                position,
+                domainDrawingId,
+                position,
+                AssemblyPosition: position,
+                IsMainPart: true))
+            .ToList();
 
-        // Instead of searching ModelObjects directly, search the cached assembly positions
-        var assemblyPositions = _assemblyCache.GetAllAssemblyPositions();
-        var searcher = SearchStrategyFactory.CreateSearcher<string>(config);
-        var contentCollector = new ContentCollectingObserver(new StringExtractor());
-        searcher.Subscribe(contentCollector);
-
-        // Search through assembly positions
-        var matchedAssemblyPositions = searcher.Search(assemblyPositions, SearchStrategyFactory.CreateSearchQuery(config));
-
-        // Get all parts related to matched assembly positions
-        var selectableParts = new List<Part>();
-        foreach (var assemblyPos in matchedAssemblyPositions)
-        {
-            if (assemblyPos == null) continue;
-            var relatedIdentifiers = _assemblyCache.GetAssemblyObjects(assemblyPos) as HashSet<string>;
-
-
-            if (relatedIdentifiers == null) continue;
-            var identifiersToProcess = config.ShowAllAssemblyParts
-                ? relatedIdentifiers
-                : relatedIdentifiers.Where(r => r.Contains("main"));
-            foreach (var identifier in identifiersToProcess)
-            {
-                var relatedObjects = _drawingCache.GetRelatedObjects(
-                    activeDrawing.GetIdentifier().ToString(),
-                    identifier);
-                selectableParts.AddRange(relatedObjects.OfType<Part>());
-            }
-        }
-
-        TeklaWrapper.DrawingObjectListToSelection(selectableParts.Cast<DrawingObject>().ToList(), activeDrawing);
+        var request = new SearchRequest.Assembly(
+            config.SearchTerm ?? string.Empty,
+            !config.Wildcard,
+            config.CaseSensitive,
+            config.ShowAllAssemblyParts);
+        
+        var planResult = SearchPipeline.TrySearch(searchableAssemblies, request);
+        
+        if (!planResult.IsSuccessful)
+            throw planResult.Error;
+        
+        var plan = planResult.Value;
+        
+        _effectInterpreter.Interpret(plan, dwgKey, drawing);
 
         return SearchResult.Empty with
         {
-            MatchCount = selectableParts.Count(),
-            ElapsedTime = TimeSpan.Zero, // set by caller
-            SearchType = SearchType.Assembly
+            MatchCount = plan.Summary.MatchCount,
+            ElapsedTime = plan.Summary.ElapsedTime,
+            SearchType = SearchType.Assembly,
+            MatchedContent = plan.Summary.MatchedContent
         };
     }
 }

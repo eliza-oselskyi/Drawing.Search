@@ -57,11 +57,6 @@ public class SearchConfiguration
     public bool ShowAllAssemblyParts { get; set; }
 
     /// <summary>
-    ///     Gets or sets the list of search strategies to be used during the search operation.
-    /// </summary>
-    public List<ISearchStrategy> SearchStrategies { get; set; } = new();
-
-    /// <summary>
     ///     Gets or sets the type of the search operation.
     /// </summary>
     public SearchType Type { get; set; }
@@ -75,12 +70,6 @@ public class SearchConfiguration
             : StringComparison.OrdinalIgnoreCase;
 
     /// <summary>
-    ///     Gets or sets the observer that listens to the search operation result notifications.
-    /// </summary>
-    public IObserver? Observer { get; set; }
-
-
-    /// <summary>
     ///     Returns a string representation of the search configuration, containing all properties.
     /// </summary>
     /// <returns>A <see cref="string" /> describing the current search configuration.</returns>
@@ -90,9 +79,6 @@ public class SearchConfiguration
         stringBuilder.AppendLine($"Search Term: {SearchTerm}");
         stringBuilder.AppendLine($"Case Sensitive: {CaseSensitive}");
         stringBuilder.AppendLine($"Wildcard: {Wildcard}");
-        var stratList = SearchStrategies.Select(m => m.GetType().Name).ToList();
-        var stratString = string.Join(", ", stratList);
-        stringBuilder.AppendLine($"Search Strategies: {stratString}");
         stringBuilder.AppendLine($"Search Type: {Type}");
         return stringBuilder.ToString();
     }

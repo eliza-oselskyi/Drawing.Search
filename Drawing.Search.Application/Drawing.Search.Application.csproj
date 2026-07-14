@@ -98,8 +98,6 @@
         <Compile Include="Features\History\DrawingObjectsOriginator.cs" />
         <Compile Include="Features\History\DrawingState.cs" />
         <Compile Include="Features\Search\Interfaces\ISearchExecutor.cs" />
-        <Compile Include="Features\Search\ObservableSearch.cs" />
-        <Compile Include="Features\Search\SearchBuilder.cs" />
         <Compile Include="Features\Search\SearchConfiguration.cs" />
         <Compile Include="Features\Search\SearchLogger.cs" />
         <Compile Include="Features\Search\SearchMatch.cs" />
@@ -108,7 +106,6 @@
         <Compile Include="Features\Search\SearchPredicates.cs" />
         <Compile Include="Features\Search\SearchQuery.cs" />
         <Compile Include="Features\Search\SearchResult.cs" />
-        <Compile Include="Features\Search\SearchStrategyFactory.cs" />
         <Compile Include="Features\Search\Strategies\DrawingSearchEffectInterpreter.cs" />
         <Compile Include="Features\Search\Strategies\SearchExecutorStrategies.cs" />
         <Compile Include="IsExternalInit\IsExternalInit.cs" />

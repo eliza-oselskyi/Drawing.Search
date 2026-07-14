@@ -8,7 +8,6 @@ using Drawing.Search.Application.Services.Interfaces;
 using Drawing.Search.Domain.Enums;
 using Drawing.Search.Domain.Interfaces;
 using Drawing.Search.Infrastructure.CAD.Models;
-using Drawing.Search.Infrastructure.CAD.Strategies;
 
 namespace Drawing.Search.Application.Services.Implementations;
 
@@ -70,8 +69,8 @@ public class DrawingSearchService : ISearchService, IDisposable
     {
         return new Dictionary<SearchType, ISearchExecutor>
         {
-            { SearchType.PartMark, new PartMarkSearchExecutor(resultSelector, drawingCache, cacheKeyGenerator) },
-            { SearchType.Text, new TextSearchExecutor(resultSelector, drawingCache) },
+            { SearchType.PartMark, new PartMarkSearchExecutor(resultSelector, drawingCache, cacheKeyGenerator, assemblyCache) },
+            { SearchType.Text, new TextSearchExecutor(resultSelector, drawingCache, assemblyCache) },
             { SearchType.Assembly, new AssemblySearchExecutor(resultSelector, assemblyCache, drawingCache) }
         };
     }
