@@ -107,6 +107,7 @@
         <Compile Include="Observers\ContentCollectingObserver.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="Search\SearchError.cs" />
+        <Compile Include="Search\SearchException.cs" />
         <Compile Include="Search\SearchPlan.cs" />
         <Compile Include="Search\SearchRequest.cs" />
         <Compile Include="Search\SearchSummary.cs" />

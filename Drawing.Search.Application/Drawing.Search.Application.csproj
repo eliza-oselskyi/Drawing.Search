@@ -93,6 +93,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Effects\SearchEffectInterpreter.cs" />
+        <Compile Include="Effects\SearchPlanRunner.cs" />
         <Compile Include="Features\History\DrawingHistory.cs" />
         <Compile Include="Features\History\DrawingObjectsOriginator.cs" />
         <Compile Include="Features\History\DrawingState.cs" />
@@ -104,6 +105,7 @@
         <Compile Include="Features\Search\SearchMatch.cs" />
         <Compile Include="Features\Search\SearchPipeline.cs" />
         <Compile Include="Features\Search\SearchPredicate.cs" />
+        <Compile Include="Features\Search\SearchPredicates.cs" />
         <Compile Include="Features\Search\SearchQuery.cs" />
         <Compile Include="Features\Search\SearchResult.cs" />
         <Compile Include="Features\Search\SearchStrategyFactory.cs" />

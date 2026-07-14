@@ -1,8 +1,8 @@
 ﻿using Drawing.Search.Domain.Interfaces;
 
-namespace Drawing.Search.Infrastructure.CAD.Strategies;
+namespace Drawing.Search.Application.Features.Search;
 
-public static class SearchPredicates // TODO: remove this duplicate once refactor is done
+public static class SearchPredicates
 {
     public static bool Exact(string candidate, ISearchQuery query) => 
         string.Equals(candidate, query.Term, query.CaseSensitive);
