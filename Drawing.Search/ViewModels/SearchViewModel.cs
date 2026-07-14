@@ -420,8 +420,13 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             var result = await _searchService.ExecuteSearchAsync(config);
 
             stopwatch.Stop();
-            result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
-            StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedMilliseconds} ms.";
+            
+            result = result with
+            {
+                ElapsedTime = stopwatch.Elapsed
+            };
+            
+            StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedTime.Milliseconds} ms.";
 
             // After successful search, add to previous searches list
             if (result.MatchCount > 0)

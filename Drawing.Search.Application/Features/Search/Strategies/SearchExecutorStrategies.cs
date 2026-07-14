@@ -55,10 +55,10 @@ public class PartMarkSearchExecutor : ISearchExecutor
         var enumerable = results.ToList();
         _resultSelector.SelectResults(enumerable.Cast<DrawingObject>().ToList());
 
-        return new SearchResult
+        return SearchResult.Empty with
         {
             MatchCount = enumerable.Count(),
-            ElapsedMilliseconds = 0, // Set by caller
+            ElapsedTime = TimeSpan.Zero, // set by caller
             SearchType = SearchType.PartMark
         };
     }
@@ -95,10 +95,10 @@ public class TextSearchExecutor : Interfaces.ISearchExecutor
         var enumerable = results.ToList();
         _resultSelector.SelectResults(enumerable.Cast<DrawingObject>().ToList());
 
-        return new SearchResult()
+        return SearchResult.Empty with
         {
             MatchCount = enumerable.Count(),
-            ElapsedMilliseconds = 0, // Set by caller
+            ElapsedTime = TimeSpan.Zero, // set by caller
             SearchType = SearchType.Text
         };
     }
@@ -157,10 +157,10 @@ public class AssemblySearchExecutor : Interfaces.ISearchExecutor
 
         TeklaWrapper.DrawingObjectListToSelection(selectableParts.Cast<DrawingObject>().ToList(), activeDrawing);
 
-        return new SearchResult
+        return SearchResult.Empty with
         {
-            MatchCount = selectableParts.Count,
-            ElapsedMilliseconds = 0,
+            MatchCount = selectableParts.Count(),
+            ElapsedTime = TimeSpan.Zero, // set by caller
             SearchType = SearchType.Assembly
         };
     }
