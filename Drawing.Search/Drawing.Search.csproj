@@ -100,6 +100,7 @@
         <None Include="packages.config" />
     </ItemGroup>
     <ItemGroup>
+        <PackageReference Include="DotNext" Version="1.2.10" />
         <PackageReference Include="IsExternalInit" Version="1.0.3">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
