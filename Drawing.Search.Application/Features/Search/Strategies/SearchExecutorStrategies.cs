@@ -19,51 +19,83 @@ using Tekla.Structures.DrawingInternal;
 
 namespace Drawing.Search.Application.Features.Search.Strategies;
 
-public class PartMarkSearchExecutor : ISearchExecutor
+public class PartMarkSearchExecutor(
+    DrawingResultSelector resultSelector,
+    IDrawingCache drawingCache,
+    ICacheKeyGenerator cacheKeyGenerator)
+    : ISearchExecutor
 {
+    private readonly MarkExtractor _markExtractor = new();
 
-    private readonly IDrawingCache _drawingCache;
-    private readonly DrawingResultSelector _resultSelector;
-    private readonly ICacheKeyGenerator _cacheKeyGenerator;
-
-    public PartMarkSearchExecutor(
-        DrawingResultSelector resultSelector,
-        IDrawingCache drawingCache,
-        ICacheKeyGenerator cacheKeyGenerator)
-    {
-        //_cacheService = cacheService;
-
-        _drawingCache = drawingCache;
-        _cacheKeyGenerator = cacheKeyGenerator;
-        
-        _resultSelector = resultSelector;
-    }
-    
     public SearchResult Execute(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
     {
-        var dwgKey = _cacheKeyGenerator.GenerateDrawingKey(drawing.GetIdentifier().ToString());
+        if (config is null) throw new ArgumentNullException(nameof(config));
+        if (drawing is null) throw new ArgumentNullException(nameof(drawing));
+        
+        var drawingId = drawing.GetIdentifier().ToString();
+        var domainDrawingId = new DrawingId(drawingId);
+        var dwgKey = cacheKeyGenerator.GenerateDrawingKey(drawingId);
+        
+        var ids = drawingCache.GetDrawingIdentifiers(drawingId);
 
-        var ids = _drawingCache.GetDrawingIdentifiers(drawing.GetIdentifier().ToString());
-        //var ids = _cacheService.DumpIdentifiers(drawing.GetIdentifier().ToString());
-        var marks = ids.Where(t => _drawingCache.GetDrawingObject(dwgKey, t) is Mark)
-            .Select(t => _drawingCache.GetDrawingObject(dwgKey, t) as Mark).ToList();
-        var searcher = SearchStrategyFactory.CreateSearcher<Mark>(config);
-        var contentCollector = new ContentCollectingObserver(new MarkExtractor());
-        searcher.Subscribe(contentCollector);
+        var searchableMarks = ids
+            .Select(id => new
+            {
+                Id = id,
+                Object = drawingCache.GetDrawingObject(dwgKey, id)
+            })
+            .Where(entry => entry.Object is Mark)
+            .Select(entry =>
+            {
+                var mark = (Mark)entry.Object;
 
-        Debug.Assert(marks != null, nameof(marks) + " != null");
-        if (marks == null) return new SearchResult();
-        var results = searcher.Search(marks, SearchStrategyFactory.CreateSearchQuery(config));
-
-        var enumerable = results.ToList();
-        _resultSelector.SelectResults(enumerable.Cast<DrawingObject>().ToList());
+                return new SearchableDrawingObject.PartMarkObject(entry.Id, domainDrawingId,
+                    _markExtractor.ExtractSearchableString(mark));
+            })
+            .ToList();
+        
+        var request = new SearchRequest.PartMark(config.SearchTerm ?? string.Empty, !config.Wildcard, config.CaseSensitive);
+        
+        var planResult = SearchPipeline.TrySearch(searchableMarks, request);
+        
+        if (!planResult.IsSuccessful)
+            throw planResult.Error;
+        
+        var plan = planResult.Value;
+        
+        InterpretPartMarkSearchEffects(plan, dwgKey);
 
         return SearchResult.Empty with
         {
-            MatchCount = enumerable.Count(),
-            ElapsedTime = TimeSpan.Zero, // set by caller
-            SearchType = SearchType.PartMark
+            MatchCount = plan.Summary.MatchCount,
+            ElapsedTime = plan.Summary.ElapsedTime,
+            SearchType = SearchType.PartMark,
+            MatchedContent = plan.Summary.MatchedContent
         };
+    }
+
+    private void InterpretPartMarkSearchEffects(SearchPlan plan, string dwgKey)
+    {
+        foreach (var effect in plan.Effects)
+        {
+            switch (effect)
+            {
+                case SearchEffect.SelectTargets targets:
+                    SelectPartMarkTargets(targets.Targets, dwgKey);
+                    break;
+            }
+        }
+    }
+
+    private void SelectPartMarkTargets(IReadOnlyList<SelectionTarget> targets, string dwgKey)
+    {
+        var drawingObjects = targets
+            .OfType<SelectionTarget.DrawingObject>()
+            .Select(target => drawingCache.GetDrawingObject(dwgKey, target.ObjectId))
+            .OfType<DrawingObject>()
+            .ToList();
+        
+        resultSelector.SelectResults(drawingObjects);
     }
 }
 
