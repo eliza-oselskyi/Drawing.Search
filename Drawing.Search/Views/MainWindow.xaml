@@ -24,7 +24,7 @@
         <WindowChrome CaptionHeight="32"
                       ResizeBorderThickness="5"
                       GlassFrameThickness="0"
-                      CornerRadius="0" />
+                      CornerRadius="4" />
     </WindowChrome.WindowChrome>
 
     <Window.Resources>
@@ -37,8 +37,8 @@
     <DockPanel>
         <!-- Title Bar -->
         <Border DockPanel.Dock="Top"
-                Background="{StaticResource DarkPanelAlt}"
-                BorderBrush="{StaticResource DarkBorder}"
+                Background="{DynamicResource Layer01}"
+                BorderBrush="{DynamicResource BorderStrong01}"
                 BorderThickness="0,0,0,1"
                 Height="32">
             <Grid>
@@ -47,7 +47,7 @@
                            HorizontalAlignment="Left"
                            Margin="12,0,0,0"
                            FontSize="12"
-                           Foreground="{StaticResource TextPrimary}" />
+                           Foreground="{DynamicResource TextPrimary}" />
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <!-- Minimize Button -->
@@ -57,7 +57,7 @@
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Background" Value="Transparent" />
-                                <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
@@ -72,10 +72,12 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="#3E3E42" />
+                                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ButtonPrimaryHover}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextOnColor}"/>
                                                 </Trigger>
                                                 <Trigger Property="IsPressed" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="#4E4E52" />
+                                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ButtonPrimaryActive}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextOnColor}"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -92,7 +94,7 @@
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Background" Value="Transparent" />
-                                <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
@@ -108,9 +110,11 @@
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
                                                     <Setter TargetName="border" Property="Background" Value="#E81123" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextOnColor}"/>
                                                 </Trigger>
                                                 <Trigger Property="IsPressed" Value="True">
                                                     <Setter TargetName="border" Property="Background" Value="#F1707A" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextOnColor}"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -124,7 +128,7 @@
         </Border>
 
 
-        <Grid Background="{DynamicResource BackgroundBrush}"
+        <Grid Background="{DynamicResource BackgroundGlobal}"
               Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /> <!-- Radio buttons -->
@@ -173,6 +177,7 @@
                 <!-- Search Box -->
                 <controls:GhostTextBox x:Name="SearchTextBox"
                                        Grid.Row="0"
+                                       Margin="0,0,0,5"
                                        Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
                                        Height="30"
                                        GhostText="{Binding GhostSuggestion, UpdateSourceTrigger=PropertyChanged}"
@@ -192,7 +197,7 @@
                         HorizontalContentAlignment="Stretch"
                         IsEnabled="{Binding IsCaching, Converter={StaticResource InverseBooleanConverter}}">
                     <Button.Style>
-                        <Style TargetType="Button">
+                        <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
                             <!--
                     <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"></Setter>
                     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
@@ -277,7 +282,7 @@
                        TextWrapping="Wrap"
                        VerticalAlignment="Top"
                        Margin="0,0,0,2"
-                       Foreground="{DynamicResource ForegroundBrush}" />
+                       Foreground="{DynamicResource TextPrimary}" />
 
             <!-- Version and Theme Toggle Row -->
             <Grid Grid.Row="4" Margin="0,5,0,0">
