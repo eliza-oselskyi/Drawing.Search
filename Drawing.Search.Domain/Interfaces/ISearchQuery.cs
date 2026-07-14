@@ -8,5 +8,6 @@ public interface ISearchQuery
     public string Term { get; }
     public StringComparison CaseSensitive { get; }
     public bool Wildcard { get; }
-    public Regex? CompiledRegex { get; }
+    public Regex CompiledRegex { get; }
+    public Regex WildcardRegex { get; }
 }

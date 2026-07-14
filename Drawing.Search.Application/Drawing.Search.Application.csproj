@@ -87,6 +87,7 @@
         <Compile Include="Features\Search\SearchBuilder.cs" />
         <Compile Include="Features\Search\SearchConfiguration.cs" />
         <Compile Include="Features\Search\SearchLogger.cs" />
+        <Compile Include="Features\Search\SearchMatch.cs" />
         <Compile Include="Features\Search\SearchPredicate.cs" />
         <Compile Include="Features\Search\SearchQuery.cs" />
         <Compile Include="Features\Search\SearchResult.cs" />

@@ -13,18 +13,8 @@ public static class SearchPredicates
         candidate.IndexOf(query.Term, query.CaseSensitive) >= 0;
 
     public static bool Regex(string candidate, ISearchQuery query) =>
-        query.CompiledRegex?.IsMatch(candidate) == true;
+        query.CompiledRegex.IsMatch(candidate) == true;
 
-    public static bool Wildcard(string candidate, ISearchQuery query)
-    {
-        var regex = "^" + System.Text.RegularExpressions.Regex.Escape(query.Term)
-            .Replace("\\?", ".")
-            .Replace("\\*", ".*") + "$";
-
-        var options = query.CaseSensitive == StringComparison.OrdinalIgnoreCase
-            ? RegexOptions.IgnoreCase
-            : RegexOptions.None;
-
-        return System.Text.RegularExpressions.Regex.IsMatch(candidate, regex, options);
-    }
+    public static bool Wildcard(string candidate, ISearchQuery query) =>
+        query.WildcardRegex.IsMatch(candidate);
 }
