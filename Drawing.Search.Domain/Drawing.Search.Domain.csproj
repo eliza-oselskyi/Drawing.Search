@@ -83,6 +83,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Compatibility.cs" />
         <Compile Include="Enums\SearchType.cs" />
         <Compile Include="Interfaces\IAssemblyCache.cs" />
         <Compile Include="Interfaces\ICacheKeyGenerator.cs" />
