@@ -6,29 +6,12 @@ namespace Drawing.Search.Infrastructure.CAD.Strategies;
 
 public class ExactMatchStrategy : ISearchStrategy
 {
-    public bool Match(string obj, ISearchQuery query)
-    {
-        var res = obj.ToString().Equals(query.Term, StringComparison.OrdinalIgnoreCase);
-        return res;
-    }
+    public bool Match(string obj, ISearchQuery query) => SearchPredicates.Exact(obj, query);
 }
 
 public class ContainsMatchStrategy : ISearchStrategy
 {
-    public bool Match(string obj, ISearchQuery query)
-    {
-        string s;
-        if (query.CaseSensitive == StringComparison.OrdinalIgnoreCase)
-        {
-            s = obj.ToString().ToLower();
-            return s.Contains(query.Term.ToLower());
-        }
-        else
-        {
-            s = obj.ToString();
-            return s.Contains(query.Term);
-        }
-    }
+    public bool Match(string obj, ISearchQuery query) => SearchPredicates.Contains(obj, query);
 }
 
 /// <summary>
@@ -45,15 +28,9 @@ public class RegexMatchStrategy<T> : ISearchStrategy
     /// <returns>True on a successful match.</returns>
     public bool Match(string obj, ISearchQuery query)
     {
-        var s = obj.ToString();
         try
         {
-            return query.CompiledRegex.IsMatch(s);
-            //return Regex.IsMatch(s,
-            //    query.Term,
-            //    query.CaseSensitive == StringComparison.OrdinalIgnoreCase
-            //        ? RegexOptions.IgnoreCase
-            //        : RegexOptions.None);
+            return SearchPredicates.Regex(obj, query);
         }
         catch (ArgumentException e)
         {
@@ -68,19 +45,5 @@ public class RegexMatchStrategy<T> : ISearchStrategy
 
 public class WildcardMatchStrategy<T> : ISearchStrategy
 {
-    public bool Match(string obj, ISearchQuery query)
-    {
-        var s = obj.ToString();
-        var reg = WildcardToRegex(query.Term);
-        return Regex.IsMatch(s,
-            reg,
-            query.CaseSensitive == StringComparison.OrdinalIgnoreCase
-                ? RegexOptions.IgnoreCase
-                : RegexOptions.None);
-    }
-
-    private static string WildcardToRegex(string wildcard)
-    {
-        return "^" + Regex.Escape(wildcard).Replace("\\?", ".").Replace("\\*", ".*") + "$";
-    }
+    public bool Match(string obj, ISearchQuery query) => SearchPredicates.Wildcard(obj, query);
 }
