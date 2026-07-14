@@ -26,6 +26,7 @@ public class PartMarkSearchExecutor(
     : ISearchExecutor
 {
     private readonly MarkExtractor _markExtractor = new();
+    private readonly DrawingSearchEffectInterpreter _effectInterpreter = new(drawingCache, resultSelector);
 
     public SearchResult Execute(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
     {
@@ -63,7 +64,7 @@ public class PartMarkSearchExecutor(
         
         var plan = planResult.Value;
         
-        InterpretPartMarkSearchEffects(plan, dwgKey);
+        _effectInterpreter.Interpret(plan, dwgKey);
 
         return SearchResult.Empty with
         {
@@ -73,36 +74,14 @@ public class PartMarkSearchExecutor(
             MatchedContent = plan.Summary.MatchedContent
         };
     }
-
-    private void InterpretPartMarkSearchEffects(SearchPlan plan, string dwgKey)
-    {
-        foreach (var effect in plan.Effects)
-        {
-            switch (effect)
-            {
-                case SearchEffect.SelectTargets targets:
-                    SelectPartMarkTargets(targets.Targets, dwgKey);
-                    break;
-            }
-        }
-    }
-
-    private void SelectPartMarkTargets(IReadOnlyList<SelectionTarget> targets, string dwgKey)
-    {
-        var drawingObjects = targets
-            .OfType<SelectionTarget.DrawingObject>()
-            .Select(target => drawingCache.GetDrawingObject(dwgKey, target.ObjectId))
-            .OfType<DrawingObject>()
-            .ToList();
-        
-        resultSelector.SelectResults(drawingObjects);
-    }
 }
 
 public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCache drawingCache)
     : Interfaces.ISearchExecutor
 {
-    
+    private readonly DrawingResultSelector _resultSelector = resultSelector;
+    private readonly DrawingSearchEffectInterpreter _effectInterpreter = new(drawingCache, resultSelector);
+
     public SearchResult Execute(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
     {
         if (config is null) throw new ArgumentNullException(nameof(config));
@@ -139,7 +118,7 @@ public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCa
         
         var plan = planResult.Value;
 
-        InterpretTextSearchEffects(plan, dwgKey);
+        _effectInterpreter.Interpret(plan, dwgKey);
 
         return SearchResult.Empty with
         {
@@ -148,30 +127,6 @@ public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCa
             SearchType = SearchType.Text,
             MatchedContent = plan.Summary.MatchedContent
         };
-    }
-
-    private void InterpretTextSearchEffects(SearchPlan plan, string dwgKey)
-    {
-        foreach (var effect in plan.Effects)
-        {
-            switch (effect)
-            {
-                case SearchEffect.SelectTargets targets: 
-                    SelectTextTargets(targets.Targets, dwgKey);
-                    break;
-            }
-        }
-    }
-
-    private void SelectTextTargets(IReadOnlyList<SelectionTarget> targets, string dwgKey)
-    {
-        var drawingObjects = targets
-            .OfType<SelectionTarget.DrawingObject>()
-            .Select(target => drawingCache.GetDrawingObject(dwgKey, target.ObjectId))
-            .OfType<DrawingObject>()
-            .ToList();
-        
-        resultSelector.SelectResults(drawingObjects);
     }
 }
 

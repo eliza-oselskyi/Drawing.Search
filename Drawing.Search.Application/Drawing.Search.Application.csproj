@@ -109,6 +109,7 @@
         <Compile Include="Features\Search\SearchQuery.cs" />
         <Compile Include="Features\Search\SearchResult.cs" />
         <Compile Include="Features\Search\SearchStrategyFactory.cs" />
+        <Compile Include="Features\Search\Strategies\DrawingSearchEffectInterpreter.cs" />
         <Compile Include="Features\Search\Strategies\SearchExecutorStrategies.cs" />
         <Compile Include="IsExternalInit\IsExternalInit.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
