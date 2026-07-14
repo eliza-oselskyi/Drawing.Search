@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Drawing.Search.Application.Features.Search.Interfaces;
+using Drawing.Search.Domain.Drawings;
+using Drawing.Search.Domain.Effects;
 using Drawing.Search.Domain.Enums;
 using Drawing.Search.Domain.Interfaces;
 using Drawing.Search.Domain.Observers;
+using Drawing.Search.Domain.Search;
 using Drawing.Search.Infrastructure.Caching.Models;
 using Drawing.Search.Infrastructure.CAD.Extractors;
 using Drawing.Search.Infrastructure.CAD.Models;
@@ -64,43 +67,79 @@ public class PartMarkSearchExecutor : ISearchExecutor
     }
 }
 
-public class TextSearchExecutor : Interfaces.ISearchExecutor
+public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCache drawingCache)
+    : Interfaces.ISearchExecutor
 {
-    private readonly DrawingResultSelector _resultSelector;
-    private readonly IDrawingCache _drawingCache;
-
-    public TextSearchExecutor( DrawingResultSelector resultSelector, IDrawingCache drawingCache )
-    {
-        _drawingCache = drawingCache;
-        _resultSelector = resultSelector;
-    }
-    
     
     public SearchResult Execute(SearchConfiguration config, Tekla.Structures.Drawing.Drawing drawing)
     {
-        var dwgKey = new CacheKeyBuilder(drawing.GetIdentifier().ToString()).CreateDrawingCacheKey();
+        if (config is null) throw new ArgumentNullException(nameof(config));
+        if (drawing is null) throw new ArgumentNullException(nameof(drawing));
 
-        var ids = _drawingCache.GetDrawingIdentifiers(drawing.GetIdentifier().ToString());
+        var drawingId = drawing.GetIdentifier().ToString();
+        var domainDrawingId = new DrawingId(drawingId);
+        var dwgKey = new CacheKeyBuilder(drawingId).CreateDrawingCacheKey();
 
-        var texts = ids.Where(t => _drawingCache.GetDrawingObject(dwgKey, t) is Text)
-            .Select(t => _drawingCache.GetDrawingObject(dwgKey, t) as Text).ToList();
-        var searcher = SearchStrategyFactory.CreateSearcher<Text>(config);
-        var contentCollector = new ContentCollectingObserver(new TextExtractor());
-        searcher.Subscribe(contentCollector);
+        var ids = drawingCache.GetDrawingIdentifiers(drawingId);
 
-        Debug.Assert(texts != null, nameof(texts) + " != null");
-        var results = searcher.Search(texts ?? throw new InvalidOperationException("No search term"),
-            SearchStrategyFactory.CreateSearchQuery(config));
+        var searchableTexts = ids
+            .Select(id => new
+            {
+                Id = id,
+                Object = drawingCache.GetDrawingObject(dwgKey, id)
+            })
+            .Where(entry => entry.Object is Text)
+            .Select(entry =>
+            {
+                var text = (Text)entry.Object;
 
-        var enumerable = results.ToList();
-        _resultSelector.SelectResults(enumerable.Cast<DrawingObject>().ToList());
+                return new SearchableDrawingObject.TextObject(entry.Id, domainDrawingId,
+                    text.TextString ?? string.Empty);
+            })
+            .ToList();
+        
+        var request = new SearchRequest.Text(config.SearchTerm ?? string.Empty, !config.Wildcard, config.CaseSensitive);
+
+        var planResult = SearchPipeline.TrySearch(searchableTexts, request);
+
+        if (!planResult.IsSuccessful)
+            throw planResult.Error;
+        
+        var plan = planResult.Value;
+
+        InterpretTextSearchEffects(plan, dwgKey);
 
         return SearchResult.Empty with
         {
-            MatchCount = enumerable.Count(),
-            ElapsedTime = TimeSpan.Zero, // set by caller
-            SearchType = SearchType.Text
+            MatchCount = plan.Summary.MatchCount,
+            ElapsedTime = plan.Summary.ElapsedTime,
+            SearchType = SearchType.Text,
+            MatchedContent = plan.Summary.MatchedContent
         };
+    }
+
+    private void InterpretTextSearchEffects(SearchPlan plan, string dwgKey)
+    {
+        foreach (var effect in plan.Effects)
+        {
+            switch (effect)
+            {
+                case SearchEffect.SelectTargets targets: 
+                    SelectTextTargets(targets.Targets, dwgKey);
+                    break;
+            }
+        }
+    }
+
+    private void SelectTextTargets(IReadOnlyList<SelectionTarget> targets, string dwgKey)
+    {
+        var drawingObjects = targets
+            .OfType<SelectionTarget.DrawingObject>()
+            .Select(target => drawingCache.GetDrawingObject(dwgKey, target.ObjectId))
+            .OfType<DrawingObject>()
+            .ToList();
+        
+        resultSelector.SelectResults(drawingObjects);
     }
 }
 
