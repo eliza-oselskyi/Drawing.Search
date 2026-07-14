@@ -33,12 +33,17 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
                             SnapsToDevicePixels="True">
                         <Grid>
                             <TextBlock x:Name="PART_GhostText"
                                        Text="{TemplateBinding GhostText}"
                                        Foreground="{TemplateBinding GhostTextColor}"
-                                       Margin="{TemplateBinding Padding}"
+                                       FontFamily="{TemplateBinding FontFamily}"
+                                       FontSize="{TemplateBinding FontSize}"
+                                       FontStyle="{TemplateBinding FontStyle}"
+                                       FontWeight="{TemplateBinding FontWeight}"
+                                       IsHitTestVisible="False"
                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                                 <TextBlock.Visibility>
                                     <MultiBinding Converter="{StaticResource EmptyTextToVisibilityConverter}">
@@ -48,7 +53,6 @@
                                 </TextBlock.Visibility>
                             </TextBlock>
                             <ScrollViewer x:Name="PART_ContentHost"
-                                          Margin="{TemplateBinding Padding}"
                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                           HorizontalAlignment="Stretch"
                                           VerticalScrollBarVisibility="Hidden"
@@ -61,7 +65,8 @@
                             <Setter TargetName="Border" Property="Background" Value="{DynamicResource FieldHover01}" />
                         </Trigger>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource BorderInteractive}" />
+                            <Setter TargetName="Border" Property="BorderBrush"
+                                    Value="{DynamicResource BorderInteractive}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
@@ -122,12 +127,16 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ButtonSecondaryHover}" />
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource ButtonSecondaryHover}" />
+                            <Setter TargetName="Border" Property="Background"
+                                    Value="{DynamicResource ButtonSecondaryHover}" />
+                            <Setter TargetName="Border" Property="BorderBrush"
+                                    Value="{DynamicResource ButtonSecondaryHover}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ButtonSecondaryActive}" />
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource ButtonSecondaryActive}" />
+                            <Setter TargetName="Border" Property="Background"
+                                    Value="{DynamicResource ButtonSecondaryActive}" />
+                            <Setter TargetName="Border" Property="BorderBrush"
+                                    Value="{DynamicResource ButtonSecondaryActive}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
@@ -157,12 +166,16 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ButtonPrimaryHover}" />
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource ButtonPrimaryHover}" />
+                            <Setter TargetName="Border" Property="Background"
+                                    Value="{DynamicResource ButtonPrimaryHover}" />
+                            <Setter TargetName="Border" Property="BorderBrush"
+                                    Value="{DynamicResource ButtonPrimaryHover}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ButtonPrimaryActive}" />
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource ButtonPrimaryActive}" />
+                            <Setter TargetName="Border" Property="Background"
+                                    Value="{DynamicResource ButtonPrimaryActive}" />
+                            <Setter TargetName="Border" Property="BorderBrush"
+                                    Value="{DynamicResource ButtonPrimaryActive}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
