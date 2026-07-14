@@ -2,18 +2,122 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:Drawing.Search">
 
-    <!-- Colors -->
-    <Color x:Key="BackgroundColor">#1E1E1E</Color>
-    <Color x:Key="SecondaryBackgroundColor">#2D2D2D</Color>
-    <Color x:Key="ForegroundColor">#FFFFFF</Color>
-    <Color x:Key="BorderColor">#333333</Color>
-    <Color x:Key="HighlightColor">#007ACC</Color>
-    <Color x:Key="GhostTextColor">#666666</Color>
-    <Color x:Key="DisabledForegroundColor">#666666</Color>
-    <Color x:Key="DisabledBorderColor">#404040</Color>
-    <Color x:Key="DisabledCheckmarkColor">#808080</Color>
+    <!-- IBM Carbon-inspired Dark Theme / Gray 100 -->
 
-    <!-- Brushes -->
+    <!-- Core colors -->
+    <Color x:Key="BackgroundColor">#161616</Color>
+    <Color x:Key="SecondaryBackgroundColor">#262626</Color>
+    <Color x:Key="ForegroundColor">#F4F4F4</Color>
+    <Color x:Key="BorderColor">#525252</Color>
+    <Color x:Key="HighlightColor">#001D6C</Color>
+    <Color x:Key="GhostTextColor">#6F6F6F</Color>
+    <Color x:Key="DisabledForegroundColor">#40F4F4F4</Color>
+    <Color x:Key="DisabledBorderColor">#808D8D8D</Color>
+    <Color x:Key="DisabledCheckmarkColor">#8D8D8D</Color>
+
+    <!-- Carbon palette brushes -->
+    <SolidColorBrush x:Key="BackgroundGlobal" Color="#161616" />
+    <SolidColorBrush x:Key="BackgroundHover" Color="#8D8D8D" />
+    <SolidColorBrush x:Key="BackgroundInverse" Color="#F4F4F4" />
+    <SolidColorBrush x:Key="BackgroundInverseHover" Color="#E5E5E5" />
+    <SolidColorBrush x:Key="BackgroundAccent" Color="#0F62FE" />
+
+    <SolidColorBrush x:Key="Layer01" Color="#262626" />
+    <SolidColorBrush x:Key="Layer02" Color="#393939" />
+    <SolidColorBrush x:Key="Layer03" Color="#525252" />
+
+    <SolidColorBrush x:Key="LayerHover01" Color="#333333" />
+    <SolidColorBrush x:Key="LayerHover02" Color="#474747" />
+    <SolidColorBrush x:Key="LayerHover03" Color="#636363" />
+
+    <SolidColorBrush x:Key="LayerActive01" Color="#525252" />
+    <SolidColorBrush x:Key="LayerActive02" Color="#6F6F6F" />
+    <SolidColorBrush x:Key="LayerActive03" Color="#8D8D8D" />
+
+    <SolidColorBrush x:Key="LayerSelected01" Color="#393939" />
+    <SolidColorBrush x:Key="LayerSelected02" Color="#525252" />
+    <SolidColorBrush x:Key="LayerSelected03" Color="#6F6F6F" />
+
+    <SolidColorBrush x:Key="LayerSelectedHover01" Color="#474747" />
+    <SolidColorBrush x:Key="LayerSelectedHover02" Color="#636363" />
+    <SolidColorBrush x:Key="LayerSelectedHover03" Color="#5E5E5E" />
+    <SolidColorBrush x:Key="LayerSelectedInverse" Color="#F4F4F4" />
+    <SolidColorBrush x:Key="LayerSelectedDisabled" Color="#6F6F6F" />
+
+    <SolidColorBrush x:Key="LayerAccent01" Color="#393939" />
+    <SolidColorBrush x:Key="LayerAccent02" Color="#525252" />
+    <SolidColorBrush x:Key="LayerAccent03" Color="#6F6F6F" />
+
+    <SolidColorBrush x:Key="LayerAccentHover01" Color="#4C4C4C" />
+    <SolidColorBrush x:Key="LayerAccentHover02" Color="#656565" />
+    <SolidColorBrush x:Key="LayerAccentHover03" Color="#5E5E5E" />
+
+    <SolidColorBrush x:Key="LayerAccentActive01" Color="#525252" />
+    <SolidColorBrush x:Key="LayerAccentActive02" Color="#8D8D8D" />
+    <SolidColorBrush x:Key="LayerAccentActive03" Color="#393939" />
+
+    <SolidColorBrush x:Key="Field01" Color="#262626" />
+    <SolidColorBrush x:Key="Field02" Color="#393939" />
+    <SolidColorBrush x:Key="Field03" Color="#525252" />
+
+    <SolidColorBrush x:Key="FieldHover01" Color="#333333" />
+    <SolidColorBrush x:Key="FieldHover02" Color="#474747" />
+    <SolidColorBrush x:Key="FieldHover03" Color="#636363" />
+
+    <SolidColorBrush x:Key="BorderInteractive" Color="#4589FF" />
+    <SolidColorBrush x:Key="BorderSubtle00" Color="#393939" />
+    <SolidColorBrush x:Key="BorderSubtle01" Color="#525252" />
+    <SolidColorBrush x:Key="BorderSubtle02" Color="#6F6F6F" />
+    <SolidColorBrush x:Key="BorderSubtle03" Color="#6F6F6F" />
+
+    <SolidColorBrush x:Key="BorderSubtleSelected01" Color="#6F6F6F" />
+    <SolidColorBrush x:Key="BorderSubtleSelected02" Color="#8D8D8D" />
+    <SolidColorBrush x:Key="BorderSubtleSelected03" Color="#8D8D8D" />
+
+    <SolidColorBrush x:Key="BorderStrong01" Color="#6F6F6F" />
+    <SolidColorBrush x:Key="BorderStrong02" Color="#8D8D8D" />
+    <SolidColorBrush x:Key="BorderStrong03" Color="#A8A8A8" />
+
+    <SolidColorBrush x:Key="BorderTile01" Color="#525252" />
+    <SolidColorBrush x:Key="BorderTile02" Color="#6F6F6F" />
+    <SolidColorBrush x:Key="BorderTile03" Color="#8D8D8D" />
+
+    <SolidColorBrush x:Key="BorderInverse" Color="#F4F4F4" />
+    <SolidColorBrush x:Key="BorderDisabled" Color="#808D8D8D" />
+
+    <SolidColorBrush x:Key="TextPrimary" Color="#F4F4F4" />
+    <SolidColorBrush x:Key="TextSecondary" Color="#C6C6C6" />
+    <SolidColorBrush x:Key="TextPlaceholder" Color="#6F6F6F" />
+    <SolidColorBrush x:Key="TextOnColor" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="TextOnColorDisabled" Color="#40FFFFFF" />
+    <SolidColorBrush x:Key="TextError" Color="#FF8389" />
+    <SolidColorBrush x:Key="TextInverse" Color="#161616" />
+    <SolidColorBrush x:Key="TextDisabled" Color="#40F4F4F4" />
+
+    <SolidColorBrush x:Key="SupportError" Color="#FA4D56" />
+    <SolidColorBrush x:Key="SupportErrorInverse" Color="#DA1E28" />
+    <SolidColorBrush x:Key="SupportSuccess" Color="#42BE65" />
+    <SolidColorBrush x:Key="SupportSuccessInverse" Color="#24A148" />
+    <SolidColorBrush x:Key="SupportWarning" Color="#F1C21B" />
+    <SolidColorBrush x:Key="SupportWarningInverse" Color="#F1C21B" />
+    <SolidColorBrush x:Key="SupportInfo" Color="#4589FF" />
+    <SolidColorBrush x:Key="SupportInfoInverse" Color="#0043CE" />
+
+    <SolidColorBrush x:Key="Interactive" Color="#4589FF" />
+    <SolidColorBrush x:Key="Highlight" Color="#001D6C" />
+
+    <SolidColorBrush x:Key="ButtonPrimary" Color="#0F62FE" />
+    <SolidColorBrush x:Key="ButtonPrimaryHover" Color="#0353E9" />
+    <SolidColorBrush x:Key="ButtonPrimaryActive" Color="#002D9C" />
+    <SolidColorBrush x:Key="ButtonSecondary" Color="#393939" />
+    <SolidColorBrush x:Key="ButtonSecondaryHover" Color="#4C4C4C" />
+    <SolidColorBrush x:Key="ButtonSecondaryActive" Color="#6F6F6F" />
+    <SolidColorBrush x:Key="ButtonTertiary" Color="#0F62FE" />
+    <SolidColorBrush x:Key="ButtonTertiaryHover" Color="#0353E9" />
+    <SolidColorBrush x:Key="ButtonTertiaryActive" Color="#002D9C" />
+    <SolidColorBrush x:Key="ButtonDisabled" Color="#80C6C6C6" />
+
+    <!-- Compatibility brushes used by existing views/styles -->
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="{StaticResource SecondaryBackgroundColor}" />
     <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}" />
@@ -24,41 +128,41 @@
     <SolidColorBrush x:Key="DisabledBorderBrush" Color="{StaticResource DisabledBorderColor}" />
     <SolidColorBrush x:Key="DisabledCheckmarkBrush" Color="{StaticResource DisabledCheckmarkColor}" />
 
+    <!-- Legacy aliases used by MainWindow/App styles -->
+    <SolidColorBrush x:Key="DarkPanel" Color="#262626" />
+    <SolidColorBrush x:Key="DarkPanelAlt" Color="#393939" />
+    <SolidColorBrush x:Key="DarkBorder" Color="#525252" />
+    <SolidColorBrush x:Key="AccentBlue" Color="#0F62FE" />
+    <SolidColorBrush x:Key="AccentBlueHover" Color="#0353E9" />
+    <SolidColorBrush x:Key="ProgressBackground" Color="#393939" />
+    <SolidColorBrush x:Key="ProgressForeground" Color="#4589FF" />
+
     <!-- Control Styles -->
     <Style TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource SecondaryBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="Background" Value="{StaticResource ButtonSecondary}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderStrong01}" />
     </Style>
-
-
-    <!--
-    <Style TargetType="TextBox">
-        <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-    </Style>
-    -->
 
     <Style TargetType="CheckBox">
-        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderStrong01}" />
         <Style.Triggers>
             <Trigger Property="IsEnabled" Value="False">
-                <Setter Property="Foreground" Value="{StaticResource DisabledForegroundBrush}" />
-                <Setter Property="BorderBrush" Value="{StaticResource DisabledBorderBrush}" />
+                <Setter Property="Foreground" Value="{StaticResource TextDisabled}" />
+                <Setter Property="BorderBrush" Value="{StaticResource BorderDisabled}" />
                 <Setter Property="Opacity" Value="0.7" />
             </Trigger>
         </Style.Triggers>
     </Style>
 
     <Style TargetType="Expander">
-        <Setter Property="Background" Value="#2D2D2D" />
-        <Setter Property="BorderBrush" Value="#3F3F3F" />
-        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="Background" Value="{StaticResource Layer01}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle01}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
     </Style>
 
     <Style TargetType="RadioButton">
-        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
     </Style>
 </ResourceDictionary>
