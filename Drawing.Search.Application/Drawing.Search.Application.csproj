@@ -92,6 +92,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Effects\SearchEffectInterpreter.cs" />
         <Compile Include="Features\History\DrawingHistory.cs" />
         <Compile Include="Features\History\DrawingObjectsOriginator.cs" />
         <Compile Include="Features\History\DrawingState.cs" />
