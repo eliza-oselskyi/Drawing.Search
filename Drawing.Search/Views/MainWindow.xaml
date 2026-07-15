@@ -324,7 +324,7 @@
                            Foreground="Gray"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"
-                           ToolTip="Created by Eliza Oselskyi" />
+                           ToolTip="Created by Eliza Pavlovna Oselskaya" />
 
                 <!-- Theme Toggle -->
                 <CheckBox Grid.Column="1"
