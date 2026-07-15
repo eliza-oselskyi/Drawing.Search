@@ -1,22 +1,56 @@
 using System;
+using System.Text.RegularExpressions;
 using Drawing.Search.Domain.Interfaces;
 
 namespace Drawing.Search.Application.Features.Search;
 
 /// <summary>
-///     Encapsulates a search query
+/// Describes a search query
 /// </summary>
-/// <param name="term">The query itself.</param>
-/// <param name="caseSensitive">Case sensitivity. False by default. </param>
-public class SearchQuery(string term, bool caseSensitive = false) : ISearchQuery
+public sealed record SearchQuery
 {
-    public string Term { get; set; } = term;
-
-    public StringComparison CaseSensitive { get; set; } =
-        caseSensitive == true ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+    public SearchQuery(string term, bool caseSensitive = false, bool wildcard = false)
+    {
+        Term = term ?? string.Empty;
+        CaseSensitive = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+        Wildcard = wildcard;
+        var regexOptions = RegexOptions.Compiled | (CaseSensitive == StringComparison.OrdinalIgnoreCase
+            ? RegexOptions.IgnoreCase
+            : RegexOptions.None);
+        
+        CompiledRegex = new Regex(Term,regexOptions);
+        WildcardRegex = new Regex(ToWildCardRegex(Term), regexOptions);
+    }
 
     /// <summary>
-    ///     Whether the search type should use wildcards. Default is false (default to regex).
+    /// Gets the search term.
     /// </summary>
-    public bool Wildcard { get; set; } = false;
+    public string Term { get; }
+
+    /// <summary>
+    /// Gets the <see cref="StringComparison" /> value based on whether the search is case-sensitive.
+    /// </summary>
+    public StringComparison CaseSensitive { get; }
+
+    /// <summary>
+    /// Whether the search type should use wildcards. Default is false (default to regex).
+    /// </summary>
+    public bool Wildcard { get; } 
+
+    /// <summary>
+    /// Gets the compiled regular expression.
+    /// </summary>
+    public Regex CompiledRegex { get; }
+    
+    /// <summary>
+    /// Gets the compiled regular expression for wildcards.
+    /// </summary>
+    public Regex WildcardRegex { get; }
+    
+    private static string ToWildCardRegex(string wildcard)
+    {
+        return "^" + Regex.Escape(wildcard)
+            .Replace("\\?", ".")
+            .Replace("\\*", ".*") + "$";
+    }
 }

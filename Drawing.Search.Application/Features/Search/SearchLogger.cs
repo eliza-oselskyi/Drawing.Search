@@ -1,5 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Text;
 using Drawing.Search.Domain.Interfaces;
 
 namespace Drawing.Search.Application.Features.Search;
@@ -8,12 +14,12 @@ namespace Drawing.Search.Application.Features.Search;
 ///     A simple logger implementation used to log search-related information,
 ///     errors, and debug messages in the application.
 /// </summary>
-/// <remarks>
-///     This logger uses both <see cref="Debug.WriteLine" /> and <see cref="Console.WriteLine" />
-///     to log the messages, enabling logging in both development and runtime environments.
-/// </remarks>
-public class SearchLogger : ISearchLogger
+public sealed class SearchLogger : ISearchLogger
 {
+    private readonly List<LogEntry> _logEntries = [];
+    
+    public IReadOnlyList<LogEntry> LogEntries => _logEntries;
+
     /// <summary>
     ///     Logs informational messages such as updates or general events.
     /// </summary>
@@ -26,8 +32,10 @@ public class SearchLogger : ISearchLogger
     /// </example>
     public void LogInformation(string message)
     {
-        Debug.WriteLine($"INFO: {message}");
-        Console.WriteLine($"INFO: {message}");
+        var compiled = $"INFO: {message}";
+        var logEntry = new LogEntry(compiled, null);
+        _logEntries.Add(logEntry);
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LogEntries)));
     }
 
     /// <summary>
@@ -51,10 +59,9 @@ public class SearchLogger : ISearchLogger
     /// </example>
     public void LogError(Exception exception, string message)
     {
-        Debug.WriteLine($"ERROR: {message}");
-        Debug.WriteLine($"Exception: {exception}");
-        Console.WriteLine($"ERROR: {message}");
-        Console.WriteLine($"Exception: {exception}");
+        var logEntry = new LogEntry($"ERROR: {message}", exception);;
+        _logEntries.Add(logEntry);
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LogEntries)));
     }
 
     /// <summary>
@@ -69,6 +76,21 @@ public class SearchLogger : ISearchLogger
     /// </example>
     public void DebugInfo(string message)
     {
-        Debug.WriteLine($"DEBUG: {message}");
+        var logEntry = new LogEntry($"DEBUG: {message}", null);
+        _logEntries.Add(logEntry);
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LogEntries)));
+    }
+
+    public void ClearLog()
+    {
+        _logEntries.Clear();
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LogEntries)));
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

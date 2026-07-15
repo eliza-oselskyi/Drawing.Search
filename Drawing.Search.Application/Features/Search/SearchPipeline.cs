@@ -1,0 +1,108 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using DotNext;
+using Drawing.Search.Domain.Drawings;
+using Drawing.Search.Domain.Effects;
+using Drawing.Search.Domain.Interfaces;
+using Drawing.Search.Domain.Search;
+
+namespace Drawing.Search.Application.Features.Search;
+
+
+public static class SearchPipeline
+{
+    private sealed record Match(SearchableDrawingObject Item, string Content);
+    
+    
+    public static Result<SearchPlan> TryPlanSearch(
+        IEnumerable<SearchableDrawingObject> objects,
+        SearchRequest request)
+    {
+        try
+        {
+            if (request is null)
+                return new SearchException(new SearchError.Unexpected("Search request cannot be null."))
+                    .ResultFromException<SearchPlan>();
+
+            if (objects is null)
+                return new SearchException(new SearchError.Unexpected("Search objects cannot be null."))
+                    .ResultFromException<SearchPlan>();
+
+            if (string.IsNullOrWhiteSpace(request.Term))
+                return new SearchException(new SearchError.EmptySearchTerm())
+                    .ResultFromException<SearchPlan>();
+
+            return PlanSearch(objects, request).ResultFromValue();
+        }
+        catch (ArgumentException ex)
+        {
+            return new SearchException(
+                    new SearchError.InvalidRegex(request.Term, ex.Message),
+                    ex)
+                .ResultFromException<SearchPlan>();
+        }
+        catch (Exception ex)
+        {
+            return new SearchException(
+                    new SearchError.Unexpected(ex.Message),
+                    ex)
+                .ResultFromException<SearchPlan>();
+        }
+    }
+
+    public static SearchPlan PlanSearch(
+        IEnumerable<SearchableDrawingObject> objects,
+        SearchRequest request)
+    {
+        if (objects is null) throw new ArgumentNullException(nameof(objects));
+        if (request is null) throw new ArgumentNullException(nameof(request));
+
+        var query = new SearchQuery(request.Term, request.CaseSensitive, wildcard: !request.UseRegex);
+
+        SearchPredicate predicate = request.UseRegex
+            ? SearchPredicates.Regex
+            : SearchPredicates.Wildcard;
+
+        var matches = objects
+            .Select(obj => new Match(obj, obj.SearchText))
+            .Where(match => predicate(match.Content, query))
+            .ToList();
+
+        var targets = matches
+            .Select(match => ToSelectionTarget(match.Item, request))
+            .Where(target => target is not null)
+            .Cast<SelectionTarget>()
+            .ToList();
+
+        return new SearchPlan(
+            new SearchSummary(
+                matches.Count,
+                TimeSpan.Zero,
+                matches.Select(match => match.Content).ToList()),
+            [
+                new SearchEffect.SelectTargets(targets),
+                new SearchEffect.SetStatus($"Found {matches.Count} matches.")
+            ]);
+    }
+
+    private static SelectionTarget? ToSelectionTarget(SearchableDrawingObject obj, SearchRequest request)
+    {
+        return obj switch
+        {
+            SearchableDrawingObject.TextObject text =>
+                new SelectionTarget.DrawingObject(text.DrawingId, text.Id),
+
+            SearchableDrawingObject.PartMarkObject partMark =>
+                new SelectionTarget.DrawingObject(partMark.DrawingId, partMark.Id),
+
+            SearchableDrawingObject.AssemblyObject assembly when request is SearchRequest.Assembly assemblyRequest =>
+                new SelectionTarget.AssemblyPosition(
+                    assembly.DrawingId,
+                    assembly.AssemblyPosition,
+                    assemblyRequest.IncludeAllParts),
+
+            _ => null
+        };
+    }
+}

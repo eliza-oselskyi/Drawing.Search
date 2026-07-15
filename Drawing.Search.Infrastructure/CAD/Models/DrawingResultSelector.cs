@@ -2,6 +2,7 @@
 using System.Linq;
 using Drawing.Search.Domain.Interfaces;
 using Drawing.Search.Infrastructure.CAD.Tekla;
+using Drawing.Search.Infrastructure.CAD.Tekla.Interfaces;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.Model;
 using ModelObject = Tekla.Structures.Model.ModelObject;

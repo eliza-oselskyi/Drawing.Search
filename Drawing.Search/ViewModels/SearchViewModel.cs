@@ -9,19 +9,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using Drawing.Search.Application.Features.History;
 using Drawing.Search.Application.Features.Search;
 using Drawing.Search.Application.Services.Interfaces;
 using Drawing.Search.Domain.Enums;
 using Drawing.Search.Domain.Interfaces;
-using Drawing.Search.Domain.Observers;
 using Drawing.Search.Infrastructure;
 using Drawing.Search.Infrastructure.Caching.Models;
-using Drawing.Search.Infrastructure.CAD.Extractors;
-using Drawing.Search.Infrastructure.CAD.Strategies;
+using Drawing.Search.Infrastructure.CAD.History;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
-using ModelObject = Tekla.Structures.Model.ModelObject;
 
 namespace Drawing.Search.ViewModels;
 
@@ -36,7 +32,6 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
     private readonly HashSet<string> _previousSearches = new(StringComparer.OrdinalIgnoreCase);
     private readonly Tekla.Structures.Drawing.UI.Events _uiEvents = new();
-    private ContentCollectingObserver? _contentCollector;
     private string _ghostSuggestion = ""; // for autocomplete
     private bool _isCaching;
     private bool _isCaseSensitive;
@@ -83,6 +78,9 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             return Task.CompletedTask;
         });
         SetVersionString();
+        
+        ((SearchLogger)SearchLoggerServiceLocator.Current).PropertyChanged += (_, _) => 
+            OnPropertyChanged(nameof(DebugText));
 
 
         PropertyChanged += (_, e) =>
@@ -116,6 +114,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             _testModeService.SetTestMode(value);
             SetVersionString();
             OnPropertyChanged(nameof(IsTestMode));
+            OnPropertyChanged(nameof(DebugVisibility));
         }
     }
 
@@ -254,6 +253,10 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(ShowAllAssemblyParts));
         }
     }
+    
+    public Visibility DebugVisibility => IsTestMode ? Visibility.Visible : Visibility.Collapsed;
+
+    public string DebugText => string.Join("—————————————————————————\n", SearchLoggerServiceLocator.Current.LogEntries.ToArray().Select(e => e.ToString()));
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -414,21 +417,26 @@ public sealed class SearchViewModel : INotifyPropertyChanged
 
             var stopwatch = Stopwatch.StartNew();
 
-            _contentCollector = new ContentCollectingObserver(GetExtractor(SelectedSearchType));
-
             var config = CreateSearchConfiguration();
             var result = await _searchService.ExecuteSearchAsync(config);
 
             stopwatch.Stop();
-            result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
-            StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedMilliseconds} ms.";
+            
+            result = result with
+            {
+                ElapsedTime = stopwatch.Elapsed
+            };
+            
+            SearchLoggerServiceLocator.Current.LogInformation(result.ToString());
+            
+            StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedTime.Milliseconds} ms.";
 
             // After successful search, add to previous searches list
             if (result.MatchCount > 0)
             {
                 if (!string.IsNullOrEmpty(SearchTerm)) _previousSearches.Add(SearchTerm);
 
-                foreach (var content in _contentCollector.MatchedContent) _previousSearches.Add(content);
+                foreach (var content in result.MatchedContent) _previousSearches.Add(content);
             }
         }
         catch (Exception e)
@@ -443,56 +451,13 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         }
     }
 
-    private SearchConfiguration CreateSearchConfiguration()
-    {
-        var config = new SearchConfiguration
-        {
-            SearchTerm = SearchTerm,
-            Type = SelectedSearchType,
-            SearchStrategies = GetSearchStrategies(),
-            Observer = _contentCollector,
-            ShowAllAssemblyParts = ShowAllAssemblyParts,
-            Wildcard = _settings is { WildcardSearch: true }
-        };
-        return config;
-    }
-
-    private static IDataExtractor GetExtractor(SearchType type)
-    {
-        return type switch
-        {
-            SearchType.PartMark => new MarkExtractor(),
-            SearchType.Text => new TextExtractor(),
-            SearchType.Assembly => new ModelObjectExtractor(),
-            _ => throw new ArgumentException($"No extractor available for: {type}")
-        };
-    }
-
-    private List<ISearchStrategy> GetSearchStrategies()
-    {
-        return SelectedSearchType switch
-        {
-            SearchType.PartMark => new List<ISearchStrategy>
-            {
-                _settings is { WildcardSearch: true }
-                    ? new WildcardMatchStrategy<Mark>()
-                    : new RegexMatchStrategy<Mark>()
-            },
-            SearchType.Text => new List<ISearchStrategy>
-            {
-                _settings is { WildcardSearch: true }
-                    ? new WildcardMatchStrategy<Text>()
-                    : new RegexMatchStrategy<Text>()
-            },
-            SearchType.Assembly => new List<ISearchStrategy>
-            {
-                _settings is { WildcardSearch: true }
-                    ? new WildcardMatchStrategy<ModelObject>()
-                    : new RegexMatchStrategy<ModelObject>()
-            },
-            _ => throw new ArgumentException($"Unsupported search type: {SelectedSearchType}")
-        };
-    }
+    private SearchConfiguration CreateSearchConfiguration() =>
+        new(
+            SearchTerm: SearchTerm,
+            Type: SelectedSearchType,
+            CaseSensitive: IsCaseSensitive,
+            Wildcard: _settings is { WildcardSearch: true },
+            ShowAllAssemblyParts: ShowAllAssemblyParts);
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {

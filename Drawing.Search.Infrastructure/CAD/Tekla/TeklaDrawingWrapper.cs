@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Drawing.Search.Domain.Interfaces;
+using Drawing.Search.Infrastructure.CAD.Tekla.Interfaces;
 using Tekla.Structures.DrawingInternal;
 
 namespace Drawing.Search.Infrastructure.CAD.Tekla;

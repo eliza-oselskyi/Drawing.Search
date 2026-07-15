@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Drawing.Search")]
-[assembly: AssemblyCopyright("Copyright © Eliza Oselskyi 2025")]
+[assembly: AssemblyCopyright("Copyright © Eliza Pavlovna Oselskaya 2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -49,5 +49,5 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.2.4")]
-[assembly: AssemblyFileVersion("1.2.4")]
+[assembly: AssemblyVersion("1.2.5")]
+[assembly: AssemblyFileVersion("1.2.5")]
