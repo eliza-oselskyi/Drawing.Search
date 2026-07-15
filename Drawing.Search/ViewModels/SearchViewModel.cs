@@ -78,6 +78,9 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             return Task.CompletedTask;
         });
         SetVersionString();
+        
+        ((SearchLogger)SearchLoggerServiceLocator.Current).PropertyChanged += (_, _) => 
+            OnPropertyChanged(nameof(DebugText));
 
 
         PropertyChanged += (_, e) =>
@@ -111,6 +114,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             _testModeService.SetTestMode(value);
             SetVersionString();
             OnPropertyChanged(nameof(IsTestMode));
+            OnPropertyChanged(nameof(DebugVisibility));
         }
     }
 
@@ -249,6 +253,10 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(ShowAllAssemblyParts));
         }
     }
+    
+    public Visibility DebugVisibility => IsTestMode ? Visibility.Visible : Visibility.Collapsed;
+
+    public string DebugText => string.Join("\n", SearchLoggerServiceLocator.Current.LogEntries.ToArray().Select(e => e.ToString()));
 
     public event PropertyChangedEventHandler PropertyChanged;
 

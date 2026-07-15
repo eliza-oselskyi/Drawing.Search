@@ -72,12 +72,14 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ButtonPrimaryHover}" />
-                                                    <Setter Property="Foreground" Value="{DynamicResource TextOnColor}"/>
+                                                    <Setter TargetName="border" Property="Background"
+                                                            Value="{DynamicResource ButtonPrimaryHover}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextOnColor}" />
                                                 </Trigger>
                                                 <Trigger Property="IsPressed" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ButtonPrimaryActive}" />
-                                                    <Setter Property="Foreground" Value="{DynamicResource TextOnColor}"/>
+                                                    <Setter TargetName="border" Property="Background"
+                                                            Value="{DynamicResource ButtonPrimaryActive}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextOnColor}" />
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -110,11 +112,11 @@
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
                                                     <Setter TargetName="border" Property="Background" Value="#E81123" />
-                                                    <Setter Property="Foreground" Value="{DynamicResource TextOnColor}"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextOnColor}" />
                                                 </Trigger>
                                                 <Trigger Property="IsPressed" Value="True">
                                                     <Setter TargetName="border" Property="Background" Value="#F1707A" />
-                                                    <Setter Property="Foreground" Value="{DynamicResource TextOnColor}"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextOnColor}" />
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -276,13 +278,37 @@
             </StackPanel>
 
             <!-- Status Message -->
-            <TextBlock Grid.Row="3"
-                       Name="StatusBlock"
-                       Text="{Binding StatusMessage}"
-                       TextWrapping="Wrap"
-                       VerticalAlignment="Top"
-                       Margin="0,0,0,2"
-                       Foreground="{DynamicResource TextPrimary}" />
+            <DockPanel Grid.Row="3">
+                <StackPanel DockPanel.Dock="Top">
+
+                    <TextBlock Name="StatusBlock"
+                               Text="{Binding StatusMessage, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Top"
+                               Margin="0,0,0,2"
+                               Foreground="{DynamicResource TextPrimary}" />
+                    
+                    <Separator Margin="0,4,0,12" Visibility="{Binding DebugVisibility}"/> 
+
+                    <Expander Header="Debug Info"
+                              Visibility="{Binding DebugVisibility}">
+                        <Border
+                            Padding="12"
+                            BorderBrush="{DynamicResource BorderStrong01}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            MaxHeight="300">
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                <TextBlock Text="{Binding DebugText}"
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource TextSecondary}"
+                                           Margin="0,0,0,16"/>
+                            </ScrollViewer>
+                        </Border>
+                        
+                    </Expander>
+                </StackPanel>
+            </DockPanel>
 
             <!-- Version and Theme Toggle Row -->
             <Grid Grid.Row="4" Margin="0,5,0,0">
