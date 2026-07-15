@@ -9,13 +9,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using Drawing.Search.Application.Features.History;
 using Drawing.Search.Application.Features.Search;
 using Drawing.Search.Application.Services.Interfaces;
 using Drawing.Search.Domain.Enums;
 using Drawing.Search.Domain.Interfaces;
 using Drawing.Search.Infrastructure;
 using Drawing.Search.Infrastructure.Caching.Models;
+using Drawing.Search.Infrastructure.CAD.History;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
 

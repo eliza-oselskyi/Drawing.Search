@@ -89,7 +89,13 @@
         <Compile Include="Caching\Models\TeklaSearchCache.cs" />
         <Compile Include="Caching\Services\DrawingCacheService.cs" />
         <Compile Include="CAD\Extractors\MarkSearchText.cs" />
+        <Compile Include="CAD\History\DrawingHistory.cs" />
+        <Compile Include="CAD\History\DrawingObjectsOriginator.cs" />
+        <Compile Include="CAD\History\DrawingState.cs" />
         <Compile Include="CAD\Models\DrawingResultSelector.cs" />
+        <Compile Include="CAD\Search\DrawingSearchEffectInterpreter.cs" />
+        <Compile Include="CAD\Search\ISearchExecutor.cs" />
+        <Compile Include="CAD\Search\SearchExecutorStrategies.cs" />
         <Compile Include="CAD\Tekla\TeklaDrawingHandler.cs" />
         <Compile Include="CAD\Tekla\TeklaDrawingProvider.cs" />
         <Compile Include="CAD\Tekla\TeklaDrawingWrapper.cs" />
@@ -99,6 +105,7 @@
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="SearchLoggerServiceLocator.cs" />
         <Compile Include="SearchSettings.cs" />
+        <Compile Include="Services\DrawingSearchService.cs" />
         <Compile Include="TestModeService.cs" />
         <Compile Include="TestModeServiceLocator.cs" />
     </ItemGroup>
@@ -137,6 +144,10 @@
       <Content Include="Resources\prtyp_tree_9.bmp" />
     </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="..\Drawing.Search.Application\Drawing.Search.Application.csproj">
+        <Project>{117f2f75-1f07-49ca-bafc-384dbb55fb95}</Project>
+        <Name>Drawing.Search.Application</Name>
+      </ProjectReference>
       <ProjectReference Include="..\Drawing.Search.Domain\Drawing.Search.Domain.csproj">
         <Project>{6202d4e1-9d38-4691-a987-3e9ca304007e}</Project>
         <Name>Drawing.Search.Domain</Name>

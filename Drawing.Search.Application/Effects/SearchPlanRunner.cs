@@ -3,8 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using DotNext;
 using Drawing.Search.Domain.Search;
-using Tekla.Structures.Drawing;
-using Tekla.Structures.Model.UI;
 
 namespace Drawing.Search.Application.Effects;
 

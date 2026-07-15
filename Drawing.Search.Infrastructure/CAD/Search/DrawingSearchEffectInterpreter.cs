@@ -7,11 +7,14 @@ using Drawing.Search.Infrastructure.CAD.Models;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
 
-namespace Drawing.Search.Application.Features.Search.Strategies;
+namespace Drawing.Search.Infrastructure.CAD.Search;
 
-internal sealed class DrawingSearchEffectInterpreter(IDrawingCache drawingCache, IAssemblyCache assemblyCache, DrawingResultSelector resultSelector)
+internal sealed class DrawingSearchEffectInterpreter(
+    IDrawingCache drawingCache,
+    IAssemblyCache assemblyCache,
+    DrawingResultSelector resultSelector)
 {
-    public void Interpret(SearchPlan plan, string drawingCacheKey, Tekla.Structures.Drawing.Drawing drawing)
+    public void Interpret(SearchPlan plan, string drawingCacheKey, global::Tekla.Structures.Drawing.Drawing drawing)
     {
         foreach (var effect in plan.Effects)
         {
@@ -24,20 +27,25 @@ internal sealed class DrawingSearchEffectInterpreter(IDrawingCache drawingCache,
         }
     }
 
-    private void SelectTargets(IReadOnlyList<SelectionTarget> targets, string drawingCacheKey, Tekla.Structures.Drawing.Drawing drawing)
+    private void SelectTargets(
+        IReadOnlyList<SelectionTarget> targets,
+        string drawingCacheKey,
+        global::Tekla.Structures.Drawing.Drawing drawing)
     {
         var directDrawingObjects = GetDrawingObjectTargets(targets, drawingCacheKey);
         var assemblyDrawingObjects = GetAssemblyPositionTargets(targets, drawing);
-        
+
         var selectedObjects = directDrawingObjects
             .Concat(assemblyDrawingObjects)
             .Distinct()
             .ToList();
-        
+
         resultSelector.SelectResults(selectedObjects);
     }
 
-    private IEnumerable<DrawingObject> GetAssemblyPositionTargets(IReadOnlyList<SelectionTarget> targets, Tekla.Structures.Drawing.Drawing drawing)
+    private IEnumerable<DrawingObject> GetAssemblyPositionTargets(
+        IReadOnlyList<SelectionTarget> targets,
+        global::Tekla.Structures.Drawing.Drawing drawing)
     {
         var drawingId = drawing.GetIdentifier().ToString();
 
@@ -52,7 +60,7 @@ internal sealed class DrawingSearchEffectInterpreter(IDrawingCache drawingCache,
 
                 var identifiersToProcess = target.IncludeAllParts
                     ? relatedIdentifiers
-                    : relatedIdentifiers.Where(r => r.Contains("main"));
+                    : relatedIdentifiers.Where(identifier => identifier.Contains("main"));
 
                 return identifiersToProcess
                     .SelectMany(identifier => drawingCache.GetRelatedObjects(drawingId, identifier))
@@ -60,7 +68,9 @@ internal sealed class DrawingSearchEffectInterpreter(IDrawingCache drawingCache,
             });
     }
 
-    private IEnumerable<DrawingObject> GetDrawingObjectTargets(IReadOnlyList<SelectionTarget> targets, string drawingCacheKey)
+    private IEnumerable<DrawingObject> GetDrawingObjectTargets(
+        IReadOnlyList<SelectionTarget> targets,
+        string drawingCacheKey)
     {
         return targets
             .OfType<SelectionTarget.DrawingObject>()

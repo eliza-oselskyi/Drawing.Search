@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Windows;
 using Drawing.Search.Application.Features.Search;
-using Drawing.Search.Application.Services.Implementations;
 using Drawing.Search.Application.Services.Interfaces;
 using Drawing.Search.Domain.Interfaces;
 using Drawing.Search.Infrastructure;
@@ -10,6 +9,7 @@ using Drawing.Search.Infrastructure.Caching.Keys;
 using Drawing.Search.Infrastructure.Caching.Models;
 using Drawing.Search.Infrastructure.Caching.Services;
 using Drawing.Search.Infrastructure.CAD.Tekla;
+using Drawing.Search.Infrastructure.Services;
 using Drawing.Search.ViewModels;
 using Drawing.Search.Views;
 using Microsoft.Extensions.DependencyInjection;
