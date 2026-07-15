@@ -7,7 +7,7 @@ namespace Drawing.Search.Application.Features.Search;
 /// <summary>
 /// Describes a search query
 /// </summary>
-public sealed record SearchQuery : ISearchQuery
+public sealed record SearchQuery
 {
     public SearchQuery(string term, bool caseSensitive = false, bool wildcard = false)
     {

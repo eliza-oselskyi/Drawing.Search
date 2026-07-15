@@ -51,7 +51,7 @@ public class PartMarkSearchExecutor(
             })
             .ToList();
         
-        var planResult = SearchPipeline.TrySearch(searchableMarks, config.ToSearchRequest());
+        var planResult = SearchPipeline.TryPlanSearch(searchableMarks, config.ToSearchRequest());
 
         var executionResult = await SearchPlanRunner.RunAsync(
             planResult,
@@ -107,7 +107,7 @@ public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCa
             })
             .ToList();
         
-        var planResult = SearchPipeline.TrySearch(searchableTexts, config.ToSearchRequest());
+        var planResult = SearchPipeline.TryPlanSearch(searchableTexts, config.ToSearchRequest());
 
         var executionResult = await SearchPlanRunner.RunAsync(
             planResult,
@@ -159,7 +159,7 @@ public class AssemblySearchExecutor(
                 IsMainPart: true))
             .ToList();
 
-        var planResult = SearchPipeline.TrySearch(searchableAssemblies, config.ToSearchRequest());
+        var planResult = SearchPipeline.TryPlanSearch(searchableAssemblies, config.ToSearchRequest());
 
         var executionResult = await SearchPlanRunner.RunAsync(
             planResult,

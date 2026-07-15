@@ -9,9 +9,15 @@ using Drawing.Search.Domain.Search;
 
 namespace Drawing.Search.Application.Features.Search;
 
+
 public static class SearchPipeline
 {
-    public static Result<SearchPlan> TrySearch(IEnumerable<SearchableDrawingObject> objects, SearchRequest request)
+    private sealed record Match(SearchableDrawingObject Item, string Content);
+    
+    
+    public static Result<SearchPlan> TryPlanSearch(
+        IEnumerable<SearchableDrawingObject> objects,
+        SearchRequest request)
     {
         try
         {
@@ -27,7 +33,7 @@ public static class SearchPipeline
                 return new SearchException(new SearchError.EmptySearchTerm())
                     .ResultFromException<SearchPlan>();
 
-            return Search(objects, request).ResultFromValue();
+            return PlanSearch(objects, request).ResultFromValue();
         }
         catch (ArgumentException ex)
         {
@@ -45,7 +51,9 @@ public static class SearchPipeline
         }
     }
 
-    public static SearchPlan Search(IEnumerable<SearchableDrawingObject> objects, SearchRequest request)
+    public static SearchPlan PlanSearch(
+        IEnumerable<SearchableDrawingObject> objects,
+        SearchRequest request)
     {
         if (objects is null) throw new ArgumentNullException(nameof(objects));
         if (request is null) throw new ArgumentNullException(nameof(request));
@@ -57,7 +65,7 @@ public static class SearchPipeline
             : SearchPredicates.Wildcard;
 
         var matches = objects
-            .Select(obj => new SearchMatch<SearchableDrawingObject>(obj, obj.SearchText))
+            .Select(obj => new Match(obj, obj.SearchText))
             .Where(match => predicate(match.Content, query))
             .ToList();
 
@@ -96,23 +104,5 @@ public static class SearchPipeline
 
             _ => null
         };
-    }
-
-    public static IReadOnlyList<SearchMatch<T>> Search<T>(
-        IEnumerable<T> items,
-        Func<T, string> extract,
-        ISearchQuery query,
-        SearchPredicate predicate)
-    {
-        if (items is null) throw new ArgumentNullException(nameof(items));
-        if (extract is null) throw new ArgumentNullException(nameof(extract));
-        if (query is null) throw new ArgumentNullException(nameof(query));
-        if (predicate is null) throw new ArgumentNullException(nameof(predicate));
-
-        return items
-            .Where(item => item is not null)
-            .Select(item => new SearchMatch<T>(item, extract(item) ?? string.Empty))
-            .Where(match => predicate(match.Content, query))
-            .ToList();
     }
 }
