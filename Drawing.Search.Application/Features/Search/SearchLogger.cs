@@ -18,7 +18,7 @@ namespace Drawing.Search.Application.Features.Search;
 ///     This logger uses both <see cref="Debug.WriteLine" /> and <see cref="Console.WriteLine" />
 ///     to log the messages, enabling logging in both development and runtime environments.
 /// </remarks>
-public class SearchLogger : ISearchLogger, INotifyPropertyChanged
+public sealed class SearchLogger : ISearchLogger
 {
     public readonly List<LogEntry> LogEntriesInternal = [];
     
@@ -93,18 +93,16 @@ public class SearchLogger : ISearchLogger, INotifyPropertyChanged
         Debug.WriteLine(logEntry);
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    public void ClearLog()
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        LogEntriesInternal.Clear();
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LogEntries)));
     }
 
-    protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-        field = value;
-        OnPropertyChanged(propertyName);
-        return true;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
