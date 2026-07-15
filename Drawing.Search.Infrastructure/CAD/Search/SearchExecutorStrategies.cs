@@ -30,26 +30,9 @@ public class PartMarkSearchExecutor(
         if (drawing is null) throw new ArgumentNullException(nameof(drawing));
         
         var drawingId = drawing.GetIdentifier().ToString();
-        var domainDrawingId = new DrawingId(drawingId);
         var dwgKey = cacheKeyGenerator.GenerateDrawingKey(drawingId);
         
-        var ids = drawingCache.GetDrawingIdentifiers(drawingId);
-
-        var searchableMarks = ids
-            .Select(id => new
-            {
-                Id = id,
-                Object = drawingCache.GetDrawingObject(dwgKey, id)
-            })
-            .Where(entry => entry.Object is Mark)
-            .Select(entry =>
-            {
-                var mark = (Mark)entry.Object;
-
-                return new SearchableDrawingObject.PartMarkObject(entry.Id, domainDrawingId,
-                    MarkSearchText.Extract(mark));
-            })
-            .ToList();
+        var searchableMarks = TeklaSearchableObjects.PartMarks(drawingCache, cacheKeyGenerator, drawing);
         
         var planResult = SearchPipeline.TryPlanSearch(searchableMarks, config.ToSearchRequest());
 
@@ -86,26 +69,9 @@ public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCa
         if (drawing is null) throw new ArgumentNullException(nameof(drawing));
 
         var drawingId = drawing.GetIdentifier().ToString();
-        var domainDrawingId = new DrawingId(drawingId);
         var dwgKey = new CacheKeyBuilder(drawingId).CreateDrawingCacheKey();
 
-        var ids = drawingCache.GetDrawingIdentifiers(drawingId);
-
-        var searchableTexts = ids
-            .Select(id => new
-            {
-                Id = id,
-                Object = drawingCache.GetDrawingObject(dwgKey, id)
-            })
-            .Where(entry => entry.Object is Text)
-            .Select(entry =>
-            {
-                var text = (Text)entry.Object;
-
-                return new SearchableDrawingObject.TextObject(entry.Id, domainDrawingId,
-                    text.TextString ?? string.Empty);
-            })
-            .ToList();
+        var searchableTexts = TeklaSearchableObjects.Texts(drawingCache, drawing);
         
         var planResult = SearchPipeline.TryPlanSearch(searchableTexts, config.ToSearchRequest());
 
@@ -146,18 +112,9 @@ public class AssemblySearchExecutor(
         if (drawing is null) throw new ArgumentNullException(nameof(drawing));
         
         var drawingId = drawing.GetIdentifier().ToString();
-        var domainDrawingId = new DrawingId(drawingId);
         var dwgKey = new CacheKeyBuilder(drawingId).CreateDrawingCacheKey();
 
-        var searchableAssemblies = assemblyCache.GetAllAssemblyPositions()
-            .Where(position => !string.IsNullOrWhiteSpace(position))
-            .Select(position => new SearchableDrawingObject.AssemblyObject(
-                position,
-                domainDrawingId,
-                position,
-                AssemblyPosition: position,
-                IsMainPart: true))
-            .ToList();
+        var searchableAssemblies = TeklaSearchableObjects.Assemblies(assemblyCache, drawing);
 
         var planResult = SearchPipeline.TryPlanSearch(searchableAssemblies, config.ToSearchRequest());
 
