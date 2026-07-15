@@ -8,7 +8,7 @@
         xmlns:enums="clr-namespace:Drawing.Search.Domain.Enums;assembly=Drawing.Search.Domain"
         xmlns:controls="clr-namespace:Drawing.Search.UI.Common.Controls;assembly=Drawing.Search.UI.Common"
         xmlns:behaviors="clr-namespace:Drawing.Search.UI.Common.Behaviors;assembly=Drawing.Search.UI.Common"
-        Background="{DynamicResource BackgroundBrush}"
+        Background="{DynamicResource BackgroundGlobal}"
         mc:Ignorable="d"
         Title="Search In Drawing"
         Topmost="True"
@@ -37,8 +37,8 @@
     <DockPanel>
         <!-- Title Bar -->
         <Border DockPanel.Dock="Top"
-                Background="{DynamicResource Layer01}"
-                BorderBrush="{DynamicResource BorderStrong01}"
+                Background="{DynamicResource LayerAccent02}"
+                BorderBrush="{DynamicResource BorderStrong02}"
                 BorderThickness="0,0,0,1"
                 Height="32">
             <Grid>
