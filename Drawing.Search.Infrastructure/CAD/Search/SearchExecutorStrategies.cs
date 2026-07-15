@@ -69,7 +69,7 @@ public class PartMarkSearchExecutor(
         {
             MatchCount = execution.Plan.Summary.MatchCount,
             ElapsedTime = execution.Plan.Summary.ElapsedTime,
-            SearchType = SearchType.Assembly,
+            SearchType = SearchType.PartMark,
             MatchedContent = execution.Plan.Summary.MatchedContent
         };
     }
@@ -125,7 +125,7 @@ public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCa
         {
             MatchCount = execution.Plan.Summary.MatchCount,
             ElapsedTime = execution.Plan.Summary.ElapsedTime,
-            SearchType = SearchType.Assembly,
+            SearchType = SearchType.Text,
             MatchedContent = execution.Plan.Summary.MatchedContent
         };
     }
