@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Drawing.Search.Domain.Enums;
 
 namespace Drawing.Search.Application.Features.Search;
@@ -34,4 +36,23 @@ public sealed record SearchResult
     /// Gets the searchable content that matched.
     /// </summary>
     public IReadOnlyList<string> MatchedContent { get; init; } = new List<string>();
+
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+        
+        sb.AppendLine();
+        sb.AppendLine("===========");
+        sb.AppendLine("| Search Results: |");
+        sb.AppendLine("===========");
+        sb.AppendLine($"Search Type: {SearchType}");
+        sb.AppendLine($"Match Count: {MatchCount}");
+        sb.AppendLine($"Elapsed Time: {ElapsedTime}");
+        var matched = MatchedContent;
+        if (matched.Count > 15)
+            matched = matched.Take(15).ToList();
+        
+        sb.AppendLine($"Matched Content: \n[ {string.Join(", \n", matched).TrimEnd(',', ' ')} ]");
+        return sb.ToString();
+    }
 }

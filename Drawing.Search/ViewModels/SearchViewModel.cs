@@ -256,7 +256,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     
     public Visibility DebugVisibility => IsTestMode ? Visibility.Visible : Visibility.Collapsed;
 
-    public string DebugText => string.Join("\n", SearchLoggerServiceLocator.Current.LogEntries.ToArray().Select(e => e.ToString()));
+    public string DebugText => string.Join("—————————————————————————\n", SearchLoggerServiceLocator.Current.LogEntries.ToArray().Select(e => e.ToString()));
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -426,6 +426,8 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             {
                 ElapsedTime = stopwatch.Elapsed
             };
+            
+            SearchLoggerServiceLocator.Current.LogInformation(result.ToString());
             
             StatusMessage = $"Found {result.MatchCount} matches in {result.ElapsedTime.Milliseconds} ms.";
 

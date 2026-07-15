@@ -19,7 +19,8 @@ public class PartMarkSearchExecutor(
     DrawingResultSelector resultSelector,
     IDrawingCache drawingCache,
     ICacheKeyGenerator cacheKeyGenerator,
-    IAssemblyCache assemblyCache)
+    IAssemblyCache assemblyCache,
+    ISearchLogger logger)
     : ISearchExecutor
 {
     private readonly DrawingSearchEffectInterpreter _effectInterpreter = new(drawingCache, assemblyCache, resultSelector);
@@ -38,11 +39,12 @@ public class PartMarkSearchExecutor(
             SearchType.PartMark,
             (effect, token) => _effectInterpreter.InterpretAsync(effect, dwgKey, drawing, token),
             execution => execution.Plan.Summary.MatchCount,
+            logger,
             cancellationToken);
     }
 }
 
-public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCache drawingCache, IAssemblyCache assemblyCache)
+public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCache drawingCache, IAssemblyCache assemblyCache, ISearchLogger logger)
     : ISearchExecutor
 {
     private readonly DrawingSearchEffectInterpreter _effectInterpreter = new(drawingCache, assemblyCache, resultSelector);
@@ -61,6 +63,7 @@ public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCa
             SearchType.Text,
             (effect, token) => _effectInterpreter.InterpretAsync(effect, dwgKey, drawing, token),
             execution => execution.Plan.Summary.MatchCount,
+            logger,
             cancellationToken);
     }
 }
@@ -68,7 +71,7 @@ public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCa
 public class AssemblySearchExecutor(
     DrawingResultSelector resultSelector,
     IAssemblyCache assemblyCache,
-    IDrawingCache drawingCache)
+    IDrawingCache drawingCache, ISearchLogger logger)
     : ISearchExecutor
 {
     
@@ -88,6 +91,7 @@ public class AssemblySearchExecutor(
             SearchType.Assembly,
             (effect, token) => _effectInterpreter.InterpretAsync(effect, dwgKey, drawing, token),
             execution => execution.Interpretation.SelectedObjectCount,
+            logger,
             cancellationToken);
     }
 }

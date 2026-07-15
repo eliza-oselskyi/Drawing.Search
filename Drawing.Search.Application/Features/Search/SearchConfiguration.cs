@@ -46,7 +46,8 @@ public sealed record SearchConfiguration(
     public override string ToString()
     {
         var stringBuilder = new StringBuilder();
-        stringBuilder.AppendLine($"Search Term: {SearchTerm}");
+        stringBuilder.AppendLine();
+        stringBuilder.AppendLine($"Search Term: '{SearchTerm}'");
         stringBuilder.AppendLine($"Case Sensitive: {CaseSensitive}");
         stringBuilder.AppendLine($"Wildcard: {Wildcard}");
         stringBuilder.AppendLine($"Search Type: {Type}");

@@ -28,7 +28,7 @@ public class DrawingSearchService : ISearchService, IDisposable
         _logger = logger;
 
         var resultSelector = new DrawingResultSelector(drawingProvider);
-        _searchExecutors = InitializeSearchExecutors(assemblyCache, drawingCache, resultSelector, cacheKeyGenerator);
+        _searchExecutors = InitializeSearchExecutors(assemblyCache, drawingCache, resultSelector, cacheKeyGenerator, _logger);
     }
 
     public Task<SearchResult> ExecuteSearchAsync(SearchConfiguration config)
@@ -60,13 +60,14 @@ public class DrawingSearchService : ISearchService, IDisposable
         IAssemblyCache assemblyCache,
         IDrawingCache drawingCache,
         DrawingResultSelector resultSelector,
-        ICacheKeyGenerator cacheKeyGenerator)
+        ICacheKeyGenerator cacheKeyGenerator,
+        ISearchLogger logger)
     {
         return new Dictionary<SearchType, ISearchExecutor>
         {
-            { SearchType.PartMark, new PartMarkSearchExecutor(resultSelector, drawingCache, cacheKeyGenerator, assemblyCache) },
-            { SearchType.Text, new TextSearchExecutor(resultSelector, drawingCache, assemblyCache) },
-            { SearchType.Assembly, new AssemblySearchExecutor(resultSelector, assemblyCache, drawingCache) }
+            { SearchType.PartMark, new PartMarkSearchExecutor(resultSelector, drawingCache, cacheKeyGenerator, assemblyCache, logger) },
+            { SearchType.Text, new TextSearchExecutor(resultSelector, drawingCache, assemblyCache, logger) },
+            { SearchType.Assembly, new AssemblySearchExecutor(resultSelector, assemblyCache, drawingCache, logger) }
         };
     }
 

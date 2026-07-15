@@ -14,15 +14,11 @@ namespace Drawing.Search.Application.Features.Search;
 ///     A simple logger implementation used to log search-related information,
 ///     errors, and debug messages in the application.
 /// </summary>
-/// <remarks>
-///     This logger uses both <see cref="Debug.WriteLine" /> and <see cref="Console.WriteLine" />
-///     to log the messages, enabling logging in both development and runtime environments.
-/// </remarks>
 public sealed class SearchLogger : ISearchLogger
 {
-    public readonly List<LogEntry> LogEntriesInternal = [];
+    private readonly List<LogEntry> _logEntries = [];
     
-    public IReadOnlyList<LogEntry> LogEntries => LogEntriesInternal;
+    public IReadOnlyList<LogEntry> LogEntries => _logEntries;
 
     /// <summary>
     ///     Logs informational messages such as updates or general events.
@@ -38,11 +34,8 @@ public sealed class SearchLogger : ISearchLogger
     {
         var compiled = $"INFO: {message}";
         var logEntry = new LogEntry(compiled, null);
-        LogEntriesInternal.Add(logEntry);
+        _logEntries.Add(logEntry);
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LogEntries)));
-        
-        Debug.WriteLine(compiled);
-        Console.WriteLine(compiled);
     }
 
     /// <summary>
@@ -67,11 +60,8 @@ public sealed class SearchLogger : ISearchLogger
     public void LogError(Exception exception, string message)
     {
         var logEntry = new LogEntry($"ERROR: {message}", exception);;
-        LogEntriesInternal.Add(logEntry);
+        _logEntries.Add(logEntry);
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LogEntries)));
-        
-        Debug.WriteLine(logEntry);
-        Console.WriteLine(logEntry);
     }
 
     /// <summary>
@@ -87,15 +77,13 @@ public sealed class SearchLogger : ISearchLogger
     public void DebugInfo(string message)
     {
         var logEntry = new LogEntry($"DEBUG: {message}", null);
-        LogEntriesInternal.Add(logEntry);
+        _logEntries.Add(logEntry);
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LogEntries)));
-        
-        Debug.WriteLine(logEntry);
     }
 
     public void ClearLog()
     {
-        LogEntriesInternal.Clear();
+        _logEntries.Clear();
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LogEntries)));
     }
 

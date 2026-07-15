@@ -7,6 +7,7 @@ using Drawing.Search.Application.Features.Search;
 using Drawing.Search.Domain.Drawings;
 using Drawing.Search.Domain.Effects;
 using Drawing.Search.Domain.Enums;
+using Drawing.Search.Domain.Interfaces;
 using Drawing.Search.Domain.Search;
 
 namespace Drawing.Search.Infrastructure.CAD.Search;
@@ -19,6 +20,7 @@ internal static class TeklaSearchExecutorCore
         SearchType searchType,
         Func<SearchEffect, CancellationToken, Task<SearchEffectInterpretationResult>> interpret,
         Func<SearchPlanExecutionResult<SearchEffectInterpretationResult>, int> countMatches,
+        ISearchLogger logger,
         CancellationToken cancellationToken)
     {
         var planResult = SearchPipeline.TryPlanSearch(
@@ -30,6 +32,7 @@ internal static class TeklaSearchExecutorCore
             interpret,
             SearchEffectInterpretationResult.Combine,
             SearchEffectInterpretationResult.Empty,
+            logger,
             cancellationToken);
 
         if (!executionResult.IsSuccessful)

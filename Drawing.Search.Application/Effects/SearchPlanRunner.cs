@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DotNext;
 using Drawing.Search.Domain.Effects;
+using Drawing.Search.Domain.Interfaces;
 using Drawing.Search.Domain.Search;
 
 namespace Drawing.Search.Application.Effects;
@@ -34,6 +35,7 @@ public static class SearchPlanRunner
         Func<SearchEffect, CancellationToken, Task<TInterpretation>> interpret,
         Func<TInterpretation, TInterpretation, TInterpretation> combine,
         TInterpretation empty,
+        ISearchLogger logger,
         CancellationToken cancellationToken = default)
     {
         if (interpret is null) throw new ArgumentNullException(nameof(interpret));
@@ -41,6 +43,8 @@ public static class SearchPlanRunner
 
         if (!planResult.IsSuccessful)
             return planResult.Error.ResultFromException<SearchPlanExecutionResult<TInterpretation>>();
+        
+        logger.LogInformation("Beginning search plan execution...");
 
         var plan = planResult.Value;
         var interpretation = empty;
@@ -48,6 +52,7 @@ public static class SearchPlanRunner
         foreach (var effect in plan.Effects)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            logger.LogInformation($"Executing effect: {effect.GetType().Name}");
 
             var effectResult = await interpret(effect, cancellationToken);
             interpretation = combine(interpretation, effectResult);
