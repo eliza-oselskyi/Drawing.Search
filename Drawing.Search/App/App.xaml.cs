@@ -9,6 +9,7 @@ using Drawing.Search.Infrastructure.Caching.Keys;
 using Drawing.Search.Infrastructure.Caching.Models;
 using Drawing.Search.Infrastructure.Caching.Services;
 using Drawing.Search.Infrastructure.CAD.Tekla;
+using Drawing.Search.Infrastructure.CAD.Tekla.Interfaces;
 using Drawing.Search.Infrastructure.Services;
 using Drawing.Search.ViewModels;
 using Drawing.Search.Views;

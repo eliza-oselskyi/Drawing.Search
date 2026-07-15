@@ -1,5 +1,6 @@
 ﻿using System;
 using Drawing.Search.Domain.Interfaces;
+using Drawing.Search.Infrastructure.CAD.Tekla.Interfaces;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.Drawing.UI;
 using Tekla.Structures.Model;

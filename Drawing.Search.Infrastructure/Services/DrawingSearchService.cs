@@ -7,6 +7,7 @@ using Drawing.Search.Domain.Enums;
 using Drawing.Search.Domain.Interfaces;
 using Drawing.Search.Infrastructure.CAD.Models;
 using Drawing.Search.Infrastructure.CAD.Search;
+using Drawing.Search.Infrastructure.CAD.Tekla.Interfaces;
 
 namespace Drawing.Search.Infrastructure.Services;
 

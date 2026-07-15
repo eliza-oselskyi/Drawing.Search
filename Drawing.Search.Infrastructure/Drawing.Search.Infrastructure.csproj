@@ -97,6 +97,9 @@
         <Compile Include="CAD\Search\ISearchExecutor.cs" />
         <Compile Include="CAD\Search\SearchEffectInterpretationResult.cs" />
         <Compile Include="CAD\Search\SearchExecutorStrategies.cs" />
+        <Compile Include="CAD\Tekla\Interfaces\IDrawing.cs" />
+        <Compile Include="CAD\Tekla\Interfaces\IDrawingHandler.cs" />
+        <Compile Include="CAD\Tekla\Interfaces\IDrawingProvider.cs" />
         <Compile Include="CAD\Tekla\TeklaDrawingHandler.cs" />
         <Compile Include="CAD\Tekla\TeklaDrawingProvider.cs" />
         <Compile Include="CAD\Tekla\TeklaDrawingWrapper.cs" />
