@@ -14,36 +14,43 @@ internal sealed class DrawingSearchEffectInterpreter(
     IAssemblyCache assemblyCache,
     DrawingResultSelector resultSelector)
 {
-    public void Interpret(SearchPlan plan, string drawingCacheKey, global::Tekla.Structures.Drawing.Drawing drawing)
+    public SearchEffectInterpretationResult Interpret(SearchPlan plan, string drawingCacheKey, global::Tekla.Structures.Drawing.Drawing drawing)
     {
+        var selectedObjectCount = 0;
+        
         foreach (var effect in plan.Effects)
         {
             switch (effect)
             {
                 case SearchEffect.SelectTargets selectTargets:
-                    SelectTargets(selectTargets.Targets, drawingCacheKey, drawing);
+                    selectedObjectCount += SelectTargets(selectTargets.Targets, drawingCacheKey, drawing);
                     break;
             }
         }
+        
+        return new SearchEffectInterpretationResult(selectedObjectCount);
     }
 
-    private void SelectTargets(
+    private int SelectTargets(
         IReadOnlyList<SelectionTarget> targets,
         string drawingCacheKey,
         global::Tekla.Structures.Drawing.Drawing drawing)
     {
-        var directDrawingObjects = GetDrawingObjectTargets(targets, drawingCacheKey);
-        var assemblyDrawingObjects = GetAssemblyPositionTargets(targets, drawing);
+        var directDrawingObjects = GetDrawingObjectTargets(targets, drawingCacheKey).ToList();
+        var assemblyParts = GetAssemblyPositionTargets(targets, drawing).ToList();
 
         var selectedObjects = directDrawingObjects
-            .Concat(assemblyDrawingObjects)
-            .Distinct()
+            .Concat(assemblyParts.Cast<DrawingObject>())
             .ToList();
 
         resultSelector.SelectResults(selectedObjects);
+        
+        return assemblyParts.Count > 0
+            ? assemblyParts.Count
+            : directDrawingObjects.Count;
     }
 
-    private IEnumerable<DrawingObject> GetAssemblyPositionTargets(
+    private IEnumerable<Part> GetAssemblyPositionTargets(
         IReadOnlyList<SelectionTarget> targets,
         global::Tekla.Structures.Drawing.Drawing drawing)
     {
@@ -56,7 +63,7 @@ internal sealed class DrawingSearchEffectInterpreter(
                 var relatedIdentifiers = assemblyCache.GetAssemblyObjects(target.Position) as HashSet<string>;
 
                 if (relatedIdentifiers is null)
-                    return Enumerable.Empty<DrawingObject>();
+                    return [];
 
                 var identifiersToProcess = target.IncludeAllParts
                     ? relatedIdentifiers
@@ -64,7 +71,7 @@ internal sealed class DrawingSearchEffectInterpreter(
 
                 return identifiersToProcess
                     .SelectMany(identifier => drawingCache.GetRelatedObjects(drawingId, identifier))
-                    .OfType<DrawingObject>();
+                    .OfType<Part>();
             });
     }
 

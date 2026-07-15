@@ -55,7 +55,7 @@ public class PartMarkSearchExecutor(
         
         var plan = planResult.Value;
         
-        _effectInterpreter.Interpret(plan, dwgKey, drawing);
+        _ = _effectInterpreter.Interpret(plan, dwgKey, drawing);
 
         return SearchResult.Empty with
         {
@@ -106,7 +106,7 @@ public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCa
         
         var plan = planResult.Value;
 
-        _effectInterpreter.Interpret(plan, dwgKey, drawing);
+        _ = _effectInterpreter.Interpret(plan, dwgKey, drawing);
 
         return SearchResult.Empty with
         {
@@ -153,11 +153,11 @@ public class AssemblySearchExecutor(
         
         var plan = planResult.Value;
         
-        _effectInterpreter.Interpret(plan, dwgKey, drawing);
+        var interpretation = _effectInterpreter.Interpret(plan, dwgKey, drawing);
 
         return SearchResult.Empty with
         {
-            MatchCount = plan.Summary.MatchCount,
+            MatchCount = interpretation.SelectedObjectCount,
             ElapsedTime = plan.Summary.ElapsedTime,
             SearchType = SearchType.Assembly,
             MatchedContent = plan.Summary.MatchedContent
