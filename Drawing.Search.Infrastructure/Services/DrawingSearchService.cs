@@ -45,7 +45,8 @@ public class DrawingSearchService : ISearchService, IDisposable
             if (!_searchExecutors.TryGetValue(config.Type, out var executor))
                 throw new ArgumentException($"Unsupported search type: {config.Type}");
 
-            return Task.Run(() => executor.Execute(config, drawing));
+            return executor.ExecuteAsync(config, drawing);
+
         }
         catch (Exception e)
         {

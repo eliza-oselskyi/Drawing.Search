@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Drawing.Search.Domain.Effects;
 using Drawing.Search.Domain.Interfaces;
 using Drawing.Search.Domain.Search;
 using Drawing.Search.Infrastructure.CAD.Models;
 using Tekla.Structures.Drawing;
 using Tekla.Structures.DrawingInternal;
+using Part = Tekla.Structures.Drawing.Part;
 
 namespace Drawing.Search.Infrastructure.CAD.Search;
 
@@ -14,24 +17,24 @@ internal sealed class DrawingSearchEffectInterpreter(
     IAssemblyCache assemblyCache,
     DrawingResultSelector resultSelector)
 {
-    public SearchEffectInterpretationResult Interpret(SearchPlan plan, string drawingCacheKey, global::Tekla.Structures.Drawing.Drawing drawing)
+    public Task<SearchEffectInterpretationResult> InterpretAsync(
+        SearchEffect effect,
+        string drawingCacheKey,
+        global::Tekla.Structures.Drawing.Drawing drawing,
+        CancellationToken cancellationToken)
     {
-        var selectedObjectCount = 0;
-        
-        foreach (var effect in plan.Effects)
+        cancellationToken.ThrowIfCancellationRequested();
+
+        return effect switch
         {
-            switch (effect)
-            {
-                case SearchEffect.SelectTargets selectTargets:
-                    selectedObjectCount += SelectTargets(selectTargets.Targets, drawingCacheKey, drawing);
-                    break;
-            }
-        }
-        
-        return new SearchEffectInterpretationResult(selectedObjectCount);
+            SearchEffect.SelectTargets selectTargets =>
+                Task.FromResult(SelectTargets(selectTargets.Targets, drawingCacheKey, drawing)),
+
+            _ => Task.FromResult(SearchEffectInterpretationResult.Empty)
+        };
     }
 
-    private int SelectTargets(
+    private SearchEffectInterpretationResult SelectTargets(
         IReadOnlyList<SelectionTarget> targets,
         string drawingCacheKey,
         global::Tekla.Structures.Drawing.Drawing drawing)
@@ -44,10 +47,12 @@ internal sealed class DrawingSearchEffectInterpreter(
             .ToList();
 
         resultSelector.SelectResults(selectedObjects);
-        
-        return assemblyParts.Count > 0
+
+        var selectedObjectCount = assemblyParts.Count > 0
             ? assemblyParts.Count
             : directDrawingObjects.Count;
+
+        return new SearchEffectInterpretationResult(selectedObjectCount);
     }
 
     private IEnumerable<Part> GetAssemblyPositionTargets(

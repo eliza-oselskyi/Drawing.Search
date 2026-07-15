@@ -72,6 +72,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Effects\SearchEffectInterpreter.cs" />
+        <Compile Include="Effects\SearchPlanExecutionResult.cs" />
         <Compile Include="Effects\SearchPlanRunner.cs" />
         <Compile Include="Features\Search\SearchConfiguration.cs" />
         <Compile Include="Features\Search\SearchLogger.cs" />

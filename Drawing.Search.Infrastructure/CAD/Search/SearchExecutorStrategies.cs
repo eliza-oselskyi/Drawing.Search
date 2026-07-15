@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Drawing.Search.Application.Effects;
 using Drawing.Search.Application.Features.Search;
 using Drawing.Search.Domain.Drawings;
 using Drawing.Search.Domain.Enums;
@@ -21,7 +24,7 @@ public class PartMarkSearchExecutor(
 {
     private readonly DrawingSearchEffectInterpreter _effectInterpreter = new(drawingCache, assemblyCache, resultSelector);
 
-    public SearchResult Execute(SearchConfiguration config, global::Tekla.Structures.Drawing.Drawing drawing)
+    public async Task<SearchResult> ExecuteAsync(SearchConfiguration config, global::Tekla.Structures.Drawing.Drawing drawing, CancellationToken cancellationToken = default)
     {
         if (config is null) throw new ArgumentNullException(nameof(config));
         if (drawing is null) throw new ArgumentNullException(nameof(drawing));
@@ -49,20 +52,25 @@ public class PartMarkSearchExecutor(
             .ToList();
         
         var planResult = SearchPipeline.TrySearch(searchableMarks, config.ToSearchRequest());
+
+        var executionResult = await SearchPlanRunner.RunAsync(
+            planResult,
+            (effect, token) => _effectInterpreter.InterpretAsync(effect, dwgKey, drawing, token),
+            SearchEffectInterpretationResult.Combine,
+            SearchEffectInterpretationResult.Empty,
+            cancellationToken);
+
+        if (!executionResult.IsSuccessful)
+            throw executionResult.Error;
         
-        if (!planResult.IsSuccessful)
-            throw planResult.Error;
-        
-        var plan = planResult.Value;
-        
-        _ = _effectInterpreter.Interpret(plan, dwgKey, drawing);
+        var execution = executionResult.Value;
 
         return SearchResult.Empty with
         {
-            MatchCount = plan.Summary.MatchCount,
-            ElapsedTime = plan.Summary.ElapsedTime,
-            SearchType = SearchType.PartMark,
-            MatchedContent = plan.Summary.MatchedContent
+            MatchCount = execution.Plan.Summary.MatchCount,
+            ElapsedTime = execution.Plan.Summary.ElapsedTime,
+            SearchType = SearchType.Assembly,
+            MatchedContent = execution.Plan.Summary.MatchedContent
         };
     }
 }
@@ -72,7 +80,7 @@ public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCa
 {
     private readonly DrawingSearchEffectInterpreter _effectInterpreter = new(drawingCache, assemblyCache, resultSelector);
 
-    public SearchResult Execute(SearchConfiguration config, global::Tekla.Structures.Drawing.Drawing drawing)
+    public async Task<SearchResult> ExecuteAsync(SearchConfiguration config, global::Tekla.Structures.Drawing.Drawing drawing, CancellationToken cancellationToken = default)
     {
         if (config is null) throw new ArgumentNullException(nameof(config));
         if (drawing is null) throw new ArgumentNullException(nameof(drawing));
@@ -101,19 +109,24 @@ public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCa
         
         var planResult = SearchPipeline.TrySearch(searchableTexts, config.ToSearchRequest());
 
-        if (!planResult.IsSuccessful)
-            throw planResult.Error;
-        
-        var plan = planResult.Value;
+        var executionResult = await SearchPlanRunner.RunAsync(
+            planResult,
+            (effect, token) => _effectInterpreter.InterpretAsync(effect, dwgKey, drawing, token),
+            SearchEffectInterpretationResult.Combine,
+            SearchEffectInterpretationResult.Empty,
+            cancellationToken);
 
-        _ = _effectInterpreter.Interpret(plan, dwgKey, drawing);
+        if (!executionResult.IsSuccessful)
+            throw executionResult.Error;
+        
+        var execution = executionResult.Value;
 
         return SearchResult.Empty with
         {
-            MatchCount = plan.Summary.MatchCount,
-            ElapsedTime = plan.Summary.ElapsedTime,
-            SearchType = SearchType.Text,
-            MatchedContent = plan.Summary.MatchedContent
+            MatchCount = execution.Plan.Summary.MatchCount,
+            ElapsedTime = execution.Plan.Summary.ElapsedTime,
+            SearchType = SearchType.Assembly,
+            MatchedContent = execution.Plan.Summary.MatchedContent
         };
     }
 }
@@ -127,7 +140,7 @@ public class AssemblySearchExecutor(
     
     private readonly DrawingSearchEffectInterpreter _effectInterpreter = new(drawingCache, assemblyCache, resultSelector);
 
-    public SearchResult Execute(SearchConfiguration config, global::Tekla.Structures.Drawing.Drawing drawing)
+    public async Task<SearchResult> ExecuteAsync(SearchConfiguration config, global::Tekla.Structures.Drawing.Drawing drawing, CancellationToken cancellationToken = default)
     {
         if (config is null) throw new ArgumentNullException(nameof(config));
         if (drawing is null) throw new ArgumentNullException(nameof(drawing));
@@ -147,20 +160,25 @@ public class AssemblySearchExecutor(
             .ToList();
 
         var planResult = SearchPipeline.TrySearch(searchableAssemblies, config.ToSearchRequest());
+
+        var executionResult = await SearchPlanRunner.RunAsync(
+            planResult,
+            (effect, token) => _effectInterpreter.InterpretAsync(effect, dwgKey, drawing, token),
+            SearchEffectInterpretationResult.Combine,
+            SearchEffectInterpretationResult.Empty,
+            cancellationToken);
+
+        if (!executionResult.IsSuccessful)
+            throw executionResult.Error;
         
-        if (!planResult.IsSuccessful)
-            throw planResult.Error;
-        
-        var plan = planResult.Value;
-        
-        var interpretation = _effectInterpreter.Interpret(plan, dwgKey, drawing);
+        var execution = executionResult.Value;
 
         return SearchResult.Empty with
         {
-            MatchCount = interpretation.SelectedObjectCount,
-            ElapsedTime = plan.Summary.ElapsedTime,
+            MatchCount = execution.Interpretation.SelectedObjectCount,
+            ElapsedTime = execution.Plan.Summary.ElapsedTime,
             SearchType = SearchType.Assembly,
-            MatchedContent = plan.Summary.MatchedContent
+            MatchedContent = execution.Plan.Summary.MatchedContent
         };
     }
 }
