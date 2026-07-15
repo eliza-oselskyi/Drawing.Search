@@ -53,9 +53,7 @@ public class PartMarkSearchExecutor(
             })
             .ToList();
         
-        var request = new SearchRequest.PartMark(config.SearchTerm ?? string.Empty, !config.Wildcard, config.CaseSensitive);
-        
-        var planResult = SearchPipeline.TrySearch(searchableMarks, request);
+        var planResult = SearchPipeline.TrySearch(searchableMarks, config.ToSearchRequest());
         
         if (!planResult.IsSuccessful)
             throw planResult.Error;
@@ -107,9 +105,7 @@ public class TextSearchExecutor(DrawingResultSelector resultSelector, IDrawingCa
             })
             .ToList();
         
-        var request = new SearchRequest.Text(config.SearchTerm ?? string.Empty, !config.Wildcard, config.CaseSensitive);
-
-        var planResult = SearchPipeline.TrySearch(searchableTexts, request);
+        var planResult = SearchPipeline.TrySearch(searchableTexts, config.ToSearchRequest());
 
         if (!planResult.IsSuccessful)
             throw planResult.Error;
@@ -156,13 +152,7 @@ public class AssemblySearchExecutor(
                 IsMainPart: true))
             .ToList();
 
-        var request = new SearchRequest.Assembly(
-            config.SearchTerm ?? string.Empty,
-            !config.Wildcard,
-            config.CaseSensitive,
-            config.ShowAllAssemblyParts);
-        
-        var planResult = SearchPipeline.TrySearch(searchableAssemblies, request);
+        var planResult = SearchPipeline.TrySearch(searchableAssemblies, config.ToSearchRequest());
         
         if (!planResult.IsSuccessful)
             throw planResult.Error;

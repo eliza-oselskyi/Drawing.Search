@@ -441,18 +441,13 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         }
     }
 
-    private SearchConfiguration CreateSearchConfiguration()
-    {
-        var config = new SearchConfiguration
-        {
-            SearchTerm = SearchTerm,
-            Type = SelectedSearchType,
-            ShowAllAssemblyParts = ShowAllAssemblyParts,
-            Wildcard = _settings is { WildcardSearch: true },
-            CaseSensitive = IsCaseSensitive
-        };
-        return config;
-    }
+    private SearchConfiguration CreateSearchConfiguration() =>
+        new(
+            SearchTerm: SearchTerm,
+            Type: SelectedSearchType,
+            CaseSensitive: IsCaseSensitive,
+            Wildcard: _settings is { WildcardSearch: true },
+            ShowAllAssemblyParts: ShowAllAssemblyParts);
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
